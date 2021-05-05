@@ -1,0 +1,19 @@
+{
+  "name": "lexnorm-labeller-react",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "server": "nodemon server.js",
+    "client": "npm start --prefix client",
+    "app": "concurrently -p \"[{name}]\" -n \"SERVER,CLIENT\" -c \"bgBlue.bold,bgMagenta.bold\" \"npm run server\" \"npm run client\""
+  },
+  "author": "Tyler Bikaun",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^6.0.2",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.7"
+  }
+}
