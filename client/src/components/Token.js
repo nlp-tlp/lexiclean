@@ -83,6 +83,15 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
         setSavedChange(false);
     }
 
+    const removeFromDict = () => {
+        console.log(lexNormDict);
+        setLexNormDict(prevState => ({...prevState, [textIndex]: prevState[textIndex].filter(token => token.index !== tokenIndex)}))
+        setValue(originalToken);
+        setShowRemovePopover(false);
+        setEdited(false);
+
+    }
+
     const dictPopover = <Popover id={`popover`}>
                             <Popover.Title as="p" style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', padding: '0.5em'}}>
                                     <Button onClick={() => addToDict()} size="sm" variant="info">Yes</Button>
@@ -99,12 +108,9 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
                         </Popover>
     
     const removePopover = <Popover id={`remove-popover`}>
-                            <Popover.Title as="p" style={{display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '0.5em'}}>
-                                <div style={{margin: '0', display: 'flex', justifyContent: 'space-between'}}>
-                                    <Button onClick={() => addToDict()} size="sm">Yes</Button>
-                                    <Button onClick={() => cancelChange()} size="sm">No</Button>
-                                </div>
-
+                            <Popover.Title as="p" style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', padding: '0.5em'}}>
+                                    <Button onClick={() => removeFromDict()} size="sm" variant="info">Yes</Button>
+                                    <Button onClick={() => setShowRemovePopover(false)} size="sm" variant="secondary">No</Button>
                                 </Popover.Title>
                             <Popover.Content>
                                 <p>Remove from dictionary?</p>

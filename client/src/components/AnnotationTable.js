@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import React from 'react';
+import { createUseStyles } from 'react-jss';
 
 import Text from './Text';
 
-const useStyles = makeStyles({
+const useStyles = createUseStyles({
   container: {
     display: 'flex',
     flexDirection: 'column',
@@ -31,10 +31,8 @@ const useStyles = makeStyles({
   }
 });
 
-export default function AnnotationTable({texts, tokens_en, tokens_ds}) {
+export default function AnnotationTable({texts, tokens_en, tokens_ds, lexNormDict, setLexNormDict}) {
   const classes = useStyles();
-
-  const [lexNormDict, setLexNormDict] = useState({});
 
   return (
     <div className={classes.container}>

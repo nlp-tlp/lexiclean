@@ -10,7 +10,7 @@ export default function Text({text, textIndex, tokens_en, tokens_ds, lexNormDict
         const tokenizedText = text.split(' ');
         
         setMarkedupText(tokenizedText.map((token, index) => {
-            console.log(token, index);
+            // console.log(token, index);
             if (tokens_en.includes(token)){
                 return {index: index, token: token, classification: 'en'}
 
