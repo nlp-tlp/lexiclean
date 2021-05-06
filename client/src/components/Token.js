@@ -1,4 +1,4 @@
-// color palettee: dark grey: #6F87A6, light orange: #F2A477, light grey: #D9D9D9
+// color palettee: medium blue: #6F87A6, light orange: #F2A477, light grey: #D9D9D9, light green: #99BF9C
 import React, { useState, useEffect } from 'react'
 import { OverlayTrigger, Popover, Button } from 'react-bootstrap';
 import { createUseStyles } from 'react-jss';
@@ -14,7 +14,8 @@ const useStyles = createUseStyles({
     }
 })
 
-const bgColorMap = {'en': '#D9D9D9', 'ds': '#D9D9D9', 'ua': '#6F87A6'}
+// Color map for token classifications
+const bgColorMap = {'en': '#D9D9D9', 'ds': '#D9D9D9', 'ua': '#F2A477'}
 
 export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict}) {
     const classes = useStyles();
@@ -34,6 +35,18 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
     const [inputWidth, setInputWidth] = useState(`${(value.length + 2) * 8}px`)
     
     useEffect(() => {
+        // Set input field width
+        const minWidth = 50;
+        const width = (value.length + 2) * 10
+        if (width < minWidth){
+            setInputWidth(`${minWidth}px`)
+        } else {
+            setInputWidth(`${width}px`)
+        }
+    }, [value])
+
+
+    useEffect(() => {
         // Detect state change
         if(originalToken !== value){
             setEdited(true);
@@ -48,30 +61,24 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
         setValue(targetValue);
     }
 
-    useEffect(() => {
-        const minWidth = 50;
-        const width = (value.length + 2) * 10
-        if (width < minWidth){
-            setInputWidth(`${minWidth}px`)
-        } else {
-            setInputWidth(`${width}px`)
-        }
-    }, [value])
-
     const addToDict = () => {
-        // console.log('pair', originalToken, value)
-        // console.log(lexNormDict);
-
+        // console.log('text index', textIndex, 'token index', tokenIndex)
         // Get lexnorm dict values for text
-        if (lexNormDict[textIndex] && lexNormDict[textIndex].filter(text => text.index === textIndex).length !== 0){
+        if (lexNormDict[textIndex] && Object.values(lexNormDict[textIndex]).length !== 0){
             // text exists in lexnormdict
-            console.log('t index', textIndex)
-            console.log(Object.keys(lexNormDict).filter(text => text.index === textIndex))
-
+            
+            // Get current texts values
+            const currentTextLexNorm = lexNormDict[textIndex]
+            console.log('current text lexnorm', currentTextLexNorm)
+            // Add additional inputs
+            const updatedTextLexNorm = {...currentTextLexNorm, [tokenIndex]: {'source': originalToken, 'target': value}}
+            console.log('updated lexnorm', updatedTextLexNorm)
+            // Update lexnorm dict
+            setLexNormDict(prevState => ({...prevState, [textIndex]: updatedTextLexNorm}))
         } else {
             // initial addition for text
-            console.log(lexNormDict);
-            setLexNormDict(prevState => ({...prevState, [textIndex]: [{ 'index': tokenIndex, 'norms': {source: originalToken, target: value}}]}))
+            setLexNormDict(({...lexNormDict, [textIndex]: { [tokenIndex]: {'source': originalToken, 'target': value}}}),
+            console.log('lexnormdict callback', lexNormDict))
         }
 
         setSavedChange(true);
@@ -84,8 +91,19 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
     }
 
     const removeFromDict = () => {
-        console.log(lexNormDict);
-        setLexNormDict(prevState => ({...prevState, [textIndex]: prevState[textIndex].filter(token => token.index !== tokenIndex)}))
+        console.log('removing element from dict', lexNormDict);
+
+        const filteredTextDict = Object.keys(lexNormDict[textIndex]).filter(key => key != tokenIndex)
+                                                                    .reduce((obj, key) => {
+                                                                        return {
+                                                                            ...obj,
+                                                                            [key]: lexNormDict[textIndex][key]
+                                                                        };
+                                                                    }, {})
+        // console.log(filteredTextDict)
+
+        setLexNormDict(prevState => ({...prevState, [textIndex]: filteredTextDict}))
+        
         setValue(originalToken);
         setShowRemovePopover(false);
         setEdited(false);
@@ -138,7 +156,7 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
                     value={value}
                     onChange={e => modifyToken(e.target.value)}
                     key={tokenIndex}
-                    style={{backgroundColor: edited ? '#F2A477': bgColor, width: inputWidth}}
+                    style={{backgroundColor: edited ? '#99BF9C': bgColor, width: inputWidth}}
                     className={classes.token}
                     autocomplete="off"
                     title={`Original: ${originalToken}`}
@@ -152,7 +170,7 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
                     overlay={removePopover}
                     show={showRemovePopover}
                 >
-                    <div style={{cursor: 'pointer', width: inputWidth, backgroundColor: '#F2A477', height: '6px', borderRadius: '2px', marginTop: '2px'}} onClick={() => setShowRemovePopover(true)}></div>
+                    <div style={{cursor: 'pointer', width: inputWidth, backgroundColor: '#99BF9C', height: '6px', borderRadius: '2px', marginTop: '2px'}} onClick={() => setShowRemovePopover(true)}></div>
                 </OverlayTrigger>
                 : null
             }
