@@ -26,8 +26,10 @@ export default function Header({textCount, lexNormDict}) {
     const classes = useStyles();
 
     // TODO: finish logic once data is correctly added to lexnorm dictionary
-    const changeCount = Object.keys(lexNormDict).map(text => text.length).reduce((a, b) => a + b, 0)
+    // const changeCount = Object.keys(lexNormDict).map(text => Object.keys(text).length).reduce((a, b) => a + b, 0)
     // console.log(changeCount);
+    // console.log('header', lexNormDict)
+    const changeCount = Object.keys(lexNormDict).map(textIndex => Object.keys(lexNormDict[textIndex]).length).reduce((a, b) => a + b, 0);
 
     return (
         <div className={classes.wrapper}>
@@ -35,6 +37,11 @@ export default function Header({textCount, lexNormDict}) {
             <div className={classes.metricsContainer}>
                 <h3>{changeCount}C {textCount}T</h3>
             </div>
+            {/* {
+                lexNormDict.map(text => {return(
+                        <p>{Object.keys(text)[0]}</p>
+                )})
+            } */}
         </div>
     )
 }
