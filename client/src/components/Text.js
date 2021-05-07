@@ -1,35 +1,36 @@
 import React, { useState, useEffect } from 'react'
 import Token from './Token'
 
-export default function Text({text, textIndex, tokens_en, tokens_ds, lexNormDict, setLexNormDict}) {
+export default function Text({data, textIndex, tokens_en, tokens_ds, lexNormDict, setLexNormDict}) {
     const [markedupText, setMarkedupText] = useState();
     const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
-        // Tokenize text
-        const tokenizedText = text.split(' ');
-        
-        setMarkedupText(tokenizedText.map((token, index) => {
-            // console.log(token, index);
-            if (tokens_en.includes(token)){
-                return {index: index, token: token, classification: 'en'}
+        setMarkedupText(data.tokens.map(tokenInfo => {
+            // console.log(tokenInfo);
+            if (tokens_en.includes(tokenInfo.token)){
+                return {...tokenInfo, classification: 'en'}
 
-            } else if (tokens_ds.includes(token)){
-                return {index: index, token: token, classification: 'ds'}
+            } else if (tokens_ds.includes(tokenInfo.token)){
+                return {...tokenInfo, classification: 'ds'}
 
             } else {
                 // Note: UA refers to unassigned
-                return {index: index, token: token, classification: 'ua'}
+                return {...tokenInfo, classification: 'ua'}
             }
         })
         )
         setLoaded(true);
-    }, [text])
+    }, [data])
 
     return (
         <div id="text-container" style={{display: 'flex', flexDirection:'row'}}>
             {
-                loaded ? markedupText.map((tokenInfo) => {return(
+                loaded ? markedupText.map((tokenInfo) => {
+                    
+                    // console.log(tokenInfo, textIndex);
+
+                    return(
                             <Token
                                 tokenInfo={tokenInfo}
                                 textIndex={textIndex}

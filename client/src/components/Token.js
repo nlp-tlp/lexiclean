@@ -1,6 +1,14 @@
 // color palettee: medium blue: #6F87A6, light orange: #F2A477, light grey: #D9D9D9, light green: #99BF9C
 import React, { useState, useEffect } from 'react'
 import { OverlayTrigger, Popover, Button } from 'react-bootstrap';
+import {
+    Menu,
+    Item,
+    Separator,
+    Submenu,
+    useContextMenu
+} from "react-contexify";
+import "react-contexify/dist/ReactContexify.css";
 import { createUseStyles } from 'react-jss';
 
 const useStyles = createUseStyles({
@@ -14,11 +22,18 @@ const useStyles = createUseStyles({
     }
 })
 
+
 // Color map for token classifications
 const bgColorMap = {'en': '#D9D9D9', 'ds': '#D9D9D9', 'ua': '#F2A477'}
 
 export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict}) {
     const classes = useStyles();
+    const MENU_ID = `menu-${textIndex}`;
+
+    const { show } = useContextMenu({
+        id: MENU_ID,
+      });
+
 
     const { index, token, classification } = tokenInfo;
     const tokenIndex = index;
@@ -62,7 +77,7 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
     }
 
     const addToDict = () => {
-        // console.log('text index', textIndex, 'token index', tokenIndex)
+        console.log('add to dict - ', )
         // Get lexnorm dict values for text
         if (lexNormDict[textIndex] && Object.values(lexNormDict[textIndex]).length !== 0){
             // text exists in lexnormdict
@@ -92,7 +107,7 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
 
     const removeFromDict = () => {
         console.log('removing element from dict', lexNormDict);
-
+        // https://stackoverflow.com/questions/38750705/filter-object-properties-by-key-in-es6
         const filteredTextDict = Object.keys(lexNormDict[textIndex]).filter(key => key != tokenIndex)
                                                                     .reduce((obj, key) => {
                                                                         return {
@@ -101,7 +116,6 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
                                                                         };
                                                                     }, {})
         // console.log(filteredTextDict)
-
         setLexNormDict(prevState => ({...prevState, [textIndex]: filteredTextDict}))
         
         setValue(originalToken);
@@ -140,6 +154,17 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
                             </Popover.Content>
                         </Popover>
 
+    const handleItemClick = ({ e, props, triggerEvent, data }) => {
+        // TODO: Develop click handler
+        // console.log(e, props, triggerEvent, data );
+        console.log('Menu clicked')
+    }
+
+    const displayMenu = (e) => {
+        // TODO: Develop menu handler
+        show(e);
+    }
+
     return (
         <>
         <div style={{display: 'flex', flexDirection: 'column'}}>
@@ -160,21 +185,41 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
                     className={classes.token}
                     autocomplete="off"
                     title={`Original: ${originalToken}`}
+                    onContextMenu={displayMenu}
                     />
             </OverlayTrigger>
+
             {
-                (savedChange && originalToken !== value) ?
+                (savedChange && originalToken !== value && edited) ?
                 <OverlayTrigger
                     trigger="click"
                     placement="bottom"
                     overlay={removePopover}
                     show={showRemovePopover}
                 >
-                    <div style={{cursor: 'pointer', width: inputWidth, backgroundColor: '#99BF9C', height: '6px', borderRadius: '2px', marginTop: '2px'}} onClick={() => setShowRemovePopover(true)}></div>
+                    <div
+                        style={{cursor: 'pointer', width: inputWidth, backgroundColor: '#99BF9C', height: '6px', borderRadius: '2px', marginTop: '2px'}}
+                        onClick={() => setShowRemovePopover(true)}
+                    ></div>
                 </OverlayTrigger>
                 : null
             }
         </div>
+            <Menu
+                id={MENU_ID}
+            >
+                <Item onClick={handleItemClick}>
+                Domain Specific Term
+                </Item>
+                {/* <Separator/> */}
+                <Item onClick={handleItemClick}>
+                Abbreviation
+                </Item>
+                <Item onClick={handleItemClick}>
+                Noise
+                </Item>
+            </Menu>
+
         </>
     )
 }

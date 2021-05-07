@@ -2,7 +2,32 @@ const express = require('express');
 const router = express.Router();
 const Result = require('../models/Result');
 const Data = require('../models/Data');
-const Project = require('../models/Project');
+
+router.post('/', async (req, res) => {
+    console.log('Posting replacment token')
+    try{
+        const result = new Result({
+            token_id: req.body.token_id,
+            replacement_token: req.body.replacement_token
+        })
+
+        const savedReplacement = await result.save();
+        res.json(savedReplacement)
+
+    }catch(err){
+        res.json({ message: err})
+    }
+})
+
+
+
+// ********************************************************************************
+
+
+
+
+
+
 
 
 // GET RESULT FILTERED BY PROJECT AND DOC ID

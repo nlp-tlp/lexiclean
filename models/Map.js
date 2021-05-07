@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const MapSchema = mongoose.Schema({
+    project_id: {
+        type: Schema.Types.ObjectId,
+        ref: 'Project',
+        required: true
+    },
     type: {
         type: String,
         required: true

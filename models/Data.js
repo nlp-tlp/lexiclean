@@ -11,7 +11,12 @@ const DataSchema = mongoose.Schema({
     tokens: [{
         index: { type: Number, required: true},
         token: { type: String, required: true}
-    }]
+    }],
+    annotated: {
+        type: Boolean,
+        required: true,
+        default: false
+    }
 }, { _id: true})
 
 

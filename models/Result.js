@@ -2,9 +2,13 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ResultSchema = mongoose.Schema({
-    doc_id: {
+    token_id: {
         type: Schema.Types.ObjectId,
-        ref: 'Data',
+        ref: 'Data.tokens',
+        required: true
+    },
+    replacement_token: {
+        type: String,
         required: true
     },
     created_on : {

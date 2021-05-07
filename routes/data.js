@@ -42,19 +42,10 @@ router.get('/:projectId', async (req, res) => {
 })
 
 
-// **********************************************************************
-
-
-
-
-
-
-// PAGINATE DATA FILTERED BY PHASE ID
+// PAGINATE DATA FILTERED BY PROJECT ID
+// Sorts data based on if it has been annotated
 // Note: sending limit of 0 returns meta-data of paginator
-// TODO WIP
-// Sorts data based on if data has been annotated by querying results collection
-// TODO: Optimise (calling all data -> results -> paginating) isnt efficient
-router.get('/:phaseId/filter/', async (req, res) => {
+router.get('/:projectId/filter/', async (req, res) => {
     console.log('Paginating through data');
     console.log(req.query);
 
@@ -64,16 +55,10 @@ router.get('/:phaseId/filter/', async (req, res) => {
         // -> sort for 0 array to be first -> paginate based on query inputs
         const dataAggregate = Data.aggregate([
             {
-                $match: { project_phase_id: mongoose.Types.ObjectId(req.params.phaseId)}
+                $match: { project_id: mongoose.Types.ObjectId(req.params.projectId)}
             },
             {
-                $lookup: {from: 'results', localField: '_id', foreignField: 'doc_id', as: 'results'}
-            },
-            {
-                $addFields: {result_size: {$size: '$results'} }
-            },
-            {
-                $sort: {'result_size': 1, '_id': 1 }
+                $sort: {'annotated': 1, '_id': 1 }
             },
         ])
 
@@ -85,6 +70,16 @@ router.get('/:phaseId/filter/', async (req, res) => {
         res.json({ message: err })
     }
 })
+
+
+
+// **********************************************************************
+
+
+
+
+
+
 
 // GET ALL DATA CORRESPONDING TO LIST OF PROJECT IDS
 // projectIds -> phaseIds -> docIds
