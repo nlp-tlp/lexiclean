@@ -25,7 +25,7 @@ const useStyles = createUseStyles({
     }
 })
 
-export default function Header({textCount, lexNormDict, setShowUpload, setShowDownload, setShowProgress, setSaved}) {
+export default function Header({lexNormDict, setShowUpload, setShowDownload, setShowProgress, setSaved}) {
     const classes = useStyles();
     const changeCount = Object.keys(lexNormDict).map(textIndex => Object.keys(lexNormDict[textIndex]).length).reduce((a, b) => a + b, 0);
 

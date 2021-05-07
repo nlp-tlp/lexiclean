@@ -10,6 +10,7 @@ import {
 } from "react-contexify";
 import "react-contexify/dist/ReactContexify.css";
 import { createUseStyles } from 'react-jss';
+import axios from 'axios';
 
 const useStyles = createUseStyles({
     token: {
@@ -24,9 +25,9 @@ const useStyles = createUseStyles({
 
 
 // Color map for token classifications
-const bgColorMap = {'en': '#D9D9D9', 'ds': '#D9D9D9', 'ua': '#F2A477'}
+const bgColorMap = {'en': '#D9D9D9', 'ds': '#D9D9D9', 'ua': '#F2A477', 'rp': '#99BF9C'}
 
-export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict}) {
+export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict, replacementMap, setReplacementMap}) {
     const classes = useStyles();
     const MENU_ID = `menu-${textIndex}`;
 
@@ -35,11 +36,12 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
       });
 
 
-    const { index, token, classification } = tokenInfo;
+    const { index, token, classification, original } = tokenInfo;
     const tokenIndex = index;
-    
+    const replacedToken = classification === 'rp';
+
     // const [currentTokenIndex] = useState(tokenIndex) 
-    const [originalToken] = useState(token);
+    const [originalToken] = useState(original);
     const [value, setValue] = useState(token)
     const [edited, setEdited] = useState(false);
     const [savedChange, setSavedChange] = useState(false);
@@ -48,6 +50,8 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
     const [showRemovePopover, setShowRemovePopover] = useState(false);
 
     const [inputWidth, setInputWidth] = useState(`${(value.length + 2) * 8}px`)
+    
+
     
     useEffect(() => {
         // Set input field width
@@ -86,19 +90,30 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
 
     }
 
-    const removeFromDict = () => {
+    const removeFromDict = async () => {
         // console.log('removing', value, 'from dictionary')
+        if (tokenInfo.classification === 'rp'){
+            console.log(replacementMap);
+            console.log(tokenInfo)
+            console.log(value);
+            // Token was automatically replaced -> need to delete from database
+            const response = await axios.delete(`/api/results/${tokenInfo._id}`)
+            if (response.status === 200){
+                console.log('successfully deleted result')
+                console.log(response);
+            }
+        } else {
+            // https://stackoverflow.com/questions/38750705/filter-object-properties-by-key-in-es6
+            const filteredLexNormDict = Object.keys(lexNormDict).filter(key => key !== tokenInfo._id)
+                                                                .reduce((obj, key) => {
+                                                                    return {
+                                                                        ...obj,
+                                                                        [key]: lexNormDict[key]
+                                                                    };
+                                                                }, {})
+            setLexNormDict(filteredLexNormDict)
+        }
         
-        // https://stackoverflow.com/questions/38750705/filter-object-properties-by-key-in-es6
-        const filteredLexNormDict = Object.keys(lexNormDict).filter(key => key !== tokenInfo._id)
-                                                            .reduce((obj, key) => {
-                                                                return {
-                                                                    ...obj,
-                                                                    [key]: lexNormDict[key]
-                                                                };
-                                                            }, {})
-        setLexNormDict(filteredLexNormDict)
-
         setValue(originalToken);
         setShowRemovePopover(false);
         setEdited(false);
@@ -109,9 +124,11 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
         setSavedChange(false);
     }
 
-    // useEffect(() => {
-    //     console.log(lexNormDict)
-    // }, [lexNormDict])
+    useEffect(() => {
+        console.log('hi')
+        // This triggers a render event otherwise tokens get frozen...
+        // console.log(lexNormDict)
+    }, [lexNormDict])
 
     const dictPopover = <Popover id={`popover`}>
                             <Popover.Title as="p" style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', padding: '0.5em'}}>
@@ -135,11 +152,14 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
                                 </Popover.Title>
                             <Popover.Content>
                                 <p>Remove from dictionary?</p>
-                                <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', margin: 'auto', height: '2em'}}>
-                                    <div>
-                                        <strong>{originalToken}</strong> to <strong>{value}</strong>
+                                {
+                                    replacedToken ? null :
+                                    <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', margin: 'auto', height: '2em'}}>
+                                        <div>
+                                            <strong>{originalToken}</strong> to <strong>{value}</strong>
+                                        </div>
                                     </div>
-                                </div>
+                                }
                             </Popover.Content>
                         </Popover>
 
@@ -155,10 +175,9 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
     }
 
     return (
-        <>
         <div style={{display: 'flex', flexDirection: 'column'}}>
             <OverlayTrigger
-                trigger="click"
+            trigger="click"
                 placement="bottom"
                 overlay={dictPopover}
                 show={showPopover}
@@ -179,27 +198,22 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
             </OverlayTrigger>
 
             {
-                (savedChange && originalToken !== value && edited) ?
+                ((savedChange && originalToken !== value && edited) || replacedToken) ?
                 <OverlayTrigger
                     trigger="click"
                     placement="bottom"
                     overlay={removePopover}
                     show={showRemovePopover}
-                >
+                    >
                     <div
-                        style={{cursor: 'pointer', width: inputWidth, backgroundColor: '#99BF9C', height: '6px', borderRadius: '2px', marginTop: '2px'}}
-                        onClick={() => setShowRemovePopover(true)}
+                    style={{cursor: 'pointer', width: inputWidth, backgroundColor: '#99BF9C', height: '6px', borderRadius: '2px', marginTop: '2px'}}
+                    onClick={() => setShowRemovePopover(true)}
                     ></div>
                 </OverlayTrigger>
                 : null
             }
-        </div>
-            <Menu
-                id={MENU_ID}
-            >
-                <Item onClick={handleItemClick}>
-                Domain Specific Term
-                </Item>
+            <Menu id={MENU_ID}>
+                <Item onClick={handleItemClick}>Domain Specific Term</Item>
                 {/* <Separator/> */}
                 <Item onClick={handleItemClick}>
                 Abbreviation
@@ -208,7 +222,6 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
                 Noise
                 </Item>
             </Menu>
-
-        </>
+        </div>
     )
 }

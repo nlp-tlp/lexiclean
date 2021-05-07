@@ -66,6 +66,29 @@ router.patch('/add-many/', async (req, res) => {
 });
 
 
+// UPDATE SINGLE RESULT
+router.patch('/update', async (req, res) => {
+    console.log('Updated single result');
+    try{
+        const response = await Result.updateOne({ _id: req.body._id}, {"replacement_token": req.body.replacement_token})
+        res.json(response);
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+
+// DELETE RESULT USING TOKEN ID
+router.delete('/:tokenId', async (req, res) => {
+    console.log('deleting result')
+    try{
+        const response = await Result.deleteOne({token_id: req.params.tokenId});
+        res.json(response);
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
 
 
 // ********************************************************************************

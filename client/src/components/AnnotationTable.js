@@ -39,14 +39,17 @@ const useStyles = createUseStyles({
 const PAGE_LIMIT = 10;
 
 
-export default function AnnotationTable({project, texts, tokens_en, tokens_ds, lexNormDict, setLexNormDict, saved, setSaved}) {
+export default function AnnotationTable({project, tokens_en, tokens_ds, lexNormDict, setLexNormDict, saved, setSaved}) {
   const classes = useStyles();
 
   const [data, setData] = useState();
   const [dsTokens, setDsTokens] = useState();
+  const [replacementMap, setReplacementMap] = useState();
 
   const [loaded, setLoaded] = useState(false);
   const [mapsLoaded, setMapsLoaded] = useState(false);
+  const [replacementsLoaded, setReplacementsLoaded] = useState(false);
+
     
   const [paginatorLoaded, setPaginatorLoaded] = useState();
   const [totalPages, setTotalPages] = useState();
@@ -68,12 +71,11 @@ export default function AnnotationTable({project, texts, tokens_en, tokens_ds, l
 
 
   useEffect(() => {
-    // TODO: update based on context menu having state change e.g. adding to domain specific terms, abbreviations ect.
+    // TODO: Update based on context menu having state change e.g. adding to domain specific terms, abbreviations ect.
     const fetchProjectMaps = async () => {
       if (!mapsLoaded){
         const dsMapResponse = await axios.post(`/api/map/${project._id}`, {type: 'ds_tokens'})
         // const enMapResponse = await axios.get(`/api/map/${project._id}`, {type: 'en_tokens'})
-        // const MapResponse = await axios.get() // Will be for replacement dictionary...
 
         if (dsMapResponse.status === 200){
           console.log('ds tokens response', dsMapResponse.data);
@@ -92,17 +94,10 @@ export default function AnnotationTable({project, texts, tokens_en, tokens_ds, l
       const response = await axios.get(`/api/results/${project._id}`)
 
       if (response.status === 200){
-        console.log('replacements', response);
-
-        // Build replacement mapping
-        // const replacementMap = response.data.map(token => {
-
-        //   return({
-
-        //   })
-        // })
-
-
+        setReplacementMap(response.data, () => {
+          console.log('replacements', response.data);
+          setReplacementsLoaded(true);
+        });
       }
 
     }
@@ -154,7 +149,7 @@ export default function AnnotationTable({project, texts, tokens_en, tokens_ds, l
       {/* // Need to add icon to indicate that the document has no detected non-canonical tokens */}
       <div className={classes.container}>
         {
-          !loaded ? 
+          (!loaded && !replacementsLoaded) ? 
             <div style={{margin: 'auto'}}>
               <Spinner animation="border" />
             </div>
@@ -169,8 +164,11 @@ export default function AnnotationTable({project, texts, tokens_en, tokens_ds, l
                     textIndex={data._id}
                     tokens_en={tokens_en}
                     tokens_ds={dsTokens}
+                    replacementMap={replacementMap}
+                    setReplacementMap={setReplacementMap}
                     lexNormDict={lexNormDict}
                     setLexNormDict={setLexNormDict}
+                    page={page}
                     />
                 </div>
               </div>

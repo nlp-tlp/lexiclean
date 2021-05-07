@@ -16,14 +16,11 @@ import AnnotateBeginModal from './modals/AnnotateBeginModal'
 
 
 
-const texts = ['hello world', 'hello 123 world', 'goodbye tyler world', 'goodbye world'];
 const tokens_en = ['hello', 'goodbye'];
-const tokens_ds = ['123', 'tyler'];
 
 export default function Page() {
 
     const [lexNormDict, setLexNormDict] = useState({});
-    const textCount = texts.length;
 
     const [showUpload, setShowUpload] = useState(false);
     const [showDownload, setShowDownload] = useState(false);
@@ -61,7 +58,6 @@ export default function Page() {
 
         
         <Header
-            textCount={textCount}
             lexNormDict={lexNormDict}
             setShowUpload={setShowUpload}
             setShowDownload={setShowDownload}
@@ -83,16 +79,12 @@ export default function Page() {
             :
                 <AnnotationTable
                     project={selectedProject}
-                    texts={texts}
                     tokens_en={tokens_en}
-                    tokens_ds={tokens_ds}
                     lexNormDict={lexNormDict}
                     setLexNormDict={setLexNormDict}
                     saved={saved}
                     setSaved={setSaved}
                 />
-
-
         }
 
         <Footer />
