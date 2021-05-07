@@ -30,6 +30,9 @@ export default function Page() {
     const [showProgress, setShowProgress] = useState(false);
     const [showAnnotate, setShowAnnotate] = useState(false);
     
+    const [saved, setSaved] = useState(false)
+
+
     const [projects, setProjects] = useState();
     const [projectsLoaded, setProjectsLoaded] = useState(false);
     const [selectedProject, setSelectedProject] = useState();
@@ -63,6 +66,7 @@ export default function Page() {
             setShowUpload={setShowUpload}
             setShowDownload={setShowDownload}
             setShowProgress={setShowProgress}
+            setSaved={setSaved}
         />
 
         {/* // TODO: Need to add filter/sort here... */}
@@ -84,6 +88,8 @@ export default function Page() {
                     tokens_ds={tokens_ds}
                     lexNormDict={lexNormDict}
                     setLexNormDict={setLexNormDict}
+                    saved={saved}
+                    setSaved={setSaved}
                 />
 
 

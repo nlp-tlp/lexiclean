@@ -3,10 +3,13 @@ const router = express.Router();
 const Result = require('../models/Result');
 const Data = require('../models/Data');
 
+// Create single result
 router.post('/', async (req, res) => {
-    console.log('Posting replacment token')
+    console.log('Posting single replacement token')
     try{
         const result = new Result({
+            project_id: req.body.project_id,
+            doc_id: req.body.doc_id,
             token_id: req.body.token_id,
             replacement_token: req.body.replacement_token
         })
@@ -18,6 +21,50 @@ router.post('/', async (req, res) => {
         res.json({ message: err})
     }
 })
+
+// Get results associated to project
+router.get('/:projectId', async (req, res) => {
+    console.log('Fetching project replacements')
+    try{
+        const results = await Result.find({ project_id: req.params.projectId})
+                                    .populate('doc_id')
+                                    .lean();
+        
+        const replacements = results.map(result => {
+            const replacementToken = result.replacement_token;
+            const tokenId = result.token_id;
+            const originalToken = result.doc_id.tokens.filter(token => token._id.toString() == tokenId)[0].token;
+            return({
+                [originalToken]: replacementToken
+            })
+        })
+        const replacementMap = Object.assign({}, ...replacements)
+        res.json(replacementMap);
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+
+// CREATE MANY RESULTS OR WRITES OVER EXISTING ONES
+router.patch('/add-many/', async (req, res) => {
+    console.log('Adding many results');
+
+    try {
+        const results = req.body.results;
+        console.log(results);
+
+        let response;
+        for (const result of results){
+            console.log('inserting', result);
+            response = await Result.updateOne({ token_id: result.token_id}, result, {upsert: true})
+        }
+        res.json(response);
+    }catch(err){
+        res.json({ mesage: err })
+    }
+});
+
 
 
 

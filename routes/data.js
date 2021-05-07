@@ -45,21 +45,20 @@ router.get('/:projectId', async (req, res) => {
 // PAGINATE DATA FILTERED BY PROJECT ID
 // Sorts data based on if it has been annotated
 // Note: sending limit of 0 returns meta-data of paginator
+// If any issues arise with results - refer to: https://github.com/aravindnc/mongoose-aggregate-paginate-v2/issues/18
+// TODO: Add sort functionality (this will require patching data with annotated status when results are patched)
 router.get('/:projectId/filter/', async (req, res) => {
     console.log('Paginating through data');
     console.log(req.query);
-
     try {
         // Paginate Aggregation
-        // matches phase -> adds results based on _id map doc_id -> adds length of result array
-        // -> sort for 0 array to be first -> paginate based on query inputs
         const dataAggregate = Data.aggregate([
             {
                 $match: { project_id: mongoose.Types.ObjectId(req.params.projectId)}
             },
-            {
-                $sort: {'annotated': 1, '_id': 1 }
-            },
+            // {
+            //     $sort: {'annotated': 1}
+            // },
         ])
 
         const options = {page: req.query.page, limit: req.query.limit}

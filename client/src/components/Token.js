@@ -66,6 +66,7 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
         if(originalToken !== value){
             setEdited(true);
         } else {
+            // Remove from dictionary if the value is reverted to its original form
             setEdited(false);
             setShowPopover(false);
         }
@@ -77,27 +78,30 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
     }
 
     const addToDict = () => {
-        console.log('add to dict - ', )
-        // Get lexnorm dict values for text
-        if (lexNormDict[textIndex] && Object.values(lexNormDict[textIndex]).length !== 0){
-            // text exists in lexnormdict
-            
-            // Get current texts values
-            const currentTextLexNorm = lexNormDict[textIndex]
-            console.log('current text lexnorm', currentTextLexNorm)
-            // Add additional inputs
-            const updatedTextLexNorm = {...currentTextLexNorm, [tokenIndex]: {'source': originalToken, 'target': value}}
-            console.log('updated lexnorm', updatedTextLexNorm)
-            // Update lexnorm dict
-            setLexNormDict(prevState => ({...prevState, [textIndex]: updatedTextLexNorm}))
-        } else {
-            // initial addition for text
-            setLexNormDict(({...lexNormDict, [textIndex]: { [tokenIndex]: {'source': originalToken, 'target': value}}}),
-            console.log('lexnormdict callback', lexNormDict))
-        }
+        // console.log(originalToken, value, tokenInfo._id)
 
+        setLexNormDict(prevState => ({...prevState, [tokenInfo._id]: {"replacement_token": value, "doc_id": textIndex}}))
         setSavedChange(true);
         setShowPopover(false);
+
+    }
+
+    const removeFromDict = () => {
+        // console.log('removing', value, 'from dictionary')
+        
+        // https://stackoverflow.com/questions/38750705/filter-object-properties-by-key-in-es6
+        const filteredLexNormDict = Object.keys(lexNormDict).filter(key => key !== tokenInfo._id)
+                                                            .reduce((obj, key) => {
+                                                                return {
+                                                                    ...obj,
+                                                                    [key]: lexNormDict[key]
+                                                                };
+                                                            }, {})
+        setLexNormDict(filteredLexNormDict)
+
+        setValue(originalToken);
+        setShowRemovePopover(false);
+        setEdited(false);
     }
 
     const cancelChange = () => {
@@ -105,24 +109,9 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
         setSavedChange(false);
     }
 
-    const removeFromDict = () => {
-        console.log('removing element from dict', lexNormDict);
-        // https://stackoverflow.com/questions/38750705/filter-object-properties-by-key-in-es6
-        const filteredTextDict = Object.keys(lexNormDict[textIndex]).filter(key => key != tokenIndex)
-                                                                    .reduce((obj, key) => {
-                                                                        return {
-                                                                            ...obj,
-                                                                            [key]: lexNormDict[textIndex][key]
-                                                                        };
-                                                                    }, {})
-        // console.log(filteredTextDict)
-        setLexNormDict(prevState => ({...prevState, [textIndex]: filteredTextDict}))
-        
-        setValue(originalToken);
-        setShowRemovePopover(false);
-        setEdited(false);
-
-    }
+    // useEffect(() => {
+    //     console.log(lexNormDict)
+    // }, [lexNormDict])
 
     const dictPopover = <Popover id={`popover`}>
                             <Popover.Title as="p" style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', padding: '0.5em'}}>

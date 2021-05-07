@@ -14,7 +14,9 @@ export default function Text({data, textIndex, tokens_en, tokens_ds, lexNormDict
             } else if (tokens_ds.includes(tokenInfo.token)){
                 return {...tokenInfo, classification: 'ds'}
 
-            } else {
+            } 
+            
+            else {
                 // Note: UA refers to unassigned
                 return {...tokenInfo, classification: 'ua'}
             }

@@ -25,9 +25,11 @@ const useStyles = createUseStyles({
     }
 })
 
-export default function Header({textCount, lexNormDict, setShowUpload, setShowDownload, setShowProgress}) {
+export default function Header({textCount, lexNormDict, setShowUpload, setShowDownload, setShowProgress, setSaved}) {
     const classes = useStyles();
     const changeCount = Object.keys(lexNormDict).map(textIndex => Object.keys(lexNormDict[textIndex]).length).reduce((a, b) => a + b, 0);
+
+    const showSaveBtn = Object.keys(lexNormDict).length > 0;
 
     return (
         <Container as="div" className={classes.container}>
@@ -47,9 +49,13 @@ export default function Header({textCount, lexNormDict, setShowUpload, setShowDo
                 </Col>
                 <Col xs={8}className={classes.title}>Lexnorm Annotator</Col>
                 <Col>
-                <div style={{fontSize: '32px', color: 'white', cursor: 'pointer'}} onClick={() => console.log('should save progress')}>
-                    <FaSave/>
-                </div>
+                {
+                    showSaveBtn ?
+                        <div style={{fontSize: '32px', color: '#F2A477', cursor: 'pointer'}} onClick={() => setSaved(true)}>
+                            <FaSave/>
+                        </div>
+                        : null
+                }
                 </Col>
 
             </Row>

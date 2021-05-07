@@ -39,7 +39,7 @@ const useStyles = createUseStyles({
 const PAGE_LIMIT = 10;
 
 
-export default function AnnotationTable({project, texts, tokens_en, tokens_ds, lexNormDict, setLexNormDict}) {
+export default function AnnotationTable({project, texts, tokens_en, tokens_ds, lexNormDict, setLexNormDict, saved, setSaved}) {
   const classes = useStyles();
 
   const [data, setData] = useState();
@@ -47,18 +47,18 @@ export default function AnnotationTable({project, texts, tokens_en, tokens_ds, l
 
   const [loaded, setLoaded] = useState(false);
   const [mapsLoaded, setMapsLoaded] = useState(false);
-  
-  
+    
   const [paginatorLoaded, setPaginatorLoaded] = useState();
   const [totalPages, setTotalPages] = useState();
   const [page, setPage] = useState(1);
+
 
   useEffect(() => {
     // Fetch pagination metadata
     const fetchPaginationInfo = async () => {
         const response = await axios.get(`/api/data/${project._id}/filter/`, { params: {page: 1000000, limit: 0 }})
         if (response.status === 200){
-          console.log('pagination meta data response', response.data)
+          // console.log('pagination meta data response', response.data)
           setTotalPages(response.data.totalPages);
           setPaginatorLoaded(true);
         }
@@ -67,9 +67,8 @@ export default function AnnotationTable({project, texts, tokens_en, tokens_ds, l
   }, [paginatorLoaded])
 
 
-
   useEffect(() => {
-
+    // TODO: update based on context menu having state change e.g. adding to domain specific terms, abbreviations ect.
     const fetchProjectMaps = async () => {
       if (!mapsLoaded){
         const dsMapResponse = await axios.post(`/api/map/${project._id}`, {type: 'ds_tokens'})
@@ -86,12 +85,40 @@ export default function AnnotationTable({project, texts, tokens_en, tokens_ds, l
     fetchProjectMaps();
   }, [mapsLoaded])
 
+
+  useEffect(() => {
+    // Fetches replacements that are made by the user on save and pagination events 
+    const fetchReplacements = async () => {
+      const response = await axios.get(`/api/results/${project._id}`)
+
+      if (response.status === 200){
+        console.log('replacements', response);
+
+        // Build replacement mapping
+        // const replacementMap = response.data.map(token => {
+
+        //   return({
+
+        //   })
+        // })
+
+
+      }
+
+    }
+
+    fetchReplacements();
+  }, [page, saved])
+
+
+
   useEffect(() => {
     const fetchData = async () => {
+        setLoaded(false);
         const dataResponse = await axios.get(`/api/data/${project._id}/filter/`, { params: {page: page, limit: PAGE_LIMIT }})
 
         if (dataResponse.status === 200){
-          console.log('data response', dataResponse.data)
+          console.log('data response', dataResponse.data.docs)
           setData(dataResponse.data.docs);
           setLoaded(true);
         }
@@ -101,17 +128,41 @@ export default function AnnotationTable({project, texts, tokens_en, tokens_ds, l
   }, [page])
 
 
+  useEffect(() => {
+    const saveResults = async () => {
+      // If there are results, save them when paginating, otherwise skip.
+      if (Object.keys(lexNormDict).length > 0){
+          const resultsPayload = Object.keys(lexNormDict).map(tokenId => {return{"project_id": project._id,
+                                                                                  "doc_id": lexNormDict[tokenId].doc_id,
+                                                                                  "token_id": tokenId,
+                                                                                  "replacement_token": lexNormDict[tokenId].replacement_token
+                                                                                }})
+          const response = await axios.patch('/api/results/add-many', {results: resultsPayload})
+          if (response.status === 200){
+            console.log('Successfully saved data')
+            setLexNormDict({});
+            setSaved(false);
+          }
+      }
+    }
+    saveResults();
+  }, [page, saved])
+
+
   return (
     <>
       {/* // Need to add icon to indicate that the document has no detected non-canonical tokens */}
       <div className={classes.container}>
         {
-          !loaded ? <Spinner animation="border" />
+          !loaded ? 
+            <div style={{margin: 'auto'}}>
+              <Spinner animation="border" />
+            </div>
           :
           data.map((data, dataIndex) => {
             return(
               <div className={classes.row}>
-                <div className={classes.indexColumn}>{dataIndex+1}</div>
+                <div className={classes.indexColumn}>{dataIndex+1 + ((page-1)*10)}</div>
                 <div className={classes.textColumn}>
                   <Text
                     data={data}
@@ -135,7 +186,7 @@ export default function AnnotationTable({project, texts, tokens_en, tokens_ds, l
             { 
               [...Array(totalPages).keys()].map(number => {
                 return(
-                <Pagination.Item key={number+1} active={number+1 === page} onClick={() => setPage(prevState => number+1)}>
+                <Pagination.Item key={number+1} active={number+1 === page} onClick={() => setPage(number+1)}>
                 {number+1}
                 </Pagination.Item>
               )
