@@ -10,7 +10,10 @@ const DataSchema = mongoose.Schema({
     },
     tokens: [{
         index: { type: Number, required: true},
-        token: { type: String, required: true}
+        token: { type: String, required: true},
+        replacement: { type: String, required: false},
+        domain_specific: { type: Boolean, required: true, default: false},
+        abbreviation: { type: Boolean, required: true, default: false},
     }],
     annotated: {
         type: Boolean,

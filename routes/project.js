@@ -3,6 +3,8 @@ const router = express.Router();
 const Project = require('../models/Project');
 const Data = require('../models/Data');
 const Map = require('../models/Map');
+const Text = require('../models/Text');
+const Token = require('../models/Token');
 
 
 // Create Project
@@ -105,6 +107,125 @@ router.patch('/:projectId', async (req, res) => {
             { $set: { title: req.body.title }}
             );
         res.json(updatedProject);
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+
+// Create project v2
+router.post('/create_v2', async (req, res) => {
+    console.log('creating project v2')
+    try{
+
+        // Build maps
+        console.log('Building maps')
+        console.log(req.body.maps)
+        const mapResponse = await Map.insertMany(req.body.maps);
+
+        const dsMap = mapResponse.filter(map => map.type === 'ds')[0];
+        const abrvMap = mapResponse.filter(map => map.type === 'abrv')[0];
+        const enMap = mapResponse.filter(map => map.type === 'en')[0];
+
+        console.log(dsMap, abrvMap, enMap);
+
+        // Build texts and tokens including filtering
+        console.log('Building texts and tokens');
+
+        // TOOD: review the use of lowercasing texts here. Should this be done or should
+        // casing be kept but for matching to ds, en, rp the lowercasing be used?
+        const tokenizedTexts = req.body.texts.map(text => text.toLowerCase().split(' '));
+        console.log(tokenizedTexts)
+        
+        // Need to keep order and association to texts when processing tokens
+        // .flat()
+        const textList = tokenizedTexts.map((text, textIndex) => {
+            return({
+                [textIndex] : text.map(token => {
+                const domainSpecific = dsMap.tokens.includes(token)
+                const abbreviation = abrvMap.tokens.includes(token)
+                const englishWord = enMap.tokens.includes(token)
+                return({
+                        value: token,
+                        domain_specific: domainSpecific,
+                        abbreviation: abbreviation,
+                        english_word: englishWord
+                        })
+                    })
+                })
+            });
+        console.log('tokens', textList);
+
+        let globalTokenIndex = -1;  // this is used to index the tokenlist that is posted to mongo as a flat list when reconstructing texts
+        const tokenTextMap = tokenizedTexts.map((text, textIndex) => text.map((token, tokenIndex) => {
+            globalTokenIndex += 1;
+            return(
+                {
+                    value: token,
+                    index: tokenIndex,
+                    text: textIndex,
+                    globalTokenIndex: globalTokenIndex 
+                })
+            })
+        );
+
+        console.log(tokenTextMap);
+
+        const tokenList = tokenizedTexts.flat().map(token => {
+            const domainSpecific = dsMap.tokens.includes(token)
+            const abbreviation = abrvMap.tokens.includes(token)
+            const englishWord = enMap.tokens.includes(token)
+            return({
+                    value: token,
+                    domain_specific: domainSpecific,
+                    abbreviation: abbreviation,
+                    english_word: englishWord
+                    })
+            })
+
+        console.log(tokenList);
+
+        const tokenListResponse = await Token.insertMany(tokenList);
+        console.log('token list response',tokenListResponse)
+
+
+
+        // Build texts
+        const builtTexts = tokenTextMap.map(text => {
+            return({
+                    tokens: text.map(token => {
+                        return({
+                            index: token.index, 
+                            token: tokenListResponse[token.globalTokenIndex]._id
+                        })
+                    })
+                })   
+        });
+
+        console.log(builtTexts);
+
+        // Create texts
+        const textResponse = await Text.insertMany(builtTexts);
+
+
+        // Build project
+        const textObjectIds = textResponse.map(text => text._id);
+        const mapObjectIds = mapResponse.map(map => map._id);
+
+        const projectResponse = await Project.create({
+            name: req.body.projectName,
+            description: req.body.projectDescription,
+            texts: textObjectIds,
+            maps: mapObjectIds
+        })
+
+
+
+        // Return
+        res.json(projectResponse)
+
+
+
     }catch(err){
         res.json({ message: err })
     }

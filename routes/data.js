@@ -71,6 +71,44 @@ router.get('/:projectId/filter/', async (req, res) => {
 })
 
 
+// Patch one token
+router.post('/one/:tokenId', async (req, res) => {
+    try{
+        const response = await Data.find({"tokens._id": req.params.tokenId})
+        
+        const tokenInfo = response[0].tokens.filter(token => token._id == req.params.tokenId)[0];
+        console.log(tokenInfo);
+        // Update token information
+        console.log(req.body.field, req.body.value)
+        const field = req.body.field;
+        const value = req.body.value;
+        // Note spreading response will give ALL the meta data too, so need to acces just the doc
+        const tokenInfoUpdated = {...tokenInfo._doc, [field]: value}
+        console.log(tokenInfoUpdated)
+
+        // TODO: update model with new information...
+        // const updatedReponse = await Data.updateOne({"tokens._id": req.params.tokenId}, })
+        
+
+        res.json(response);
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+// Get one token
+router.get('/one/:tokenId', async (req, res) => {
+    try{
+        const response = await Data.find({"tokens._id": req.params.tokenId})
+        console.log(response);
+        const tokenInfo = response[0].tokens.filter(token => token._id == req.params.tokenId)[0];
+        console.log(tokenInfo);
+        res.json(tokenInfo)
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
 
 // **********************************************************************
 

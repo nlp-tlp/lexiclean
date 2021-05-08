@@ -81,6 +81,12 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
         setValue(targetValue);
     }
 
+    const addReplacement = async () => {
+
+        const response = await axios.post('/api/data/')
+
+    }
+
     const addToDict = () => {
         // console.log(originalToken, value, tokenInfo._id)
 

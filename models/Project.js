@@ -10,6 +10,16 @@ const ProjectSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    texts: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Text',
+        required: true
+    }],
+    maps: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Map',
+        required: true
+    }],
     created_on: {
         type: Date,
         default: Date.now

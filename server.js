@@ -9,6 +9,9 @@ const projectsRoute = require('./routes/project');
 const dataRoute = require('./routes/data');
 const resultRoute = require('./routes/results');
 const mapRoute = require('./routes/map');
+const tokenRoute = require('./routes/token');
+const textRoute = require('./routes/text');
+
 
 // Middleware
 app.use(cors())
@@ -21,6 +24,10 @@ app.use('/api/project', projectsRoute)
 app.use('/api/data', dataRoute)
 app.use('/api/results', resultRoute)
 app.use('/api/map', mapRoute)
+app.use('/api/token', tokenRoute)
+app.use('/api/text', textRoute)
+
+
 
 
 // Connect to mongo db
