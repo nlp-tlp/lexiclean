@@ -64,7 +64,7 @@ router.get('/', async (req, res) => {
 // TODO: Add sort functionality (this will require patching data with annotated status when results are patched)
 router.get('/:projectId/filter/', async (req, res) => {
     console.log('Paginating through texts');
-    console.log(req.query);
+    // console.log(req.query);
     try {
 
         // Get 

@@ -16,15 +16,32 @@ const useStyles = createUseStyles({
     container: {
         paddingTop: '1em',
         paddingBottom: '1em',
-        backgroundColor: '#D9D9D9',
+        backgroundColor: '#8F8F8F',
         maxWidth: '100%'
+    },
+    header: {
+        paddingTop: '0.5em',
+        paddingBottom: '0.5em',
+        backgroundColor: '#8F8F8F',
+        maxWidth: '100%',
+        display: 'flex',
+        justifyContent: 'space-between',
+        borderBottom: '1px #D9D9D9 solid'
     },
     title: {
         fontWeight: 'bolder',
-        fontSize: '2em',
-        textAlign: 'center'
-        
-    }
+        fontSize: '1.5em',
+        textAlign: 'left',
+        fontFamily: 'sans-serif',
+        color: '#F8F9FA',
+        padding: '0.25em',
+        borderRadius: '0.5em',
+        marginLeft: '1em',
+    },
+    menu: {
+        marginRight: '1em',
+        padding: '0.25em',
+    },
 })
 
 export default function ProjectFeed() {
@@ -81,22 +98,24 @@ export default function ProjectFeed() {
             />
             : null
         }
-
-        <Container as="div" className={classes.container}>
-            <Row className="align-items-center">
-                <Col>
-                    <Button variant="light" onClick={() => setShowUpload(true)}>Start New Project</Button>
-                </Col>
-                <Col xs={8} className={classes.title}>Lexnorm Annotator</Col>
-                <Col>
-                </Col>
-            </Row>
-        </Container>
+        
+        <div className={classes.header}>
+            <div className={classes.title}>
+            Lexiclean
+            </div>
+            <div className={classes.menu}>
+                <Button variant="light" onClick={() => setShowUpload(true)}>Start New Project</Button>
+            </div>
+        </div>
 
         {
             !projectsLoaded ? 
-                <Spinner animation="border" />
-            : 
+            <div style={{margin: 'auto', marginTop: '5em'}}>
+              <Spinner animation="border" />
+            </div>
+            : projects.length === 0 ?
+            <div style={{margin: 'auto', textAlign: 'center', marginTop: '5em', fontSize: '2em'}}>No projects</div>
+            :
             <ProjectList 
                 projects={projects}
                 setSelectedProject={setSelectedProject}

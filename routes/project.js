@@ -43,10 +43,7 @@ router.get('/:projectId', async (req, res) => {
 
 
 
-
-
-
-// Create project v2
+// Create project
 router.post('/create', async (req, res) => {
     console.log('creating project')
     try{
@@ -65,7 +62,8 @@ router.post('/create', async (req, res) => {
 
         // TOOD: review the use of lowercasing texts here. Should this be done or should
         // casing be kept but for matching to ds, en, rp the lowercasing be used?
-        const tokenizedTexts = req.body.texts.map(text => text.toLowerCase().split(' '));
+        // removes white space between tokens as this will break the validation of the Token model.
+        const tokenizedTexts = req.body.texts.map(text => text.toLowerCase().replace(/\s+/g,' ').trim().split(' '));
         
         let globalTokenIndex = -1;  // this is used to index the tokenlist that is posted to mongo as a flat list when reconstructing texts
         const tokenTextMap = tokenizedTexts.map((text, textIndex) => text.map((token, tokenIndex) => {
@@ -74,33 +72,43 @@ router.post('/create', async (req, res) => {
                 {
                     value: token,
                     index: tokenIndex,
-                    text: textIndex,
+                    textIndex: textIndex,
                     globalTokenIndex: globalTokenIndex 
                 })
             })
         );
 
-        console.log(tokenTextMap);
+        // console.log(tokenTextMap);
 
-        const tokenList = tokenizedTexts.flat().map(token => {
+        console.log(tokenizedTexts.flat()[3452], tokenizedTexts.flat()[4210])
+
+        console.log('Building token list');
+        const tokenList = tokenizedTexts.flat().map((token, index) => {
             const domainSpecific = dsMap.tokens.includes(token)
             const abbreviation = abrvMap.tokens.includes(token)
             const englishWord = enMap.tokens.includes(token)
+
             return({
                     value: token,
                     domain_specific: domainSpecific,
                     abbreviation: abbreviation,
                     english_word: englishWord,
-                    replacement: null // TODO: pre-populate with existing dictionaries in the future.
+                    replacement: null, // TODO: pre-populate with existing dictionaries in the future.
+                    suggested_replacement: null // TODO: pre-populate with existing dictionaries in the future.
                     })
+
             })
 
-        console.log(tokenList);
+        console.log('token list length', tokenList.length);
+
+        // console.log('tokens without value', tokenList.filter(token => !token.value).length)
 
         const tokenListResponse = await Token.insertMany(tokenList);
-        console.log('token list response',tokenListResponse)
+
+        // console.log('token list response',tokenListResponse)
 
         // Build texts
+        console.log('Building texts');
         const builtTexts = tokenTextMap.map(text => {
             return({
                     // project_id: 'ph', // Cannot insert real project_id here as the project hasn't been created. This is done below as an updateMany. Uses placeholder is null. 
@@ -113,13 +121,15 @@ router.post('/create', async (req, res) => {
                 })   
         });
 
-        console.log(builtTexts);
+        // console.log(builtTexts);
 
         // Create texts
+        console.log('creating many texts')
         const textResponse = await Text.insertMany(builtTexts);
 
 
         // Build project
+        console.log('Building project');
         const textObjectIds = textResponse.map(text => text._id);
         const mapObjectIds = mapResponse.map(map => map._id);
 
@@ -137,8 +147,8 @@ router.post('/create', async (req, res) => {
 
 
         // Return
-        res.json(textsUpdateResponse)
-        // res.json('Project created successfully.')
+        // res.json(textsUpdateResponse)
+        res.json('Project created successfully.')
 
 
 
@@ -155,7 +165,7 @@ router.get('/maps/:projectId', async (req, res) => {
     try{
         const response = await Project.find({_id: req.params.projectId}).populate('maps');
         const maps = response[0].maps;
-        console.log('map response', maps);
+        // console.log('map response', maps);
 
         // Restructure maps from arary of maps to object of maps with keys based on map type
         let mapsRestructured = maps.map(map => {return({[map.type]: map})});

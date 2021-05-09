@@ -24,8 +24,6 @@ app.use('/api/token', tokenRoute)
 app.use('/api/text', textRoute)
 
 
-
-
 // Connect to mongo db
 mongoose.connect(
     process.env.DB_CONNECTION,

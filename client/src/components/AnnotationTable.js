@@ -77,7 +77,8 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
         console.log('fetching maps...');
         const maps = await axios.get(`/api/project/maps/${project._id}`)
         if (maps.status === 200){
-          console.log('maps', maps.data);
+          console.log('maps loaded')
+          // console.log('maps', maps.data);
           setMaps(maps.data);
           setMapsLoaded(true);
         }
@@ -125,15 +126,15 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
 
 
   useEffect(() => {
-    // Cascades replacements across tokens
+    // Cascades replacements as suggested replacements across tokens
     const updateTokens = async () => {
-      console.log(replacementDict);
+      console.log('suggesting replacements with', replacementDict);
       if (Object.keys(replacementDict).length > 0){
 
-        const response = await axios.patch(`/api/token/replace-many/${project._id}`, {replacement_dict: replacementDict});
+        const response = await axios.patch(`/api/token/suggest-many/${project._id}`, {replacement_dict: replacementDict});
 
         if (response.status === 200){
-          console.log('Updated tokens with replacements')
+          console.log('Updated tokens with suggested replacements')
 
           setReplacementDict({});
 
@@ -141,6 +142,15 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
       }
     }
     updateTokens();
+  }, [page])
+
+  useEffect(() => {
+    // Converts suggested replacements to replacements for results on page 
+    //  (users needs to remove them if they don't want they to persist)
+
+
+
+    console.log('page changed')
   }, [page])
 
 

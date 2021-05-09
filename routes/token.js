@@ -113,8 +113,8 @@ router.patch('/auxiliary/:tokenId', async (req, res) => {
 })
 
 // Patch suggested_replacements over all tokens in a project
-router.patch('/replace-many/:projectId', async (req, res) => {
-    console.log('Updating suggested_replacements based on a replacement dictionary');
+router.patch('/suggest-many/:projectId', async (req, res) => {
+    console.log('Updating suggested_replacements based on a replacement dictionary for entire project');
     try{
         const replacementDict = req.body.replacement_dict;
         console.log(replacementDict)
@@ -148,6 +148,51 @@ router.patch('/replace-many/:projectId', async (req, res) => {
         res.json({ message: err })
     }
 })
+
+// Patch replacement with suggested replacement for tokens in n texts
+router.patch('/suggest-confirm/', async (req, res) => {
+    console.log('Converting suggested replacements to replacements on page');
+
+    const replacementDict = req.body.replacement_dict;
+    console.log(replacementDict)
+    const replacementDictKeys = Object.keys(replacementDict); // original tokens, not replacements.
+    console.log(replacementDictKeys);
+
+    const textIdsList = req.body.textIds;
+    console.log(textIdsList);
+    
+    try{
+        const textResponse = await Text.find({ _id: textIdsList})
+                                        .populate('tokens.token')
+                                        .lean();
+
+
+        // Do not override existing replacements so these are filter out
+        const candidateTokens = textResponse.map(text => text.tokens.filter(tokenInfo => tokenInfo.token.replacement == null).map(tokenInfo => tokenInfo)).flat();
+        console.log(candidateTokens);
+        console.log('candidate tokens for suggested replacement', candidateTokens.length)
+
+        const suggestReplaceTokens = candidateTokens.filter(tokenInfo => replacementDictKeys.includes(tokenInfo.token.value)).map(tokenInfo => ({"_id": tokenInfo.token._id, "value": tokenInfo.token.value}));
+        console.log(suggestReplaceTokens)
+
+
+        // Patch suggested_replacement field with replacement
+        const suggestedReplaceResponse = await Token.bulkWrite(suggestReplaceTokens.map(token => ({
+            updateOne: {
+                filter: {_id: token._id},
+                update: {
+                    "replacement": replacementDict[token.value],
+                    "suggested_replacement": null},
+                upsert: true
+            }
+        })))
+
+        res.json(suggestedReplaceResponse)
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
 
 
 

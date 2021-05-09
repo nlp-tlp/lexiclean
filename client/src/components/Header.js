@@ -1,20 +1,28 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { createUseStyles } from 'react-jss';
-import { Dropdown, Container, Row, Col } from 'react-bootstrap';
+import { Dropdown } from 'react-bootstrap';
 import { FaSave } from 'react-icons/fa'
 
 const useStyles = createUseStyles({
-    container: {
-        paddingTop: '1em',
-        paddingBottom: '1em',
-        backgroundColor: '#D9D9D9',
-        maxWidth: '100%'
+    header: {
+        paddingTop: '0.5em',
+        paddingBottom: '0.5em',
+        backgroundColor: '#8F8F8F',
+        maxWidth: '100%',
+        display: 'flex',
+        justifyContent: 'space-between',
+        borderBottom: '1px #D9D9D9 solid'
     },
     title: {
         fontWeight: 'bolder',
-        fontSize: '2em',
-        textAlign: 'center'
+        fontSize: '1.5em',
+        textAlign: 'left',
+        fontFamily: 'sans-serif',
+        color: '#F8F9FA',
+        padding: '0.25em',
+        borderRadius: '0.5em',
+        marginLeft: '1em',
     },
     metricsContainer: {
         display: 'inline-block',
@@ -22,6 +30,28 @@ const useStyles = createUseStyles({
         margin: 'auto',
         padding: '0.2em 0.5em 0em 0.5em',
         borderRadius: '0.5em'
+    },
+    legend: {
+        fontSize: '16px',
+        display: 'flex',
+        padding: '0.25em',
+        justifyContent: 'space-between',
+    },
+    legendItem: {
+        textAlign: 'center',
+        width: '6em',
+        margin: '0.5em',
+        borderRadius: '0.25em',
+        padding: '0.2em'
+    },
+    menu: {
+        marginRight: '1em',
+        padding: '0.25em',
+    },
+    save: {
+        fontSize: '32px',
+        color: '#F2A477',
+        cursor: 'pointer'
     }
 })
 
@@ -33,9 +63,30 @@ export default function Header({replacementDict, setShowDownload, setShowProgres
     const showSaveBtn = Object.keys(replacementDict).length > 0;
 
     return (
-        <Container as="div" className={classes.container}>
-            <Row className="align-items-center">
-                <Col>
+        <div className={classes.header}>
+            <div className={classes.title}>
+                Lexiclean
+            </div>
+
+            <div className={classes.legend}>
+
+                    <div className={classes.legendItem} style={{backgroundColor: '#F2A477'}}>
+                        Candidate
+                    </div>
+                    <div className={classes.legendItem} style={{backgroundColor: '#99BF9C'}}>
+                        Replaced
+                    </div>
+                    <div className={classes.legendItem} style={{backgroundColor: '#D9D9D9'}}>
+                        Normalised
+                    </div>
+                    <div className={classes.legendItem} style={{backgroundColor: '#6BB0BF'}}>
+                        Suggestion
+                    </div>
+
+            </div>
+
+            <div className={classes.actions}>
+                <div className={classes.menu}>
                     <Dropdown>
                         <Dropdown.Toggle variant="light" id="dropdown-basic">
                             Menu
@@ -47,19 +98,15 @@ export default function Header({replacementDict, setShowDownload, setShowProgres
                             <Dropdown.Item onClick={() => history.push('/')}>Home</Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
-                </Col>
-                <Col xs={8} className={classes.title}>Lexnorm Annotator</Col>
-                <Col>
+                </div>
                 {
                     showSaveBtn ?
-                        <div style={{fontSize: '32px', color: '#F2A477', cursor: 'pointer'}} onClick={() => setSaved(true)}>
-                            <FaSave/>
-                        </div>
-                        : null
+                    <div className={classes.save} onClick={() => setSaved(true)}>
+                        <FaSave/>
+                    </div>
+                    : null
                 }
-                </Col>
-
-            </Row>
-        </Container>
+            </div>
+        </div>
     )
 }

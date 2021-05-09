@@ -261,6 +261,9 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
                 <Item style={{ backgroundColor: tokenInfo['noise'] ? '#99BF9C': null}} onClick={() => handleItemClick("noise")}>
                 Noise
                 </Item>
+                <Item style={{ backgroundColor: tokenInfo['english_word'] ? '#99BF9C': null}} onClick={() => handleItemClick("english_word")}>
+                English Word
+                </Item>
             </Menu>
         </div>
     )
