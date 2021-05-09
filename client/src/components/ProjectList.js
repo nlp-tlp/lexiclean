@@ -1,11 +1,17 @@
 import React from 'react'
 import { ListGroup } from 'react-bootstrap';
+import { MdDelete, MdEdit } from 'react-icons/md'
 
-export default function ProjectList({projects, setSelectedProject, setShowAnnotate}) {
+export default function ProjectList({projects, setSelectedProject, setShowAnnotate, setShowProjectDelete}) {
 
     const confirmationAction = (index) => {
-        setSelectedProject(projects[index])
+        setSelectedProject(projects[index]);
         setShowAnnotate(true);
+    }
+
+    const deleteAction = (index) => {
+        setSelectedProject(projects[index]);
+        setShowProjectDelete(true);
     }
     
     return (
@@ -14,11 +20,19 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
             {
                 projects.map((project, index) => {
                     return(
-                        <ListGroup.Item action key={index} onClick={() => confirmationAction(index)}>
-                            <div style={{fontSize: '22px', fontWeight: 'bold'}}>
-                                {project.name}
+                        <>
+                        <ListGroup.Item action key={index}>
+                            <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                                <div style={{fontSize: '22px', fontWeight: 'bold'}} >
+                                    {project.name}
+                                </div>
+                                <div >
+                                    <MdEdit style={{fontSize: '22px'}} onClick={() => confirmationAction(index)}/>
+                                    <MdDelete style={{fontSize: '22px', color: '#D95F69'}} onClick={() => deleteAction(index)}/>
+                                </div>
                             </div>
                         </ListGroup.Item>
+                        </>
                     )
                 })
             }

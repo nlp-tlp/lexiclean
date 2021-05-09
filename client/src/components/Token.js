@@ -19,154 +19,200 @@ const useStyles = createUseStyles({
         border: 'none',
         verticalAlign: 'center',
         textAlign: 'center',
-        borderRadius: '4px'
+        borderRadius: '4px',
+        '&:hover': {
+            opacity: '0.8'
+        }
     }
 })
 
 
 // Color map for token classifications
-const bgColorMap = {'en': '#D9D9D9', 'ds': '#D9D9D9', 'ua': '#F2A477', 'rp': '#99BF9C'}
+// ua - unassigned, rp - replacement, sr - suggested replacemtn
+const bgColorMap = { 'ds_abrv_en': '#D9D9D9', 'ua': '#F2A477', 'rp': '#99BF9C', 'sr': '#6BB0BF'}
 
-export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict, replacementMap, setReplacementMap}) {
+export default function Token({tokenInfo, textIndex, replacementDict, setReplacementDict}) {
     const classes = useStyles();
-    const MENU_ID = `menu-${textIndex}`;
-
-    const { show } = useContextMenu({
-        id: MENU_ID,
-      });
-
-
-    const { index, token, classification, original } = tokenInfo;
+    const { index, value } = tokenInfo;
+    const tokenId = tokenInfo.token;
     const tokenIndex = index;
-    const replacedToken = classification === 'rp';
+    const [replacedToken, setReplacedToken] = useState(tokenInfo.replacement);
+    const [suggestedToken, setSuggestedToken] = useState(tokenInfo.suggested_replacement);
 
-    // const [currentTokenIndex] = useState(tokenIndex) 
-    const [originalToken] = useState(original);
-    const [value, setValue] = useState(token)
+
+    const MENU_ID = `menu-${tokenIndex}`;
+    const { show } = useContextMenu({ id: MENU_ID });
+   
+    const [originalToken] = useState(value);
+    const [currentToken, setCurrentToken] = useState(replacedToken ? replacedToken : value); // Populate with replaced token if its available
     const [edited, setEdited] = useState(false);
     const [savedChange, setSavedChange] = useState(false);
-    const [bgColor, setBgColor] = useState(bgColorMap[classification])
+    
+    // Specify colour of token
+    const tokenClassification = (tokenInfo.domain_specific || tokenInfo.abbreviation || tokenInfo.english_word) ? 'ds_abrv_en' : replacedToken ? 'rp' : suggestedToken ? 'sr' : 'ua';
+    const [bgColor, setBgColor] = useState(bgColorMap[tokenClassification])
+
     const [showPopover, setShowPopover] = useState(false);
     const [showRemovePopover, setShowRemovePopover] = useState(false);
+    const [showAddSuggestionPopover, setShowAddSuggestionPopover] = useState(false);
 
-    const [inputWidth, setInputWidth] = useState(`${(value.length + 2) * 8}px`)
-    
 
+    const [inputWidth, setInputWidth] = useState(`${(currentToken.length + 2) * 8}px`)
+
+    useEffect(() => {
+        // Updates token colour based on state of token information
+        const tokenClassification = (tokenInfo.domain_specific || tokenInfo.abbreviation || tokenInfo.english_word) ? 'ds_abrv_en' : replacedToken ? 'rp' : suggestedToken ? 'sr' : 'ua';
+        setBgColor(bgColorMap[tokenClassification])
+    }, [replacedToken, suggestedToken, tokenInfo])
     
     useEffect(() => {
         // Set input field width
         const minWidth = 50;
-        const width = (value.length + 2) * 10
+        const width = (currentToken.length + 2) * 10
         if (width < minWidth){
             setInputWidth(`${minWidth}px`)
         } else {
             setInputWidth(`${width}px`)
         }
-    }, [value])
-
+    }, [currentToken])
 
     useEffect(() => {
         // Detect state change
-        if(originalToken !== value){
+        if(originalToken !== currentToken){
             setEdited(true);
         } else {
-            // Remove from dictionary if the value is reverted to its original form
+            // Remove from dictionary if the currentToken is reverted to its original form
             setEdited(false);
             setShowPopover(false);
         }
-    }, [value])
+    }, [currentToken])
+
+    // useEffect(() => {
+    //     // console.log('hi')
+    //     // This triggers a render event otherwise tokens get frozen...
+    //     console.log(replacementDict)
+
+    // }, [replacementDict])
 
     const modifyToken = (targetValue) => {
         setShowPopover(true);
-        setValue(targetValue);
+        setCurrentToken(targetValue);
     }
 
-    const addToDict = () => {
-        // console.log(originalToken, value, tokenInfo._id)
+    const addReplacement = async () => {
+        const response = await axios.patch(`/api/token/replace/${tokenId}`, {replacement: currentToken});
+        if (response.status === 200){
+            console.log('replacement response', response);
+            setSavedChange(true);
+            setShowPopover(false);
 
-        setLexNormDict(prevState => ({...prevState, [tokenInfo._id]: {"replacement_token": value, "doc_id": textIndex}}))
-        setSavedChange(true);
-        setShowPopover(false);
+            // Add replacement to replacementDict (used to update other tokens)
+            setReplacementDict(prevState => ({...prevState, [originalToken]: currentToken}));
 
-    }
-
-    const removeFromDict = async () => {
-        // console.log('removing', value, 'from dictionary')
-        if (tokenInfo.classification === 'rp'){
-            console.log(replacementMap);
-            console.log(tokenInfo)
-            console.log(value);
-            // Token was automatically replaced -> need to delete from database
-            const response = await axios.delete(`/api/results/${tokenInfo._id}`)
-            if (response.status === 200){
-                console.log('successfully deleted result')
-                console.log(response);
-            }
-        } else {
-            // https://stackoverflow.com/questions/38750705/filter-object-properties-by-key-in-es6
-            const filteredLexNormDict = Object.keys(lexNormDict).filter(key => key !== tokenInfo._id)
-                                                                .reduce((obj, key) => {
-                                                                    return {
-                                                                        ...obj,
-                                                                        [key]: lexNormDict[key]
-                                                                    };
-                                                                }, {})
-            setLexNormDict(filteredLexNormDict)
         }
-        
-        setValue(originalToken);
-        setShowRemovePopover(false);
-        setEdited(false);
+    }
+
+    const removeReplacement = async () => {
+        const response = await axios.delete(`/api/token/replace-remove/${tokenId}`)
+        if (response.status === 200){
+            console.log('Replacement was successfully removed.')
+            setCurrentToken(originalToken);
+            setShowRemovePopover(false);
+            setSavedChange(false);
+            setReplacedToken(null);
+            setEdited(false);
+
+            // Remove replacement from dictionary (used to update other tokens)
+            setReplacementDict(Object.keys(replacementDict).filter(token => token !== originalToken));
+        }
     }
 
     const cancelChange = () => {
-        setValue(originalToken);
+        setCurrentToken(originalToken);
         setSavedChange(false);
     }
 
-    useEffect(() => {
-        console.log('hi')
-        // This triggers a render event otherwise tokens get frozen...
-        // console.log(lexNormDict)
-    }, [lexNormDict])
 
-    const dictPopover = <Popover id={`popover`}>
+    const addReplacementPopover = <Popover id={`popover`}>
                             <Popover.Title as="p" style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', padding: '0.5em'}}>
-                                    <Button onClick={() => addToDict()} size="sm" variant="info">Yes</Button>
+                                    <Button onClick={() => addReplacement()} size="sm" variant="info">Yes</Button>
                                     <Button onClick={() => cancelChange()} size="sm" variant="secondary">No</Button>
                                 </Popover.Title>
                             <Popover.Content>
                                 <p>Add to dictionary?</p>
                                 <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', margin: 'auto', height: '2em'}}>
                                     <div>
-                                        <strong>{originalToken}</strong> to <strong>{value}</strong>
+                                        <strong>{originalToken}</strong> to <strong>{currentToken}</strong>
                                     </div>
                                 </div>
                             </Popover.Content>
                         </Popover>
     
-    const removePopover = <Popover id={`remove-popover`}>
+    const removeReplacementPopover = <Popover id={`remove-popover`}>
                             <Popover.Title as="p" style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', padding: '0.5em'}}>
-                                    <Button onClick={() => removeFromDict()} size="sm" variant="info">Yes</Button>
+                                    <Button onClick={() => removeReplacement()} size="sm" variant="info">Yes</Button>
                                     <Button onClick={() => setShowRemovePopover(false)} size="sm" variant="secondary">No</Button>
                                 </Popover.Title>
                             <Popover.Content>
-                                <p>Remove from dictionary?</p>
-                                {
-                                    replacedToken ? null :
-                                    <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', margin: 'auto', height: '2em'}}>
-                                        <div>
-                                            <strong>{originalToken}</strong> to <strong>{value}</strong>
-                                        </div>
+                                <p>Remove replacement?</p>
+                                <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', margin: 'auto', height: '2em'}}>
+                                    <div>
+                                        <strong>{currentToken}</strong> to <strong>{originalToken}</strong>
                                     </div>
-                                }
+                                </div>
                             </Popover.Content>
                         </Popover>
 
-    const handleItemClick = ({ e, props, triggerEvent, data }) => {
-        // TODO: Develop click handler
-        // console.log(e, props, triggerEvent, data );
-        console.log('Menu clicked')
+    const addSuggestedReplacement = async () => {
+        const response = await axios.patch(`/api/token/suggestion-add/${tokenId}`, {suggested_replacement: suggestedToken});
+        if (response.status === 200){
+            console.log('succesfully added suggested replacement.');
+            setSuggestedToken(null);
+            setReplacedToken(suggestedToken);
+            setCurrentToken(suggestedToken);
+            setShowAddSuggestionPopover(false)
+        }
+    }
+
+    const removeSuggestedReplacement = async () => {
+        const response = await axios.delete(`/api/token/suggestion-remove/${tokenId}`);
+        if (response.status === 200){
+            console.log('succesfully removed suggested replacement.');
+            setShowAddSuggestionPopover(false)
+            setSuggestedToken(null);
+        }
+    }
+
+    const addSuggestionPopover = <Popover id={`add-suggestion-popover`}>    
+                                    <Popover.Title as="p" style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', padding: '0.5em'}}>
+                                            <Button onClick={() => addSuggestedReplacement()} size="sm" variant="info">Yes</Button>
+                                            <Button onClick={() => removeSuggestedReplacement()} size="sm" variant="secondary">No</Button>
+                                        </Popover.Title>
+                                    <Popover.Content>
+                                        <p>Add suggested replacement?</p>
+                                        <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', margin: 'auto', height: '2em'}}>
+                                            <div>
+                                                <strong>{currentToken}</strong> to <strong>{suggestedToken}</strong>
+                                            </div>
+                                        </div>
+                                    </Popover.Content>
+                                    </Popover>
+
+
+
+    const addAuxiliary = async (field, value) => {
+        // Adds auxiliary label to tokens
+        const response = await axios.patch(`/api/token/auxiliary/${tokenId}`, {field: field, value: value});
+
+        if (response.status === 200){
+            console.log('auxilliary updated successfully');
+        }
+    }
+
+    const handleItemClick = (field) => {
+        // Handles menu when auxiliary tags are requested
+        console.log('menu action on aux field', field);
+        addAuxiliary(field, !tokenInfo[field])
     }
 
     const displayMenu = (e) => {
@@ -175,50 +221,44 @@ export default function Token({tokenInfo, textIndex, lexNormDict, setLexNormDict
     }
 
     return (
-        <div style={{display: 'flex', flexDirection: 'column'}}>
-            <OverlayTrigger
-            trigger="click"
-                placement="bottom"
-                overlay={dictPopover}
-                show={showPopover}
-                >
+        <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '0.5em'}} key={tokenIndex}>
+            <OverlayTrigger trigger="click" placement="bottom" overlay={addReplacementPopover} show={showPopover}>
                 <input
                     type="text"
                     name="token"
-                    placeholder={value}
-                    value={value}
+                    placeholder={currentToken}
+                    value={currentToken}
                     onChange={e => modifyToken(e.target.value)}
                     key={tokenIndex}
                     style={{backgroundColor: edited ? '#99BF9C': bgColor, width: inputWidth}}
                     className={classes.token}
-                    autocomplete="off"
-                    title={`Original: ${originalToken}`}
+                    autoComplete="off"
+                    title={`original: ${originalToken}`}
                     onContextMenu={displayMenu}
-                    />
+                />
             </OverlayTrigger>
 
             {
-                ((savedChange && originalToken !== value && edited) || replacedToken) ?
-                <OverlayTrigger
-                    trigger="click"
-                    placement="bottom"
-                    overlay={removePopover}
-                    show={showRemovePopover}
-                    >
-                    <div
-                    style={{cursor: 'pointer', width: inputWidth, backgroundColor: '#99BF9C', height: '6px', borderRadius: '2px', marginTop: '2px'}}
-                    onClick={() => setShowRemovePopover(true)}
-                    ></div>
+                (( savedChange && originalToken !== currentToken && edited ) || replacedToken ) ?
+                <OverlayTrigger trigger="click" placement="bottom" overlay={removeReplacementPopover} show={showRemovePopover}>
+                    <div style={{cursor: 'pointer', width: inputWidth, backgroundColor: bgColorMap['rp'], height: '6px', borderRadius: '2px', marginTop: '2px', marginBottom: '0.5em'}} onClick={() => setShowRemovePopover(!showRemovePopover)}></div>
                 </OverlayTrigger>
-                : null
+                : (suggestedToken)
+                ?
+                <OverlayTrigger trigger="click" placement="bottom" overlay={addSuggestionPopover} show={showAddSuggestionPopover}>
+                    <div style={{cursor: 'pointer', width: inputWidth, backgroundColor: bgColorMap['sr'], height: '6px', borderRadius: '2px', marginTop: '2px', marginBottom: '0.5em'}} onClick={() => setShowAddSuggestionPopover(!showAddSuggestionPopover)}></div>
+                </OverlayTrigger>
+            : null
+
             }
+            {/* TODO: Add english word here in the future... */}
             <Menu id={MENU_ID}>
-                <Item onClick={handleItemClick}>Domain Specific Term</Item>
+                <Item style={{ backgroundColor: tokenInfo['domain_specific'] ? '#99BF9C': null}} onClick={() => handleItemClick("domain_specific")}>Domain Specific Term</Item>
                 {/* <Separator/> */}
-                <Item onClick={handleItemClick}>
+                <Item style={{ backgroundColor: tokenInfo['abbreviation'] ? '#99BF9C': null}} onClick={() => handleItemClick("abbreviation")}>
                 Abbreviation
                 </Item>
-                <Item onClick={handleItemClick}>
+                <Item style={{ backgroundColor: tokenInfo['noise'] ? '#99BF9C': null}} onClick={() => handleItemClick("noise")}>
                 Noise
                 </Item>
             </Menu>

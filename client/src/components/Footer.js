@@ -1,7 +1,5 @@
 import React from 'react'
 import { createUseStyles } from 'react-jss';
-import { Button } from 'react-bootstrap';
-
 
 const useStyles = createUseStyles({
     footer: {
@@ -10,7 +8,8 @@ const useStyles = createUseStyles({
         bottom: '0',
         width: '100%',
         backgroundColor: '#D9D9D9',
-        paddingTop: '1em'
+        paddingTop: '1em',
+        textAlign: 'center'
     },
 })
 
@@ -19,7 +18,7 @@ export default function Footer() {
     const classes = useStyles();
     return (
         <div className={classes.footer}>
-            <p>Footer</p>
+            <p>UWA NLP-TLP 2021.</p>
         </div>
     )
 }

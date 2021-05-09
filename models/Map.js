@@ -2,11 +2,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const MapSchema = mongoose.Schema({
-    project_id: {
-        type: Schema.Types.ObjectId,
-        ref: 'Project',
-        required: true
-    },
     type: {
         type: String,
         required: true
@@ -14,7 +9,12 @@ const MapSchema = mongoose.Schema({
     tokens: [{
         type: String,
         required: true
-    }]
+    }],
+    last_modified: {
+        type: Date,
+        required: true,
+        default: Date.now,
+    }
 }, { _id: true})
 
 
