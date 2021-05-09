@@ -12,13 +12,17 @@ const schema = yup.object().shape({
   export default function UploadForm({ setShowUpload }) {
 
     const [fileData, setFileData] = useState({'textFile': {'meta': null, 'data': null},
-                                            //   'enWordFile': {'meta': null, 'data': null},
+                                              'enWordFile': {'meta': null, 'data': null},
                                               'dsWordFile': {'meta': null, 'data': null},
+                                              'abrvWordFile': {'meta': null, 'data': null}
                                             //   'replaceDictFile': {'meta': null, 'data': null}
                                             })
     
     const [dataFileLoaded, setDataFileLoaded] = useState(false);
     const [dsWordFileLoaded, setDsWordFileLoaded] = useState(false);
+    const [abrvWordFileLoaded, setAbrvWordFileLoaded] = useState(false);
+    const [enWordFileLoaded, setEnWordFileLoaded] = useState(false);
+
     const [formSubmitted, setFormSubmitted] = useState(false);
 
     const readFile = (fileKey, fileMeta) => {
@@ -58,18 +62,36 @@ const schema = yup.object().shape({
                 console.log('form data ready');
                 console.log('has form been submitted?', formSubmitted);
 
+                const maps = [
+                  {
+                    "type": "ds",
+                    "tokens": fileData['dsWordFile'].data
+                  },
+                  {
+                    "type": "abrv",
+                    "tokens": fileData['abrvWordFile'].data
+                  },
+                  {
+                  "type": "en",
+                  "tokens": fileData['enWordFile'].data
+                  }
+                ];
+
+                const formPayload = {
+                  name: values.projectName,
+                  description: values.projectDescription,
+                  texts: fileData['textFile'].data,
+                  maps: maps
+                }
+                
+                console.log('form payload', formPayload)
+
                 if (formSubmitted === false){
                     console.log('submitting...')
-                    const response = await axios.post('/api/project/create',
-                                                        {
-                                                            name: values.projectName,
-                                                            description: values.projectDescription,
-                                                            textData: fileData['textFile'].data,
-                                                            // enWordsData: fileData['enWordFile'].data,
-                                                            dsWordsData: fileData['dsWordFile'].data,
-                                                    })
+                    const response = await axios.post('/api/project/create_v2', formPayload)
+
                     if (response.status === 200){
-                        console.log('respose of create project', response);
+                        console.log('response of create project', response);
                         setFormSubmitted(true);
                         setShowUpload(false);
                     }
@@ -160,33 +182,35 @@ const schema = yup.object().shape({
 
         <Form.Group>
             <Form.Row>
-                {/* <Col>
+                <Col>
                     <Form.File
                         id="exampleFormControlFile2"
                         label="English words"
-                        onChange={(e) => setFileData(prevState => ({...prevState, "enWordFile": {"meta": e.target.files[0], "data": null}}))}
+                        onChange={(e) => setFileData(prevState => ({...prevState, "enWordFile": {"meta": e.target.files[0], "data": readFile("enWordFile", e.target.files[0])}}))}
                         />
                     <Form.Text id="passwordHelpBlock" muted>
                         English words should be in text (.txt) format.
                     </Form.Text>
-                </Col> */}
-                {/* <Col>
+                </Col>
+                
+                <Col>
                     <Form.File
                         id="exampleFormControlFile4"
-                        label="Replacement dictionary"
-                        onChange={(e) => setFileData(prevState => ({...prevState, "replaceDictFile": {"meta": e.target.files[0], "data": null}}))}
+                        label="Abbreviations"
+                        onChange={(e) => setFileData(prevState => ({...prevState, "abrvWordFile": {"meta": e.target.files[0], "data": readFile("abrvWordFile", e.target.files[0])}}))}
                     />
                     <Form.Text id="passwordHelpBlock" muted>
-                        Initial replacement dictionary that will be modified through the annotation process.
-                        This should be in JSON (.json) format.
+                        Abbreviations should be in text (.txt) format.
+                        {/* Initial replacement dictionary that will be modified through the annotation process.
+                        This should be in JSON (.json) format. */}
                     </Form.Text>    
-                </Col> */}
+                </Col>
             </Form.Row>
         </Form.Group>
 
         <div style={{display: 'flex', justifyContent: 'space-evenly'}}>
           <Button variant="secondary" onClick={() => setShowUpload(false)}>Cancel</Button>
-            <Button type="submit">Create Project</Button>
+          <Button type="submit">Create Project</Button>
         </div>
 
         </Form>

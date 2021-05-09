@@ -22,8 +22,14 @@ const ProjectSchema = mongoose.Schema({
     }],
     created_on: {
         type: Date,
+        required: true,
         default: Date.now
     },
+    last_modified: {
+        type: Date,
+        required: true,
+        default: Date.now,
+    }
 }, { _id: true})
 
 

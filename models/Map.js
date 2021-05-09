@@ -9,7 +9,12 @@ const MapSchema = mongoose.Schema({
     tokens: [{
         type: String,
         required: true
-    }]
+    }],
+    last_modified: {
+        type: Date,
+        required: true,
+        default: Date.now,
+    }
 }, { _id: true})
 
 

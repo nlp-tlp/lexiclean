@@ -24,6 +24,11 @@ const TokenSchema = mongoose.Schema({
         type: Boolean,
         required: true,
         default: false
+    },
+    last_modified: {
+        type: Date,
+        required: true,
+        default: Date.now,
     }
 }, {_id: true})
 

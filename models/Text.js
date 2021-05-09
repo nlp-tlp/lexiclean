@@ -18,6 +18,11 @@ const TextSchema = mongoose.Schema({
         type: Boolean,
         required: false,
         default: false
+    },
+    last_modified: {
+        type: Date,
+        required: true,
+        default: Date.now,
     }
 }, { _id: true})
 
