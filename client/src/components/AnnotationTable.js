@@ -11,9 +11,7 @@ const useStyles = createUseStyles({
     flexDirection: 'column',
     justifyContent: 'center',
     width: '80%',
-    margin: 'auto',
-    // overflowY: 'scroll',
-    // maxHeight: '700px'
+    margin: 'auto'
   },
   row: {
     display: 'flex',
@@ -35,15 +33,13 @@ const useStyles = createUseStyles({
   }
 });
 
+const PAGE_LIMIT = 3;
 
-const PAGE_LIMIT = 2;
 
-
-export default function AnnotationTable({project, tokens_en, tokens_ds, lexNormDict, setLexNormDict, saved, setSaved}) {
+export default function AnnotationTable({project, replacementDict, setReplacementDict, saved, setSaved}) {
   const classes = useStyles();
 
   const [texts, setTexts] = useState();
-  const [dsTokens, setDsTokens] = useState();
   const [maps, setMaps] = useState();
   const [replacementMap, setReplacementMap] = useState();
 
@@ -51,7 +47,6 @@ export default function AnnotationTable({project, tokens_en, tokens_ds, lexNormD
   const [mapsLoaded, setMapsLoaded] = useState(false);
   const [replacementsLoaded, setReplacementsLoaded] = useState(false);
 
-    
   const [paginatorLoaded, setPaginatorLoaded] = useState();
   const [totalPages, setTotalPages] = useState();
   const [page, setPage] = useState(1);
@@ -92,22 +87,25 @@ export default function AnnotationTable({project, tokens_en, tokens_ds, lexNormD
   }, [mapsLoaded])
 
 
-  // useEffect(() => {
-  //   // Fetches replacements that are made by the user on save and pagination events 
-  //   const fetchReplacements = async () => {
-  //     const response = await axios.get(`/api/results/${project._id}`)
+  useEffect(() => {
+    // On save or page change, any suggested replacements that remain are posted to the backend
 
-  //     if (response.status === 200){
-  //       setReplacementMap(response.data, () => {
-  //         console.log('replacements', response.data);
-  //         setReplacementsLoaded(true);
-  //       });
-  //     }
+    const fetchReplacements = async () => {
 
-  //   }
 
-  //   fetchReplacements();
-  // }, [page, saved])
+      // const response = await axios.get(`/api/results/${project._id}`)
+
+      // if (response.status === 200){
+      //   setReplacementMap(response.data, () => {
+      //     console.log('replacements', response.data);
+      //     setReplacementsLoaded(true);
+      //   });
+      // }
+
+    }
+
+    fetchReplacements();
+  }, [page, saved])
 
 
 
@@ -127,24 +125,44 @@ export default function AnnotationTable({project, tokens_en, tokens_ds, lexNormD
 
 
   useEffect(() => {
-    const saveResults = async () => {
-      // If there are results, save them when paginating, otherwise skip.
-      if (Object.keys(lexNormDict).length > 0){
-          const resultsPayload = Object.keys(lexNormDict).map(tokenId => {return{"project_id": project._id,
-                                                                                  "doc_id": lexNormDict[tokenId].doc_id,
-                                                                                  "token_id": tokenId,
-                                                                                  "replacement_token": lexNormDict[tokenId].replacement_token
-                                                                                }})
-          const response = await axios.patch('/api/results/add-many', {results: resultsPayload})
-          if (response.status === 200){
-            console.log('Successfully saved data')
-            setLexNormDict({});
-            setSaved(false);
-          }
+    // Cascades replacements across tokens
+    const updateTokens = async () => {
+      console.log(replacementDict);
+      if (Object.keys(replacementDict).length > 0){
+
+        const response = await axios.patch(`/api/token/replace-many/${project._id}`, {replacement_dict: replacementDict});
+
+        if (response.status === 200){
+          console.log('Updated tokens with replacements')
+
+          setReplacementDict({});
+
+        }
       }
     }
-    saveResults();
-  }, [page, saved])
+    updateTokens();
+  }, [page])
+
+
+  // useEffect(() => {
+  //   const saveResults = async () => {
+  //     // If there are results, save them when paginating, otherwise skip.
+  //     if (Object.keys(replacementDict).length > 0){
+  //         const resultsPayload = Object.keys(replacementDict).map(tokenId => {return{"project_id": project._id,
+  //                                                                                 "doc_id": replacementDict[tokenId].doc_id,
+  //                                                                                 "token_id": tokenId,
+  //                                                                                 "replacement_token": replacementDict[tokenId].replacement_token
+  //                                                                               }})
+  //         const response = await axios.patch('/api/results/add-many', {results: resultsPayload})
+  //         if (response.status === 200){
+  //           console.log('Successfully saved data')
+  //           setReplacementDict({});
+  //           setSaved(false);
+  //         }
+  //     }
+  //   }
+  //   saveResults();
+  // }, [page, saved])
 
 
   return (
@@ -153,22 +171,22 @@ export default function AnnotationTable({project, tokens_en, tokens_ds, lexNormD
       <div className={classes.container}>
         {
           (!loaded && !replacementsLoaded) ? 
-            <div style={{margin: 'auto'}}>
+            <div style={{margin: 'auto', marginTop: '5em'}}>
               <Spinner animation="border" />
             </div>
           :
           texts.map((text, textIndex) => {
             return(
               <div className={classes.row} key={textIndex}>
-                <div className={classes.indexColumn}>{textIndex+1 + ((page-1)*10)}</div>
+                <div className={classes.indexColumn}>{textIndex+1 + ((page-1)*PAGE_LIMIT)}</div>
                 <div className={classes.textColumn}>
                   <Text
                     text={text}
                     textIndex={text._id}
                     maps={maps}
                     setMaps={setMaps}
-                    lexNormDict={lexNormDict}
-                    setLexNormDict={setLexNormDict}
+                    replacementDict={replacementDict}
+                    setReplacementDict={setReplacementDict}
                     page={page}
                     />
                 </div>

@@ -1,27 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const Project = require('../models/Project');
-const Data = require('../models/Data');
 const Map = require('../models/Map');
 const Text = require('../models/Text');
 const Token = require('../models/Token');
-
-
-// Create Project
-router.post('/', async (req, res) => {
-    console.log('creating project')
-    const project = new Project({
-        name: req.body.name,
-        description: req.body.description,
-    });
-    try {
-        const savedProject = await project.save();
-        res.json(savedProject);
-    }catch(err){
-        console.log(err);
-        res.json({ mesage: err })
-    }
-});
 
 
 // Fetch projects
@@ -36,69 +18,6 @@ router.get('/', async (req, res) => {
 })
 
 
-// Create Project and fill with data
-router.post('/create_depreciated', async (req, res) => {
-    console.log('creating project with data and maps - depreciated')
-
-    try {
-        console.log('building project')
-        const project = new Project({
-            name: req.body.name,
-            description: req.body.description, 
-        });
-        const savedProject = await project.save();
-        const projectId = savedProject._id
-        console.log('project response', savedProject)
-        
-
-        console.log('uploading data')
-        const data = req.body.textData;
-        
-        // Tokenize texts and build payloads
-        const dataPayload = data.map((text) => {
-            // Build tokenized data
-            const tokenizedText = text.split(' ');
-            const tokenData = tokenizedText.map((token, index) => {return({index: index, token: token})})
-            // console.log(tokenData);
-            return({
-                project_id: projectId,
-                tokens: tokenData
-            })
-
-        })
-
-        console.log(dataPayload);
-        const savedDataMany = await Data.insertMany(dataPayload)
-        console.log('data response', savedDataMany)
-
-
-        console.log('uploading maps');
-        // const enWordsMap = new Map({
-        //     project_id: projectId,
-        //     type: 'english_words',
-        //     tokens: req.body.enWordsData
-        // })
-        // const savedEnWordsMap = await enWordsMap.save();
-
-        // console.log('ds word data', req.body.dsWordsData)
-        // console.log('project id', projectId);
-
-        const dsWordsMap = new Map({
-            project_id: projectId,
-            type: 'ds_tokens',
-            tokens: req.body.dsWordsData
-        })
-        console.log(dsWordsMap);
-        const savedDsWordsMap = await dsWordsMap.save();
-        console.log('ds response', savedDsWordsMap)
-
-        res.json('successfully created project');
-    }catch(err){
-        console.log(err);
-        res.json({ mesage: err })
-    }
-});
-
 // UPDATE PROJECT
 router.patch('/:projectId', async (req, res) => {
     try{
@@ -111,6 +30,20 @@ router.patch('/:projectId', async (req, res) => {
         res.json({ message: err })
     }
 })
+
+// Fetch single project
+router.get('/:projectId', async (req, res) => {
+    try{
+        const response = await Project.findOne({ _id: req.params.projectId})
+        res.json(response);
+    }catch(err){
+        res.json({ message: err })
+    }
+} )
+
+
+
+
 
 
 // Create project v2
@@ -157,7 +90,8 @@ router.post('/create', async (req, res) => {
                     value: token,
                     domain_specific: domainSpecific,
                     abbreviation: abbreviation,
-                    english_word: englishWord
+                    english_word: englishWord,
+                    replacement: null // TODO: pre-populate with existing dictionaries in the future.
                     })
             })
 
@@ -166,14 +100,13 @@ router.post('/create', async (req, res) => {
         const tokenListResponse = await Token.insertMany(tokenList);
         console.log('token list response',tokenListResponse)
 
-
-
         // Build texts
         const builtTexts = tokenTextMap.map(text => {
             return({
+                    // project_id: 'ph', // Cannot insert real project_id here as the project hasn't been created. This is done below as an updateMany. Uses placeholder is null. 
                     tokens: text.map(token => {
                         return({
-                            index: token.index, 
+                            index: token.index,
                             token: tokenListResponse[token.globalTokenIndex]._id
                         })
                     })
@@ -198,9 +131,14 @@ router.post('/create', async (req, res) => {
         })
 
 
+        // Update texts in texts collection with project_id field
+        const projectId = projectResponse._id;
+        const textsUpdateResponse = await Text.updateMany({ _id: { $in: textObjectIds }}, {project_id: projectId}, {upsert: true});
+
 
         // Return
-        res.json(projectResponse)
+        res.json(textsUpdateResponse)
+        // res.json('Project created successfully.')
 
 
 
@@ -225,6 +163,35 @@ router.get('/maps/:projectId', async (req, res) => {
         res.json(mapsRestructured);
 
     }catch(err){
+        res.json({ message: err })
+    }
+})
+
+
+
+// Delete project
+router.delete('/:projectId', async (req, res) => {
+    console.log('deleting project');
+    try{
+        const projectResponse = await Project.findOne({_id: req.params.projectId}).populate('texts')
+
+        // Get ids of associated documents
+        const textIds = projectResponse.texts.map(text => text._id);
+        const tokenIds = projectResponse.texts.map(text => text.tokens.map(token => token.token)).flat();
+        const mapIds = projectResponse.maps;
+
+        // Delete documents in collections
+        const projectDelete = await Project.deleteOne({ _id: req.params.projectId })
+        const textDelete = await Text.deleteMany({ _id: textIds})
+        const tokenDelete = await Token.deleteMany({ _id: tokenIds})
+        const mapDelete = await Map.deleteMany({ _id: mapIds})
+
+
+
+        res.json('Successfully deleted project.')
+
+
+    }catch(error){
         res.json({ message: err })
     }
 })

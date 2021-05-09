@@ -8,7 +8,7 @@ const ProjectSchema = mongoose.Schema({
     },
     description: {
         type: String,
-        required: true
+        required: false
     },
     texts: [{
         type: Schema.Types.ObjectId,

@@ -3,6 +3,14 @@ const Schema = mongoose.Schema;
 const aggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 const TextSchema = mongoose.Schema({
+    // Project id is here as its required when filtering texts with mongoose paginate aggregator. Otherwise a list of
+    // doc_ids would need to be queried from the project collection every pagination event.
+    // required is false as the project_id isn't available before texts are populated.
+    project_id: {
+        type: Schema.Types.ObjectId,
+        ref: 'Project',
+        required: false 
+    },
     tokens: [{
         index: { 
             type: Number,

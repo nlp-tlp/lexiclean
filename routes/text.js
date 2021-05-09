@@ -66,9 +66,15 @@ router.get('/:projectId/filter/', async (req, res) => {
     console.log('Paginating through texts');
     console.log(req.query);
     try {
+
+        // Get 
+
         // Paginate Aggregation
         // Note: cannot use .populate() on the aggregatePaginate so need to use $lookup instead to populate tokens field
         const textAggregation = Text.aggregate([
+            {
+                $match: { project_id: mongoose.Types.ObjectId(req.params.projectId)}
+            },
             {
                 $lookup: {
                     from: 'tokens', // need to use MongoDB collection name - NOT mongoose model name
@@ -92,9 +98,6 @@ router.get('/:projectId/filter/', async (req, res) => {
                         }
                     }
             }
-            // {
-            //     $match: { project_id: mongoose.Types.ObjectId(req.params.projectId)}
-            // },
             // {
             //     $sort: {'annotated': 1}
             // },

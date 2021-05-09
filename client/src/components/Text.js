@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from 'react'
+import { createUseStyles } from 'react-jss';
 import Token from './Token'
 
-export default function Text({text, textIndex, maps, setMaps, lexNormDict, setLexNormDict}) {
+const useStyles = createUseStyles({
+    container: {
+        display: 'flex',
+        flexDirection:'row',
+        flexWrap: 'wrap'
+    }
+})
+
+export default function Text({text, textIndex, maps, setMaps, replacementDict, setReplacementDict}) {
+    const classes = useStyles();
     return (
-        <div id="text-container" style={{display: 'flex', flexDirection:'row'}} key={textIndex}>
+        <div id="text-container" className={classes.container} key={textIndex}>
             {
                 text ?
                     text.tokens.map((tokenInfo) => {
@@ -11,8 +21,8 @@ export default function Text({text, textIndex, maps, setMaps, lexNormDict, setLe
                             <Token
                                 tokenInfo={tokenInfo}
                                 textIndex={textIndex}
-                                lexNormDict={lexNormDict}
-                                setLexNormDict={setLexNormDict}
+                                replacementDict={replacementDict}
+                                setReplacementDict={setReplacementDict}
                             />
                             )})
                 : <p>Loading...</p>

@@ -8,8 +8,14 @@ const TokenSchema = mongoose.Schema({
     },
     replacement: {
         type: String,
-        required: false
+        required: false,
+        default: null
     },
+    suggested_replacement: {
+        type: String,
+        required: false,
+        default: null
+    },    
     domain_specific: {
         type: Boolean,
         required: true,

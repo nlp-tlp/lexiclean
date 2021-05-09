@@ -1,13 +1,32 @@
 import './App.css';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link
+} from "react-router-dom";
 
-import Page from './components/Page'
+import Project from './components/Project'
+
+import ProjectFeed from './components/ProjectFeed'
+
 
 
 function App() {
   return (
-    <div className="App">
-      <Page />
-    </div>
+    <Router>
+      <Switch>
+
+        <Route path="/project/:projectId">
+          <Project/>
+        </Route>
+
+        <Route path="/">
+          <ProjectFeed />
+        </Route>
+
+      </Switch>
+    </Router>
   );
 }
 

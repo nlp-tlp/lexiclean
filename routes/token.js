@@ -1,15 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const Token = require('../models/Token');
+const Text = require('../models/Text');
 const mongoose = require('mongoose');
+const { text } = require('express');
 
 // NEED INSERT MANY SO WE CAN SLAP X DOCS INTO DATA COLLECTION
 router.post('/upload', async (req, res) => {
     console.log('Uploading tokens')
     
     // tokens is an array of objects
-    console.log(tokens);
     const tokens = req.body.tokens;
+    console.log(tokens);
 
     // Will need to load the map and use it to markup fields on the tokens (this will be done in another route)
 
@@ -21,7 +23,7 @@ router.post('/upload', async (req, res) => {
     }
 })
 
-// Patch replacment on one token
+// Patch replacement on one token
 router.patch('/replace/:tokenId', async (req, res) => {
     try{
         const updatedReponse = await Token.updateOne(
@@ -36,6 +38,52 @@ router.patch('/replace/:tokenId', async (req, res) => {
                                                 }
                                                 )
         res.json(updatedReponse);
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+// Convert suggested replacement to replacement on one token
+router.patch('/suggestion-add/:tokenId', async (req, res) => {
+    try{
+        const updatedReponse = await Token.updateOne(
+                                                {
+                                                    _id: req.params.tokenId
+                                                },
+                                                {
+                                                    replacement: req.body.suggested_replacement,
+                                                    suggested_replacement: null,
+                                                    last_modified: Date.now()},
+                                                {
+                                                    upsert: true
+                                                }
+                                                )
+        res.json(updatedReponse);
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+// Remove replacement on one token
+router.delete('/replace-remove/:tokenId', async (req, res) => {
+    console.log('removing replacement on token');
+
+    try {
+        const response = await Token.updateOne({ _id: req.params.tokenId}, {replacement: null})
+
+        res.json(response);
+
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+// Remove suggested replacement on one token
+router.delete('/suggestion-remove/:tokenId', async (req, res) => {
+    console.log('removing suggested replacement on token');
+    try {
+        const response = await Token.updateOne({ _id: req.params.tokenId}, {suggested_replacement: null})
+        res.json(response);
     }catch(err){
         res.json({ message: err })
     }
@@ -63,6 +111,44 @@ router.patch('/auxiliary/:tokenId', async (req, res) => {
         res.json({ message: err })
     }
 })
+
+// Patch suggested_replacements over all tokens in a project
+router.patch('/replace-many/:projectId', async (req, res) => {
+    console.log('Updating suggested_replacements based on a replacement dictionary');
+    try{
+        const replacementDict = req.body.replacement_dict;
+        console.log(replacementDict)
+        const replacementDictKeys = Object.keys(replacementDict); // original tokens, not replacements.
+        console.log(replacementDictKeys);
+        
+        const textResponse = await Text.find({ project_id: req.params.projectId })
+                                       .populate('tokens.token');
+        
+        // Do not override existing replacements so these are filter out
+        const candidateTokens = textResponse.map(text => text.tokens.filter(tokenInfo => tokenInfo.token.replacement == null).map(tokenInfo => tokenInfo)).flat();
+        console.log(candidateTokens);
+        console.log('candidate tokens for suggested replacement', candidateTokens.length)
+
+        const suggestReplaceTokens = candidateTokens.filter(tokenInfo => replacementDictKeys.includes(tokenInfo.token.value)).map(tokenInfo => ({"_id": tokenInfo.token._id, "value": tokenInfo.token.value}));
+        console.log(suggestReplaceTokens)
+
+
+        // Patch suggested_replacement field with replacement
+        const suggestedReplaceResponse = await Token.bulkWrite(suggestReplaceTokens.map(token => ({
+            updateOne: {
+                filter: {_id: token._id},
+                update: {"suggested_replacement": replacementDict[token.value]},
+                upsert: true
+            }
+        })))
+
+        res.json(suggestedReplaceResponse);
+
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
 
 
 // Get one token

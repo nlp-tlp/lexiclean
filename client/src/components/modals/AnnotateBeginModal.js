@@ -1,10 +1,12 @@
 import React from 'react'
+import { useHistory } from 'react-router-dom';
 import { Modal, Button } from 'react-bootstrap';
 
-export default function AnnotateBeginModal({showAnnotate, setShowAnnotate, setLoadAnnotationView}) {
+export default function AnnotateBeginModal({showAnnotate, setShowAnnotate, selectedProject}) {
+    const history = useHistory();
 
     const confirmationAction = () => {
-        setLoadAnnotationView(true);
+        history.push(`/project/${selectedProject._id}`)
         setShowAnnotate(false);
     }
 
@@ -17,7 +19,7 @@ export default function AnnotateBeginModal({showAnnotate, setShowAnnotate, setLo
             style={{}}
         >
             <Modal.Header closeButton>
-                <Modal.Title>Load Project</Modal.Title>
+                <Modal.Title>Annotate Project</Modal.Title>
             </Modal.Header>
 
             <Modal.Body>
