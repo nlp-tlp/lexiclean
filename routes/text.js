@@ -60,32 +60,54 @@ router.get('/', async (req, res) => {
 
 
 // PAGINATE DATA FILTERED BY PROJECT ID
-// Sorts data based on if it has been annotated
-// Note: sending limit of 0 returns meta-data of paginator
 // If any issues arise with results - refer to: https://github.com/aravindnc/mongoose-aggregate-paginate-v2/issues/18
 // TODO: Add sort functionality (this will require patching data with annotated status when results are patched)
-// router.get('/:projectId/filter/', async (req, res) => {
-//     console.log('Paginating through data');
-//     console.log(req.query);
-//     try {
-//         // Paginate Aggregation
-//         const dataAggregate = Data.aggregate([
-//             {
-//                 $match: { project_id: mongoose.Types.ObjectId(req.params.projectId)}
-//             },
-//             // {
-//             //     $sort: {'annotated': 1}
-//             // },
-//         ])
+router.get('/:projectId/filter/', async (req, res) => {
+    console.log('Paginating through texts');
+    console.log(req.query);
+    try {
+        // Paginate Aggregation
+        // Note: cannot use .populate() on the aggregatePaginate so need to use $lookup instead to populate tokens field
+        const textAggregation = Text.aggregate([
+            {
+                $lookup: {
+                    from: 'tokens', // need to use MongoDB collection name - NOT mongoose model name
+                    localField: 'tokens.token',
+                    foreignField: '_id',
+                    as: 'tokens_detail'
+                }
+            },
+            // Merges data in text model and that retrieved from the tokens collection into single object
+            {
+                $project: {
+                    annotated: "$annotated",
+                    tokens: {
+                        $map : {
+                            input: { $zip: { inputs: [ "$tokens", "$tokens_detail"]}},
+                            as: "el",
+                            in: {
+                                $mergeObjects: [{"$arrayElemAt": [ "$$el", 0 ]}, {"$arrayElemAt": [ "$$el", 1 ] }]
+                                }
+                            }
+                        }
+                    }
+            }
+            // {
+            //     $match: { project_id: mongoose.Types.ObjectId(req.params.projectId)}
+            // },
+            // {
+            //     $sort: {'annotated': 1}
+            // },
+        ])
 
-//         const options = {page: req.query.page, limit: req.query.limit}
-//         const data = await Data.aggregatePaginate(dataAggregate, options)    
-//         res.json(data);
+        const options = {page: req.query.page, limit: req.query.limit}
+        const response = await Text.aggregatePaginate(textAggregation, options);
+        res.json(response);
         
-//     }catch(err){
-//         res.json({ message: err })
-//     }
-// })
+    }catch(err){
+        res.json({ message: err })
+    }
+})
 
 
 // Patch one token

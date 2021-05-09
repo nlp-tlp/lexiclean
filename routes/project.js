@@ -37,8 +37,8 @@ router.get('/', async (req, res) => {
 
 
 // Create Project and fill with data
-router.post('/create', async (req, res) => {
-    console.log('creating project with data and maps')
+router.post('/create_depreciated', async (req, res) => {
+    console.log('creating project with data and maps - depreciated')
 
     try {
         console.log('building project')
@@ -114,8 +114,8 @@ router.patch('/:projectId', async (req, res) => {
 
 
 // Create project v2
-router.post('/create_v2', async (req, res) => {
-    console.log('creating project v2')
+router.post('/create', async (req, res) => {
+    console.log('creating project')
     try{
 
         // Build maps
