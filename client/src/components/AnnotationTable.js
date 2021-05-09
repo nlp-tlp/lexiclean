@@ -36,14 +36,15 @@ const useStyles = createUseStyles({
 });
 
 
-const PAGE_LIMIT = 10;
+const PAGE_LIMIT = 2;
 
 
 export default function AnnotationTable({project, tokens_en, tokens_ds, lexNormDict, setLexNormDict, saved, setSaved}) {
   const classes = useStyles();
 
-  const [data, setData] = useState();
+  const [texts, setTexts] = useState();
   const [dsTokens, setDsTokens] = useState();
+  const [maps, setMaps] = useState();
   const [replacementMap, setReplacementMap] = useState();
 
   const [loaded, setLoaded] = useState(false);
@@ -59,13 +60,16 @@ export default function AnnotationTable({project, tokens_en, tokens_ds, lexNormD
   useEffect(() => {
     // Fetch pagination metadata
     const fetchPaginationInfo = async () => {
-        const response = await axios.get(`/api/data/${project._id}/filter/`, { params: {page: 1000000, limit: 0 }})
-        if (response.status === 200){
-          // console.log('pagination meta data response', response.data)
-          setTotalPages(response.data.totalPages);
-          setPaginatorLoaded(true);
+      if (!paginatorLoaded){
+        // note large page is used as it will index to a page without any active data...
+          const response = await axios.get(`/api/text/${project._id}/filter/`, { params: {page: 1000000, limit: PAGE_LIMIT }})
+          if (response.status === 200){
+            console.log('pagination meta data response', response.data)
+            setTotalPages(response.data.totalPages);
+            setPaginatorLoaded(true);
+          }
         }
-      }
+      }  
     fetchPaginationInfo();
   }, [paginatorLoaded])
 
@@ -74,12 +78,12 @@ export default function AnnotationTable({project, tokens_en, tokens_ds, lexNormD
     // TODO: Update based on context menu having state change e.g. adding to domain specific terms, abbreviations ect.
     const fetchProjectMaps = async () => {
       if (!mapsLoaded){
-        const dsMapResponse = await axios.post(`/api/map/${project._id}`, {type: 'ds_tokens'})
-        // const enMapResponse = await axios.get(`/api/map/${project._id}`, {type: 'en_tokens'})
-
-        if (dsMapResponse.status === 200){
-          console.log('ds tokens response', dsMapResponse.data);
-          setDsTokens(dsMapResponse.data.tokens)
+        // Fetch maps
+        console.log('fetching maps...');
+        const maps = await axios.get(`/api/project/maps/${project._id}`)
+        if (maps.status === 200){
+          console.log('maps', maps.data);
+          setMaps(maps.data);
           setMapsLoaded(true);
         }
       }
@@ -88,33 +92,32 @@ export default function AnnotationTable({project, tokens_en, tokens_ds, lexNormD
   }, [mapsLoaded])
 
 
-  useEffect(() => {
-    // Fetches replacements that are made by the user on save and pagination events 
-    const fetchReplacements = async () => {
-      const response = await axios.get(`/api/results/${project._id}`)
+  // useEffect(() => {
+  //   // Fetches replacements that are made by the user on save and pagination events 
+  //   const fetchReplacements = async () => {
+  //     const response = await axios.get(`/api/results/${project._id}`)
 
-      if (response.status === 200){
-        setReplacementMap(response.data, () => {
-          console.log('replacements', response.data);
-          setReplacementsLoaded(true);
-        });
-      }
+  //     if (response.status === 200){
+  //       setReplacementMap(response.data, () => {
+  //         console.log('replacements', response.data);
+  //         setReplacementsLoaded(true);
+  //       });
+  //     }
 
-    }
+  //   }
 
-    fetchReplacements();
-  }, [page, saved])
+  //   fetchReplacements();
+  // }, [page, saved])
 
 
 
   useEffect(() => {
     const fetchData = async () => {
         setLoaded(false);
-        const dataResponse = await axios.get(`/api/data/${project._id}/filter/`, { params: {page: page, limit: PAGE_LIMIT }})
-
-        if (dataResponse.status === 200){
-          console.log('data response', dataResponse.data.docs)
-          setData(dataResponse.data.docs);
+        const response = await axios.get(`/api/text/${project._id}/filter/`,{ params: { page: page, limit: PAGE_LIMIT }})
+        if (response.status === 200){
+          console.log('texts response', response.data.docs)
+          setTexts(response.data.docs);
           setLoaded(true);
         }
       }
@@ -154,18 +157,16 @@ export default function AnnotationTable({project, tokens_en, tokens_ds, lexNormD
               <Spinner animation="border" />
             </div>
           :
-          data.map((data, dataIndex) => {
+          texts.map((text, textIndex) => {
             return(
-              <div className={classes.row}>
-                <div className={classes.indexColumn}>{dataIndex+1 + ((page-1)*10)}</div>
+              <div className={classes.row} key={textIndex}>
+                <div className={classes.indexColumn}>{textIndex+1 + ((page-1)*10)}</div>
                 <div className={classes.textColumn}>
                   <Text
-                    data={data}
-                    textIndex={data._id}
-                    tokens_en={tokens_en}
-                    tokens_ds={dsTokens}
-                    replacementMap={replacementMap}
-                    setReplacementMap={setReplacementMap}
+                    text={text}
+                    textIndex={text._id}
+                    maps={maps}
+                    setMaps={setMaps}
                     lexNormDict={lexNormDict}
                     setLexNormDict={setLexNormDict}
                     page={page}
@@ -184,8 +185,8 @@ export default function AnnotationTable({project, tokens_en, tokens_ds, lexNormD
             { 
               [...Array(totalPages).keys()].map(number => {
                 return(
-                <Pagination.Item key={number+1} active={number+1 === page} onClick={() => setPage(number+1)}>
-                {number+1}
+                <Pagination.Item key={ number+1 } active={ number+1 === page } onClick={() => setPage(number+1)}>
+                { number+1 }
                 </Pagination.Item>
               )
             })

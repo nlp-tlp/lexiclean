@@ -25,6 +25,11 @@ const TokenSchema = mongoose.Schema({
         required: true,
         default: false
     },
+    noise: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
     last_modified: {
         type: Date,
         required: true,

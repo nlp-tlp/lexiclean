@@ -88,7 +88,7 @@ const schema = yup.object().shape({
 
                 if (formSubmitted === false){
                     console.log('submitting...')
-                    const response = await axios.post('/api/project/create_v2', formPayload)
+                    const response = await axios.post('/api/project/create', formPayload)
 
                     if (response.status === 200){
                         console.log('response of create project', response);
