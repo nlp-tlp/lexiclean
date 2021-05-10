@@ -10,7 +10,7 @@ const useStyles = createUseStyles({
     }
 })
 
-export default function Text({text, textIndex, maps, setMaps, replacementDict, setReplacementDict}) {
+export default function Text({text, textIndex, maps, setMaps, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap}) {
     const classes = useStyles();
     return (
         <div id="text-container" className={classes.container} key={textIndex}>
@@ -23,6 +23,8 @@ export default function Text({text, textIndex, maps, setMaps, replacementDict, s
                                 textIndex={textIndex}
                                 replacementDict={replacementDict}
                                 setReplacementDict={setReplacementDict}
+                                metaTagSuggestionMap={metaTagSuggestionMap}
+                                setMetaTagSuggestionMap={setMetaTagSuggestionMap}
                             />
                             )})
                 : <p>Loading...</p>

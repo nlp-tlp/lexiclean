@@ -46,6 +46,10 @@ const TokenSchema = mongoose.Schema({
         required: true,
         default: false
     },
+    suggested_meta_tag: [{
+        name: { type: String, required: false },
+        value: { type: String, required: false }
+    }],
     last_modified: {
         type: Date,
         required: true,

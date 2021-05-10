@@ -10,7 +10,9 @@ import Footer from './Footer'
 
 import DownloadModal from './modals/DownloadModal'
 import ProgressModal from './modals/ProgressModal'
+import SettingsModal from './modals/SettingsModal'
 
+const PAGE_LIMIT = 10;
 
 export default function Project() {
     const { projectId } = useParams();
@@ -19,10 +21,14 @@ export default function Project() {
 
     const [showDownload, setShowDownload] = useState(false);
     const [showProgress, setShowProgress] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
+
     const [saved, setSaved] = useState(false)
 
     const [project, setProject] = useState();
     const [projectLoaded, setProjectLoaded] = useState(false);
+    const [pageLimit, setPageLimit] = useState(PAGE_LIMIT)
+    const [pageChanged, setPageChanged] = useState(); // uses page number to update state...
 
     useEffect(() => {
         // Fetches project
@@ -41,31 +47,41 @@ export default function Project() {
         <>
         { showDownload ? <DownloadModal showDownload={showDownload} setShowDownload={setShowDownload}/> : null }
         { showProgress ? <ProgressModal showProgress={showProgress} setShowProgress={setShowProgress}/> : null }
+        { showSettings ? <SettingsModal showSettings={showSettings} setShowSettings={setShowSettings} pageLimit={pageLimit} setPageLimit={setPageLimit}/> : null }
 
-        
-        <Header
-            projectName={project ? project.name : ''}
-            replacementDict={replacementDict}
-            setShowDownload={setShowDownload}
-            setShowProgress={setShowProgress}
-            setSaved={setSaved}
-        />
-
-        {/* // TODO: Need to add filter/sort here... */}
-        {
-            !projectLoaded ? 
-                <Spinner animation="border" />
-            :
-                <AnnotationTable
-                    project={project}
-                    replacementDict={replacementDict}
-                    setReplacementDict={setReplacementDict}
-                    saved={saved}
-                    setSaved={setSaved}
+        <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
+            <Header
+                project={project ? project : {}}
+                replacementDict={replacementDict}
+                setShowDownload={setShowDownload}
+                setShowProgress={setShowProgress}
+                setShowSettings={setShowSettings}
+                setSaved={setSaved}
+                pageChanged={pageChanged}
                 />
-        }
 
-        <Footer />
+            {/* // TODO: Need to add filter/sort here... */}
+            <div className="content" style={{flex: '1 0 auto'}}>
+            {
+                !projectLoaded ? 
+                <Spinner animation="border" />
+                :
+                <AnnotationTable
+                project={project}
+                replacementDict={replacementDict}
+                setReplacementDict={setReplacementDict}
+                pageLimit={pageLimit}
+                saved={saved}
+                setSaved={setSaved}
+                setPageChanged={setPageChanged}
+                />
+            }   
+            </div>
+            <div style={{flexShrink: '0'}}>
+                <Footer />
+
+            </div>
+        </div>
         </>
     )
 }

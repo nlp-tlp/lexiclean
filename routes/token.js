@@ -26,17 +26,10 @@ router.post('/upload', async (req, res) => {
 // Patch replacement on one token
 router.patch('/replace/:tokenId', async (req, res) => {
     try{
-        const updatedReponse = await Token.updateOne(
-                                                {
-                                                    _id: req.params.tokenId
-                                                },
-                                                {
-                                                    replacement: req.body.replacement,
-                                                    last_modified: Date.now()},
-                                                {
-                                                    upsert: true
-                                                }
-                                                )
+        const updatedReponse = await Token.updateOne({ _id: req.params.tokenId},
+                                                        { replacement: req.body.replacement, last_modified: Date.now()},
+                                                        { upsert: true })
+        
         res.json(updatedReponse);
     }catch(err){
         res.json({ message: err })

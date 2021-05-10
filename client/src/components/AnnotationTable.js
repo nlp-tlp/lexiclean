@@ -34,14 +34,14 @@ const useStyles = createUseStyles({
   }
 });
 
-const PAGE_LIMIT = 10;
-
-export default function AnnotationTable({project, replacementDict, setReplacementDict, saved, setSaved}) {
+export default function AnnotationTable({project, replacementDict, setReplacementDict, pageLimit, saved, setSaved, setPageChanged}) {
   const classes = useStyles();
 
   const [texts, setTexts] = useState();
   const [maps, setMaps] = useState();
-  const [replacementMap, setReplacementMap] = useState();
+  const [metaTagSuggestionMap, setMetaTagSuggestionMap] = useState({"abbreviation": {}, "domain_specific": {}, "english_word": {}, "noise": {}, "unsure": {}});
+
+  console.log(metaTagSuggestionMap)
 
   const [loaded, setLoaded] = useState(false);
   const [mapsLoaded, setMapsLoaded] = useState(false);
@@ -53,11 +53,16 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
 
 
   useEffect(() => {
+    // Updates page status anytime pagination occurs. This updates upstream components.
+    setPageChanged(page);
+  }, [page])
+
+  useEffect(() => {
     // Fetch pagination metadata
     const fetchPaginationInfo = async () => {
-      if (!paginatorLoaded){
+      if (!paginatorLoaded || pageLimit){
         // note large page is used as it will index to a page without any active data...
-          const response = await axios.get(`/api/text/${project._id}/filter/`, { params: {page: 1000000, limit: PAGE_LIMIT }})
+          const response = await axios.get(`/api/text/filter/pages/${project._id}`, { params: {limit: pageLimit }})
           if (response.status === 200){
             console.log('pagination meta data response', response.data)
             setTotalPages(response.data.totalPages);
@@ -66,7 +71,7 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
         }
       }  
     fetchPaginationInfo();
-  }, [paginatorLoaded])
+  }, [paginatorLoaded, pageLimit])
 
 
   useEffect(() => {
@@ -113,16 +118,16 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
   useEffect(() => {
     const fetchData = async () => {
         setLoaded(false);
-        const response = await axios.get(`/api/text/${project._id}/filter/`,{ params: { page: page, limit: PAGE_LIMIT }})
+        const response = await axios.get(`/api/text/filter/${project._id}`,{ params: { page: page, limit: pageLimit }})
         if (response.status === 200){
-          console.log('texts response', response.data.docs)
-          setTexts(response.data.docs);
+          console.log('texts response', response.data)
+          setTexts(response.data);
           setLoaded(true);
         }
       }
 
     fetchData();
-  }, [page])
+  }, [page, pageLimit])
 
 
   useEffect(() => {
@@ -188,8 +193,8 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
           :
           texts.map((text, textIndex) => {
             return(
-              <div className={classes.row} key={textIndex}>
-                <div className={classes.indexColumn}>{textIndex+1 + ((page-1)*PAGE_LIMIT)}</div>
+              <div className={classes.row} key={textIndex} style={{background: text.annotated ? '#8F8F8F': null, opacity: text.annotated ? 0.5 : 1.0}}>
+                <div className={classes.indexColumn} >{textIndex+1 + ((page-1)*pageLimit)}</div>
                 <div className={classes.textColumn}>
                   <Text
                     text={text}
@@ -199,6 +204,8 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
                     replacementDict={replacementDict}
                     setReplacementDict={setReplacementDict}
                     page={page}
+                    metaTagSuggestionMap={metaTagSuggestionMap}
+                    setMetaTagSuggestionMap={setMetaTagSuggestionMap}
                     />
                 </div>
               </div>

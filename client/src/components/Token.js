@@ -1,25 +1,22 @@
-// color palettee: medium blue: #6F87A6, light orange: #F2A477, light grey: #D9D9D9, light green: #99BF9C
+// color palettee: medium blue: #6F87A6, light orange: #F2A477, light grey: #D9D9D9, light green: #99BF9C, light purple: #8F8EBF
 import React, { useState, useEffect } from 'react'
-import { OverlayTrigger, Popover, Button } from 'react-bootstrap';
-import {
-    Menu,
-    Item,
-    Separator,
-    Submenu,
-    useContextMenu
-} from "react-contexify";
-import "react-contexify/dist/ReactContexify.css";
+import { useContextMenu } from "react-contexify";
 import { createUseStyles } from 'react-jss';
 import axios from 'axios';
 
+import ContextMenu from './utils/ContextMenu';
+import TokenInput from './TokenInput';
+import TokenUnderline from './TokenUnderline';
+
 const useStyles = createUseStyles({
-    token: {
-        padding: '0.5em',
-        marginRight: '0.5em',
-        border: 'none',
-        verticalAlign: 'center',
-        textAlign: 'center',
-        borderRadius: '4px',
+    tokenCircle: {
+        width: '6px',
+        height: '6px',
+        backgroundColor: '#8F8EBF',
+        marginLeft: '0.25em',
+        borderRadius: '50%',
+        marginTop: '2px',
+        marginBottom: '0.5em',
         '&:hover': {
             opacity: '0.8'
         }
@@ -31,33 +28,37 @@ const useStyles = createUseStyles({
 // ua - unassigned, rp - replacement, sr - suggested replacemtn
 const bgColorMap = { 'ds_abrv_en_no_un': '#D9D9D9', 'ua': '#F2A477', 'rp': '#99BF9C', 'sr': '#6BB0BF'}
 
-export default function Token({tokenInfo, textIndex, replacementDict, setReplacementDict}) {
+export default function Token({tokenInfo, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap}) {
     const classes = useStyles();
+
+    // Token
     const { index, value } = tokenInfo;
     const tokenId = tokenInfo.token;
     const tokenIndex = index;
+    const [originalToken] = useState(value);
     const [replacedToken, setReplacedToken] = useState(tokenInfo.replacement);
     const [suggestedToken, setSuggestedToken] = useState(tokenInfo.suggested_replacement);
-
-
-    const MENU_ID = `menu-${textIndex}-${tokenIndex}`;
-    const { show } = useContextMenu({ id: MENU_ID });
-   
-    const [originalToken] = useState(value);
     const [currentToken, setCurrentToken] = useState(replacedToken ? replacedToken : value); // Populate with replaced token if its available
-    const [edited, setEdited] = useState(false);
-    const [savedChange, setSavedChange] = useState(false);
-    
-    // Specify colour of token
     const tokenClassification = (tokenInfo.domain_specific || tokenInfo.abbreviation || tokenInfo.english_word || tokenInfo.noise || tokenInfo.unsure) ? 'ds_abrv_en_no_un' : replacedToken ? 'rp' : suggestedToken ? 'sr' : 'ua';
     const [bgColor, setBgColor] = useState(bgColorMap[tokenClassification])
-
+    
+    // Meta Tag
+    const [hasSuggestedMetaTag, setHasSuggestedMetaTag] = useState(tokenInfo.suggested_meta_tag ? Object.keys(tokenInfo.suggested_meta_tag).length > 0 : null);
+    
+    // Menu
+    const MENU_ID = `menu-${textIndex}-${tokenIndex}`;
+    const { show: showContextMenu } = useContextMenu({ id: MENU_ID });
+    
+    // User interaction
+    const [edited, setEdited] = useState(false);
+    const [savedChange, setSavedChange] = useState(false);
+    const [inputWidth, setInputWidth] = useState(`${(currentToken.length + 2) * 8}px`)  // dynamically changes input width based on text value
+    
+    // Popover Controllers
     const [showPopover, setShowPopover] = useState(false);
     const [showRemovePopover, setShowRemovePopover] = useState(false);
     const [showAddSuggestionPopover, setShowAddSuggestionPopover] = useState(false);
 
-
-    const [inputWidth, setInputWidth] = useState(`${(currentToken.length + 2) * 8}px`)
 
     useEffect(() => {
         // Updates token colour based on state of token information
@@ -94,13 +95,6 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
         }
 
     }, [replacementDict])
-
-    // useEffect(() => {
-    //     // console.log('hi')
-    //     // This triggers a render event otherwise tokens get frozen...
-    //     console.log(replacementDict)
-
-    // }, [replacementDict])
 
     const modifyToken = (targetValue) => {
         setShowPopover(true);
@@ -140,39 +134,6 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
         setSavedChange(false);
     }
 
-
-    const addReplacementPopover = <Popover id={`popover`}
-                                    onKeyDown={(event) => console.log(event)}
-                                    >
-                            <Popover.Title as="p" style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', padding: '0.5em'}}>
-                                    <Button onClick={() => addReplacement()} size="sm" variant="info">Yes</Button>
-                                    <Button onClick={() => cancelChange()} size="sm" variant="secondary">No</Button>
-                                </Popover.Title>
-                            <Popover.Content>
-                                <p>Add to dictionary?</p>
-                                <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', margin: 'auto', height: '2em'}}>
-                                    <div>
-                                        <strong>{originalToken}</strong> to <strong>{currentToken}</strong>
-                                    </div>
-                                </div>
-                            </Popover.Content>
-                        </Popover>
-    
-    const removeReplacementPopover = <Popover id={`remove-popover`}>
-                            <Popover.Title as="p" style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', padding: '0.5em'}}>
-                                    <Button onClick={() => removeReplacement()} size="sm" variant="info">Yes</Button>
-                                    <Button onClick={() => setShowRemovePopover(false)} size="sm" variant="secondary">No</Button>
-                                </Popover.Title>
-                            <Popover.Content>
-                                <p>Remove replacement?</p>
-                                <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', margin: 'auto', height: '2em'}}>
-                                    <div>
-                                        <strong>{currentToken}</strong> to <strong>{originalToken}</strong>
-                                    </div>
-                                </div>
-                            </Popover.Content>
-                        </Popover>
-
     const addSuggestedReplacement = async () => {
         const response = await axios.patch(`/api/token/suggestion-add/${tokenId}`, {suggested_replacement: suggestedToken});
         if (response.status === 200){
@@ -193,95 +154,87 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
         }
     }
 
-    const addSuggestionPopover = <Popover id={`add-suggestion-popover`}
-                                    onKeyDown={(event) => console.log(event)}
-                                    >
-                                    <Popover.Title as="p" style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', padding: '0.5em'}}>
-                                            <Button onClick={() => addSuggestedReplacement()} size="sm" variant="info">Yes</Button>
-                                            <Button onClick={() => removeSuggestedReplacement()} size="sm" variant="secondary">No</Button>
-                                        </Popover.Title>
-                                    <Popover.Content>
-                                        <p>Add suggested replacement?</p>
-                                        <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', margin: 'auto', height: '2em'}}>
-                                            <div>
-                                                <strong>{currentToken}</strong> to <strong>{suggestedToken}</strong>
-                                            </div>
-                                        </div>
-                                    </Popover.Content>
-                                    </Popover>
 
+    // --- Meta Tag Logic 
+    useEffect(() => {
+        // Updates suggested meta tag based on meta tag suggestion map content
+        
+        // Check if current token exists in any of the sub-maps (first checks if metatag map is initialised)
+        // TODO: currently testing with domain_specific... will do similar process for all sub-maps in the future.
+        if(Object.keys(metaTagSuggestionMap["domain_specific"]).includes(currentToken)){
+            console.log('Suggested meta tag for domain_specific exists');
+            setHasSuggestedMetaTag(true);
+        }
+    
+    }, [metaTagSuggestionMap])
 
-
-    const addAuxiliary = async (field, value) => {
+    const addMetaTag = async (field, value) => {
         // Adds auxiliary label to tokens
         const response = await axios.patch(`/api/token/auxiliary/${tokenId}`, {field: field, value: value});
 
         if (response.status === 200){
             console.log('auxilliary updated successfully');
+
+            // Add meta tag to suggestion map
+            const subMetaTagMap = metaTagSuggestionMap[field]
+            console.log('sub meta map', subMetaTagMap)
+            const subMetaTagMapUpdated = {...metaTagSuggestionMap[field], [currentToken]: value}
+            console.log('sub meta map updated', subMetaTagMapUpdated)
+
+            // {...metaTagSuggestionMap[field], }
+            setMetaTagSuggestionMap(prevState => ({...prevState, [field]: subMetaTagMapUpdated}))
+
+
         }
-    }
-
-    const handleItemClick = (field) => {
-        // Handles menu when auxiliary tags are requested
-        console.log('menu action on aux field', field);
-        addAuxiliary(field, !tokenInfo[field])
-    }
-
-    const displayMenu = (e) => {
-        // TODO: Develop menu handler
-        show(e);
     }
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '0.5em'}} key={tokenIndex}>
-            <OverlayTrigger trigger="click" placement="bottom" overlay={addReplacementPopover} show={showPopover}>
-                <input
-                    type="text"
-                    name="token"
-                    placeholder={currentToken}
-                    value={currentToken}
-                    onChange={e => modifyToken(e.target.value)}
-                    key={tokenIndex}
-                    style={{backgroundColor: edited ? '#99BF9C': bgColor, width: inputWidth}}
-                    className={classes.token}
-                    autoComplete="off"
-                    title={`original: ${originalToken}`}
-                    onContextMenu={displayMenu}
+            <TokenInput
+                showContextMenu={showContextMenu}
+                showPopover={showPopover}
+                tokenIndex={tokenIndex}
+                modifyToken={modifyToken}
+                edited={edited}
+                bgColor={bgColor}
+                inputWidth={inputWidth}
+                addReplacement={addReplacement}
+                cancelChange={cancelChange}
+                originalToken={originalToken}
+                currentToken={currentToken}            
+            />
+            <div style={{display: 'flex', flexDirection: 'row', justifyContent: (hasSuggestedMetaTag && !suggestedToken) ? 'space-between' : null, width: inputWidth}}>
+                <TokenUnderline
+                    savedChange={savedChange}
+                    originalToken={originalToken}
+                    currentToken={currentToken}
+                    edited={edited}
+                    replacedToken={replacedToken}
+                    removeReplacement={removeReplacement}
+                    showRemovePopover={showRemovePopover}
+                    setShowRemovePopover={setShowRemovePopover}
+                    inputWidth={hasSuggestedMetaTag ? parseInt(inputWidth) - 12 : inputWidth}   // Note: 1em = 16px
+                    bgColorMap={bgColorMap}
+                    suggestedToken={suggestedToken}
+                    showAddSuggestionPopover={showAddSuggestionPopover}
+                    setShowAddSuggestionPopover={setShowAddSuggestionPopover}   
+                    addSuggestedReplacement={addSuggestedReplacement}
+                    removeSuggestedReplacement={removeSuggestedReplacement}         
                 />
-            </OverlayTrigger>
+                {
+                    hasSuggestedMetaTag ?
+                    <div className={classes.tokenCircle}></div>
+                    : null
+                }   
 
-            {
-                (( savedChange && originalToken !== currentToken && edited ) || replacedToken ) ?
-                <OverlayTrigger trigger="click" placement="bottom" overlay={removeReplacementPopover} show={showRemovePopover}>
-                    <div style={{cursor: 'pointer', width: inputWidth, backgroundColor: bgColorMap['rp'], height: '6px', borderRadius: '2px', marginTop: '2px', marginBottom: '0.5em'}} onClick={() => setShowRemovePopover(!showRemovePopover)}></div>
-                </OverlayTrigger>
-                : (suggestedToken)
-                ?
-                <OverlayTrigger trigger="click" placement="bottom" overlay={addSuggestionPopover} show={showAddSuggestionPopover}>
-                    <div style={{cursor: 'pointer', width: inputWidth, backgroundColor: bgColorMap['sr'], height: '6px', borderRadius: '2px', marginTop: '2px', marginBottom: '0.5em'}} onClick={() => setShowAddSuggestionPopover(!showAddSuggestionPopover)}></div>
-                </OverlayTrigger>
-            : null
 
-            }
-            <Menu id={MENU_ID}>
-                <Item style={{ backgroundColor: tokenInfo['domain_specific'] ? '#8F8F8F': null}} onClick={() => handleItemClick("domain_specific")}>Domain Specific Term</Item>
-                {/* <Separator/> */}
-                <Item style={{ backgroundColor: tokenInfo['abbreviation'] ? '#8F8F8F': null}} onClick={() => handleItemClick("abbreviation")}>
-                Abbreviation
-                </Item>
-                <Item style={{ backgroundColor: tokenInfo['noise'] ? '#8F8F8F': null}} onClick={() => handleItemClick("noise")}>
-                Noise
-                </Item>
-                <Item style={{ backgroundColor: tokenInfo['english_word'] ? '#8F8F8F': null}} onClick={() => handleItemClick("english_word")}>
-                English Word
-                </Item>
-                <Item style={{ backgroundColor: tokenInfo['unsure'] ? '#8F8F8F': null}} onClick={() => handleItemClick("unsure")}>
-                Unsure
-                </Item>
-                <Item style={{ backgroundColor: tokenInfo['removed'] ? '#8F8F8F': null}} onClick={() => handleItemClick("removed")}>
-                Removed
-                </Item>
-            </Menu>
+            </div>
+
+            <ContextMenu
+                menu_id={MENU_ID}
+                tokenInfo={tokenInfo}
+                addMetaTag={addMetaTag}
+            />
         </div>
     )
 }
