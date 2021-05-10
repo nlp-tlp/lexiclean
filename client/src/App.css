@@ -36,3 +36,34 @@
     transform: rotate(360deg);
   }
 }
+
+
+/* React Bootstrap Pagination Styling */
+
+.pagination > li > a
+{
+    background-color: white;
+    color: #8F8F8F;
+}
+
+.pagination > li > span
+{
+  background-color: #8F8F8F !important;
+  border-color: #8F8F8F !important;
+  cursor: 'pointer';
+}
+
+.pagination > li > a:focus,
+.pagination > li > a:hover,
+.pagination > li > span:focus
+{
+  color: #5a5a5a;
+  background-color: #eee;
+  border-color: #ddd;
+}
+
+.pagination > li > span:hover
+{
+  opacity: 0.5;
+  cursor: 'pointer';
+}
