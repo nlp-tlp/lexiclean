@@ -63,7 +63,7 @@ router.post('/create', async (req, res) => {
         // TOOD: review the use of lowercasing texts here. Should this be done or should
         // casing be kept but for matching to ds, en, rp the lowercasing be used?
         // removes white space between tokens as this will break the validation of the Token model.
-        const tokenizedTexts = req.body.texts.map(text => text.toLowerCase().replace(/\s+/g,' ').trim().split(' '));
+        const tokenizedTexts = req.body.texts.map(text => text.toLowerCase().replace(/\s+/g,' ').replace(/\.$/, '').trim().split(' '));
         
         let globalTokenIndex = -1;  // this is used to index the tokenlist that is posted to mongo as a flat list when reconstructing texts
         const tokenTextMap = tokenizedTexts.map((text, textIndex) => text.map((token, tokenIndex) => {

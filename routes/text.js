@@ -46,19 +46,6 @@ router.get('/', async (req, res) => {
 })
 
 
-// GET DATA FILTERED BY PROJECT ID
-// router.get('/:projectId', async (req, res) => {
-//     console.log('Fetching data using project id');
-    
-//     try {
-//         const data = await Data.find({ project_id: req.params.projectId });
-//         res.json(data);
-//     }catch(err){
-//         res.json({ message: err})
-//     }
-// })
-
-
 // PAGINATE DATA FILTERED BY PROJECT ID
 // If any issues arise with results - refer to: https://github.com/aravindnc/mongoose-aggregate-paginate-v2/issues/18
 // TODO: Add sort functionality (this will require patching data with annotated status when results are patched)
@@ -70,7 +57,6 @@ router.get('/:projectId/filter/', async (req, res) => {
         // Get 
 
         // Paginate Aggregation
-        // Note: cannot use .populate() on the aggregatePaginate so need to use $lookup instead to populate tokens field
         const textAggregation = Text.aggregate([
             {
                 $match: { project_id: mongoose.Types.ObjectId(req.params.projectId)}
@@ -87,20 +73,47 @@ router.get('/:projectId/filter/', async (req, res) => {
             {
                 $project: {
                     annotated: "$annotated",
+                    candidates: "$candidates",
                     tokens: {
                         $map : {
                             input: { $zip: { inputs: [ "$tokens", "$tokens_detail"]}},
                             as: "el",
                             in: {
                                 $mergeObjects: [{"$arrayElemAt": [ "$$el", 0 ]}, {"$arrayElemAt": [ "$$el", 1 ] }]
-                                }
                             }
                         }
                     }
-            }
-            // {
-            //     $sort: {'annotated': 1}
-            // },
+                }
+            },
+            // To sort data based on the number of replacement candidates e.g. those that are not ds, en, abrv, unsure, etc.
+            // First need to addField aggregated over these fields and then sort descending using the calculated field 
+            {
+                $addFields: {
+                    candidates_bool: "$tokens.english_word"
+                }
+            },
+            {
+                $project:
+                {
+                    annotated: "$annotated",
+                    tokens: "$tokens",
+                    candidates: {
+                        $map: {
+                            input: "$candidates_bool",
+                            as: "candidate",
+                            in: {$toInt: "$$candidate"}
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    candidate_count: {$sum: "$candidates"}
+                }
+            },
+            {
+                $sort: {'candidate_count': -1}
+            },
         ])
 
         const options = {page: req.query.page, limit: req.query.limit}
