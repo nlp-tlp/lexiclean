@@ -1,12 +1,12 @@
 import React from 'react'
 import { Pagination } from 'react-bootstrap';
 
-export default function Paginator({page, setPage, totalPages,}) {
+export default function Paginator({page, setPage, totalPages}) {
     return (
         <div style={{display: 'flex', justifyContent: 'center', marginTop: '1em'}}>
           <Pagination>
             {
-              page > 3 ?
+              page > 4 ?
               <>
               <Pagination.First onClick={() => setPage(1)}/>
               <Pagination.Prev onClick={() => setPage(page-1)}/>
@@ -15,7 +15,7 @@ export default function Paginator({page, setPage, totalPages,}) {
               : null
             }
             {
-              (page < 3) ? [0, 1, 2, 3, 4].map(number => {
+              (page <= 4) ? [...Array(totalPages < 5 ? totalPages : 5).keys()].map(number => {
                 return(
                   <Pagination.Item key={ number+1 } active={ number+1 === page } onClick={() => setPage(number+1)}>
                   { number+1 }
