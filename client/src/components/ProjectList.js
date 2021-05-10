@@ -1,6 +1,6 @@
 import React from 'react'
 import { ListGroup } from 'react-bootstrap';
-import { MdDelete, MdEdit } from 'react-icons/md'
+import { MdDelete, MdEdit, MdFileDownload } from 'react-icons/md'
 
 export default function ProjectList({projects, setSelectedProject, setShowAnnotate, setShowProjectDelete}) {
 
@@ -26,9 +26,10 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
                                 <div style={{fontSize: '22px', fontWeight: 'bold'}} >
                                     {project.name}
                                 </div>
-                                <div >
-                                    <MdEdit style={{fontSize: '22px'}} onClick={() => confirmationAction(index)}/>
-                                    <MdDelete style={{fontSize: '22px', color: '#D95F69'}} onClick={() => deleteAction(index)}/>
+                                <div style={{fontSize: '22px'}}>
+                                    <MdEdit onClick={() => confirmationAction(index)}/>
+                                    <MdFileDownload onClick={() => console.log('prep results for download...')}/>
+                                    <MdDelete style={{color: '#D95F69'}} onClick={() => deleteAction(index)}/>
                                 </div>
                             </div>
                         </ListGroup.Item>

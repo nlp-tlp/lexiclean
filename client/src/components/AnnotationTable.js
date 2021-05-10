@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { createUseStyles } from 'react-jss';
-import { Spinner, Button, Pagination } from 'react-bootstrap';
+import { Spinner, Pagination } from 'react-bootstrap';
 import axios from 'axios';
 
 import Text from './Text';
+import Paginator from './utils/Paginator';
 
 const useStyles = createUseStyles({
   container: {
@@ -33,8 +34,7 @@ const useStyles = createUseStyles({
   }
 });
 
-const PAGE_LIMIT = 3;
-
+const PAGE_LIMIT = 10;
 
 export default function AnnotationTable({project, replacementDict, setReplacementDict, saved, setSaved}) {
   const classes = useStyles();
@@ -144,6 +144,7 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
     updateTokens();
   }, [page])
 
+
   useEffect(() => {
     // Converts suggested replacements to replacements for results on page 
     //  (users needs to remove them if they don't want they to persist)
@@ -208,19 +209,11 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
       
       {
         loaded ? 
-        <div style={{display: 'flex', justifyContent: 'center', marginTop: '1em'}}>
-          <Pagination>
-            { 
-              [...Array(totalPages).keys()].map(number => {
-                return(
-                <Pagination.Item key={ number+1 } active={ number+1 === page } onClick={() => setPage(number+1)}>
-                { number+1 }
-                </Pagination.Item>
-              )
-            })
-          }
-          </Pagination>
-        </div>
+        <Paginator 
+          page={page}
+          setPage={setPage}
+          totalPages={totalPages}
+        />
         : null
       }
     </>

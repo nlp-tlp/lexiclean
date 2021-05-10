@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Form, Col } from 'react-bootstrap';
+import { Button, Form, Col, Spinner } from 'react-bootstrap';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import axios from 'axios';
@@ -9,7 +9,7 @@ const schema = yup.object().shape({
     projectDescription: yup.string().required(),
   });
   
-  export default function UploadForm({ setShowUpload }) {
+  export default function UploadForm({ setShowUpload, setIsSubmitting }) {
 
     const [fileData, setFileData] = useState({'textFile': {'meta': null, 'data': null},
                                               'enWordFile': {'meta': null, 'data': null},
@@ -88,6 +88,7 @@ const schema = yup.object().shape({
 
                 if (formSubmitted === false){
                     console.log('submitting...')
+                    setIsSubmitting(true);
                     const response = await axios.post('/api/project/create', formPayload)
 
                     if (response.status === 200){

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import { createUseStyles } from 'react-jss';
-import { Spinner, Button, Container, Row, Col } from 'react-bootstrap';
+import { Spinner, Button } from 'react-bootstrap';
 
 import ProjectList from './ProjectList'
 import Footer from './Footer'
@@ -104,7 +104,7 @@ export default function ProjectFeed() {
             Lexiclean
             </div>
             <div className={classes.menu}>
-                <Button variant="light" onClick={() => setShowUpload(true)}>Start New Project</Button>
+                <Button variant="light" onClick={() => setShowUpload(true)}>Create Project</Button>
             </div>
         </div>
 

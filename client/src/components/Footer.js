@@ -3,7 +3,7 @@ import { createUseStyles } from 'react-jss';
 
 const useStyles = createUseStyles({
     footer: {
-        marginTop: '1em',
+        marginTop: '2em',
         position: 'absolute',
         bottom: '0',
         width: '100%',

@@ -29,7 +29,7 @@ const useStyles = createUseStyles({
 
 // Color map for token classifications
 // ua - unassigned, rp - replacement, sr - suggested replacemtn
-const bgColorMap = { 'ds_abrv_en': '#D9D9D9', 'ua': '#F2A477', 'rp': '#99BF9C', 'sr': '#6BB0BF'}
+const bgColorMap = { 'ds_abrv_en_no_un': '#D9D9D9', 'ua': '#F2A477', 'rp': '#99BF9C', 'sr': '#6BB0BF'}
 
 export default function Token({tokenInfo, textIndex, replacementDict, setReplacementDict}) {
     const classes = useStyles();
@@ -40,7 +40,7 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     const [suggestedToken, setSuggestedToken] = useState(tokenInfo.suggested_replacement);
 
 
-    const MENU_ID = `menu-${tokenIndex}`;
+    const MENU_ID = `menu-${textIndex}-${tokenIndex}`;
     const { show } = useContextMenu({ id: MENU_ID });
    
     const [originalToken] = useState(value);
@@ -49,7 +49,7 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     const [savedChange, setSavedChange] = useState(false);
     
     // Specify colour of token
-    const tokenClassification = (tokenInfo.domain_specific || tokenInfo.abbreviation || tokenInfo.english_word) ? 'ds_abrv_en' : replacedToken ? 'rp' : suggestedToken ? 'sr' : 'ua';
+    const tokenClassification = (tokenInfo.domain_specific || tokenInfo.abbreviation || tokenInfo.english_word || tokenInfo.noise || tokenInfo.unsure) ? 'ds_abrv_en_no_un' : replacedToken ? 'rp' : suggestedToken ? 'sr' : 'ua';
     const [bgColor, setBgColor] = useState(bgColorMap[tokenClassification])
 
     const [showPopover, setShowPopover] = useState(false);
@@ -61,7 +61,7 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
 
     useEffect(() => {
         // Updates token colour based on state of token information
-        const tokenClassification = (tokenInfo.domain_specific || tokenInfo.abbreviation || tokenInfo.english_word) ? 'ds_abrv_en' : replacedToken ? 'rp' : suggestedToken ? 'sr' : 'ua';
+        const tokenClassification = (tokenInfo.domain_specific || tokenInfo.abbreviation || tokenInfo.english_word || tokenInfo.noise || tokenInfo.unsure) ? 'ds_abrv_en_no_un' : replacedToken ? 'rp' : suggestedToken ? 'sr' : 'ua';
         setBgColor(bgColorMap[tokenClassification])
     }, [replacedToken, suggestedToken, tokenInfo])
     
@@ -86,6 +86,14 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
             setShowPopover(false);
         }
     }, [currentToken])
+
+    useEffect(() => {
+        // Updates suggested token based on replacment dictionary content
+        if(Object.keys(replacementDict).includes(currentToken)){
+            setSuggestedToken(replacementDict[currentToken])
+        }
+
+    }, [replacementDict])
 
     // useEffect(() => {
     //     // console.log('hi')
@@ -133,7 +141,9 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     }
 
 
-    const addReplacementPopover = <Popover id={`popover`}>
+    const addReplacementPopover = <Popover id={`popover`}
+                                    onKeyDown={(event) => console.log(event)}
+                                    >
                             <Popover.Title as="p" style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', padding: '0.5em'}}>
                                     <Button onClick={() => addReplacement()} size="sm" variant="info">Yes</Button>
                                     <Button onClick={() => cancelChange()} size="sm" variant="secondary">No</Button>
@@ -183,7 +193,9 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
         }
     }
 
-    const addSuggestionPopover = <Popover id={`add-suggestion-popover`}>    
+    const addSuggestionPopover = <Popover id={`add-suggestion-popover`}
+                                    onKeyDown={(event) => console.log(event)}
+                                    >
                                     <Popover.Title as="p" style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', padding: '0.5em'}}>
                                             <Button onClick={() => addSuggestedReplacement()} size="sm" variant="info">Yes</Button>
                                             <Button onClick={() => removeSuggestedReplacement()} size="sm" variant="secondary">No</Button>
@@ -251,18 +263,23 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
             : null
 
             }
-            {/* TODO: Add english word here in the future... */}
             <Menu id={MENU_ID}>
-                <Item style={{ backgroundColor: tokenInfo['domain_specific'] ? '#99BF9C': null}} onClick={() => handleItemClick("domain_specific")}>Domain Specific Term</Item>
+                <Item style={{ backgroundColor: tokenInfo['domain_specific'] ? '#8F8F8F': null}} onClick={() => handleItemClick("domain_specific")}>Domain Specific Term</Item>
                 {/* <Separator/> */}
-                <Item style={{ backgroundColor: tokenInfo['abbreviation'] ? '#99BF9C': null}} onClick={() => handleItemClick("abbreviation")}>
+                <Item style={{ backgroundColor: tokenInfo['abbreviation'] ? '#8F8F8F': null}} onClick={() => handleItemClick("abbreviation")}>
                 Abbreviation
                 </Item>
-                <Item style={{ backgroundColor: tokenInfo['noise'] ? '#99BF9C': null}} onClick={() => handleItemClick("noise")}>
+                <Item style={{ backgroundColor: tokenInfo['noise'] ? '#8F8F8F': null}} onClick={() => handleItemClick("noise")}>
                 Noise
                 </Item>
-                <Item style={{ backgroundColor: tokenInfo['english_word'] ? '#99BF9C': null}} onClick={() => handleItemClick("english_word")}>
+                <Item style={{ backgroundColor: tokenInfo['english_word'] ? '#8F8F8F': null}} onClick={() => handleItemClick("english_word")}>
                 English Word
+                </Item>
+                <Item style={{ backgroundColor: tokenInfo['unsure'] ? '#8F8F8F': null}} onClick={() => handleItemClick("unsure")}>
+                Unsure
+                </Item>
+                <Item style={{ backgroundColor: tokenInfo['removed'] ? '#8F8F8F': null}} onClick={() => handleItemClick("removed")}>
+                Removed
                 </Item>
             </Menu>
         </div>

@@ -41,8 +41,10 @@ export default function Project() {
         <>
         { showDownload ? <DownloadModal showDownload={showDownload} setShowDownload={setShowDownload}/> : null }
         { showProgress ? <ProgressModal showProgress={showProgress} setShowProgress={setShowProgress}/> : null }
+
         
         <Header
+            projectName={project ? project.name : ''}
             replacementDict={replacementDict}
             setShowDownload={setShowDownload}
             setShowProgress={setShowProgress}

@@ -101,7 +101,7 @@ router.get('/:projectId/filter/', async (req, res) => {
                         $map: {
                             input: "$candidates_bool",
                             as: "candidate",
-                            in: {$toInt: "$$candidate"}
+                            in: {$cond: {if: "$$candidate", then: 0, else: 1}}  // 1 if not english word else 0 
                         }
                     }
                 }
@@ -111,12 +111,15 @@ router.get('/:projectId/filter/', async (req, res) => {
                     candidate_count: {$sum: "$candidates"}
                 }
             },
+            // Sort based on the number of candidates; 
+            // TODO: also sort by the first token alphabetically.
             {
-                $sort: {'candidate_count': -1}
+                $sort: {'candidate_count': -1} // -1 descending, 1 ascending
             },
-        ])
+        ]);
 
         const options = {page: req.query.page, limit: req.query.limit}
+        console.log(options);
         const response = await Text.aggregatePaginate(textAggregation, options);
         res.json(response);
         

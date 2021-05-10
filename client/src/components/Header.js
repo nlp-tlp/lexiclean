@@ -44,18 +44,22 @@ const useStyles = createUseStyles({
         borderRadius: '0.25em',
         padding: '0.2em'
     },
+    actions: {
+        display: 'flex'
+    },
     menu: {
         marginRight: '1em',
         padding: '0.25em',
     },
     save: {
-        fontSize: '32px',
-        color: '#F2A477',
+        padding: '0.25em',
+        fontSize: '26px',
+        color: '#F8F9FA',
         cursor: 'pointer'
-    }
+    },
 })
 
-export default function Header({replacementDict, setShowDownload, setShowProgress, setSaved}) {
+export default function Header({projectName, replacementDict, setShowDownload, setShowProgress, setSaved}) {
     const history = useHistory();
     const classes = useStyles();
     const changeCount = Object.keys(replacementDict).map(textIndex => Object.keys(replacementDict[textIndex]).length).reduce((a, b) => a + b, 0);
@@ -68,24 +72,35 @@ export default function Header({replacementDict, setShowDownload, setShowProgres
                 Lexiclean
             </div>
 
-            <div className={classes.legend}>
+            <div style={{display: 'flex', flexDirection: 'column', textAlign: 'center'}}>
+                <div style={{fontSize: '2em', color: '#F8F9FA', fontWeight: 'bolder'}}>
+                    { projectName }
+                </div>
+                <div className={classes.legend}>
+                        <div className={classes.legendItem} style={{backgroundColor: '#F2A477'}}>
+                            Candidate
+                        </div>
+                        <div className={classes.legendItem} style={{backgroundColor: '#99BF9C'}}>
+                            Replaced
+                        </div>
+                        <div className={classes.legendItem} style={{backgroundColor: '#D9D9D9'}}>
+                            Normalised
+                        </div>
+                        <div className={classes.legendItem} style={{backgroundColor: '#6BB0BF'}}>
+                            Suggestion
+                        </div>
 
-                    <div className={classes.legendItem} style={{backgroundColor: '#F2A477'}}>
-                        Candidate
-                    </div>
-                    <div className={classes.legendItem} style={{backgroundColor: '#99BF9C'}}>
-                        Replaced
-                    </div>
-                    <div className={classes.legendItem} style={{backgroundColor: '#D9D9D9'}}>
-                        Normalised
-                    </div>
-                    <div className={classes.legendItem} style={{backgroundColor: '#6BB0BF'}}>
-                        Suggestion
-                    </div>
-
+                </div>
             </div>
 
             <div className={classes.actions}>
+                {
+                    showSaveBtn ?
+                    <div className={classes.save} onClick={() => setSaved(true)}>
+                        <FaSave/>
+                    </div>
+                    : null
+                }
                 <div className={classes.menu}>
                     <Dropdown>
                         <Dropdown.Toggle variant="light" id="dropdown-basic">
@@ -99,13 +114,6 @@ export default function Header({replacementDict, setShowDownload, setShowProgres
                         </Dropdown.Menu>
                     </Dropdown>
                 </div>
-                {
-                    showSaveBtn ?
-                    <div className={classes.save} onClick={() => setSaved(true)}>
-                        <FaSave/>
-                    </div>
-                    : null
-                }
             </div>
         </div>
     )
