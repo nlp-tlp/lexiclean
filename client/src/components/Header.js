@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import axios from 'axios';
 import { useHistory } from 'react-router-dom'
 import { createUseStyles } from 'react-jss';
 import { Dropdown } from 'react-bootstrap';
@@ -39,7 +40,7 @@ const useStyles = createUseStyles({
     },
     legendItem: {
         textAlign: 'center',
-        width: '6em',
+        width: '8em',
         margin: '0.5em',
         borderRadius: '0.25em',
         padding: '0.2em'
@@ -59,12 +60,29 @@ const useStyles = createUseStyles({
     },
 })
 
-export default function Header({projectName, replacementDict, setShowDownload, setShowProgress, setSaved}) {
+export default function Header({project, replacementDict, setShowDownload, setShowProgress, setShowSettings, setSaved, pageChanged}) {
     const history = useHistory();
     const classes = useStyles();
+
+    const [progress, setProgress] = useState();
+
     const changeCount = Object.keys(replacementDict).map(textIndex => Object.keys(replacementDict[textIndex]).length).reduce((a, b) => a + b, 0);
 
     const showSaveBtn = Object.keys(replacementDict).length > 0;
+
+    useEffect(() => {
+        const fetchProgressInfo = async () => {
+            console.log('fetching progress data')
+            if (project) {
+                const response = await axios.get(`/api/text/progress/${project._id}`)
+                if (response.status === 200){
+                    setProgress(response.data);
+                    console.log(response.data)
+                }
+            }   
+        }
+        fetchProgressInfo();
+    }, [project, pageChanged])
 
     return (
         <div className={classes.header}>
@@ -74,22 +92,31 @@ export default function Header({projectName, replacementDict, setShowDownload, s
 
             <div style={{display: 'flex', flexDirection: 'column', textAlign: 'center'}}>
                 <div style={{fontSize: '2em', color: '#F8F9FA', fontWeight: 'bolder'}}>
-                    { projectName }
+                    { project.name }
                 </div>
+                {
+                    progress ?
+                    <div style={{fontSize: '1.5em', color: '#F8F9FA'}}>
+                        {progress.annotated} / {progress.total}
+                    </div>
+                    : null
+                }
                 <div className={classes.legend}>
-                        <div className={classes.legendItem} style={{backgroundColor: '#F2A477'}}>
-                            Candidate
-                        </div>
-                        <div className={classes.legendItem} style={{backgroundColor: '#99BF9C'}}>
-                            Replaced
-                        </div>
-                        <div className={classes.legendItem} style={{backgroundColor: '#D9D9D9'}}>
-                            Normalised
-                        </div>
-                        <div className={classes.legendItem} style={{backgroundColor: '#6BB0BF'}}>
-                            Suggestion
-                        </div>
-
+                    <div className={classes.legendItem} style={{backgroundColor: '#F2A477'}}>
+                        Candidate
+                    </div>
+                    <div className={classes.legendItem} style={{backgroundColor: '#99BF9C'}}>
+                        Replaced
+                    </div>
+                    <div className={classes.legendItem} style={{backgroundColor: '#D9D9D9'}}>
+                        Normalised
+                    </div>
+                    <div className={classes.legendItem} style={{backgroundColor: '#6BB0BF'}}>
+                        Suggestion
+                    </div>
+                    <div className={classes.legendItem} style={{backgroundColor: '#8F8EBF'}}>
+                        Meta Suggestion
+                    </div>
                 </div>
             </div>
 
@@ -110,6 +137,7 @@ export default function Header({projectName, replacementDict, setShowDownload, s
                             {/* <Dropdown.Item onClick={() => setShowUpload(true)}>Start New Project</Dropdown.Item> */}
                             <Dropdown.Item onClick={() => setShowDownload(true)}>Download Results</Dropdown.Item>
                             <Dropdown.Item onClick={() => setShowProgress(true)}>Review Progress</Dropdown.Item>
+                            <Dropdown.Item onClick={() => setShowSettings(true)}>Settings</Dropdown.Item>
                             <Dropdown.Item onClick={() => history.push('/')}>Home</Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>

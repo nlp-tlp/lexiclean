@@ -3,13 +3,12 @@ import { createUseStyles } from 'react-jss';
 
 const useStyles = createUseStyles({
     footer: {
-        marginTop: '2em',
-        position: 'absolute',
+        // marginTop: '2em',
+        position: 'relative',
         bottom: '0',
         width: '100%',
         backgroundColor: '#8F8F8F',
         paddingTop: '0.5em',
-        paddingBottom: '0em',
         textAlign: 'center',
         borderTop: '1px #D9D9D9 solid',
         fontSize: '12px',

@@ -46,20 +46,60 @@ router.get('/', async (req, res) => {
 })
 
 
+// Get number of annotated documents
+router.get('/progress/:projectId', async (req, res) => {
+    console.log('Getting progress');
+    try{
+        const textsAnnotated = await Text.find({ project_id: req.params.projectId, annotated: true}).count();
+        const textsTotal = await Text.find({project_id: req.params.projectId}).count();
+        res.json({
+            "annotated": textsAnnotated,
+            "total": textsTotal
+        })
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+
+
+
+
+
+// Get number of total pages for paginator
+router.get('/filter/pages/:projectId', async (req, res) => {
+    console.log('getting number of pages for paginator')
+    try{
+        const textsCount = await Text.find({ project_id : req.params.projectId}).count();
+        const pages = Math.ceil(textsCount/req.query.limit);
+        res.json({"totalPages": pages})
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+
 // PAGINATE DATA FILTERED BY PROJECT ID
 // If any issues arise with results - refer to: https://github.com/aravindnc/mongoose-aggregate-paginate-v2/issues/18
 // TODO: Add sort functionality (this will require patching data with annotated status when results are patched)
-router.get('/:projectId/filter/', async (req, res) => {
+router.get('/filter/:projectId', async (req, res) => {
     console.log('Paginating through texts');
     // console.log(req.query);
     try {
 
-        // Get 
+        const skip = parseInt((req.query.page - 1) * req.query.limit)
+        const limit = parseInt(req.query.limit)
+
+        console.log(skip, limit);
+
 
         // Paginate Aggregation
-        const textAggregation = Text.aggregate([
+        const textAggregation = await Text.aggregate([
             {
-                $match: { project_id: mongoose.Types.ObjectId(req.params.projectId)}
+                $match: { 
+                    project_id: mongoose.Types.ObjectId(req.params.projectId), 
+                    // annotated: false
+                }
             },
             {
                 $lookup: {
@@ -111,17 +151,33 @@ router.get('/:projectId/filter/', async (req, res) => {
                     candidate_count: {$sum: "$candidates"}
                 }
             },
-            // Sort based on the number of candidates; 
+            // Sort based on the number of candidates
+            // Note doing sequential sorts just overrides the n-1 sort operation.
             // TODO: also sort by the first token alphabetically.
+            // 
             {
-                $sort: {'candidate_count': -1} // -1 descending, 1 ascending
+                $sort: {'candidate_count': -1, 'annotated': 1} // -1 descending, 1 ascending
             },
-        ]);
+            // {
+            //     $sort: {'annotated': 1} // -1 descending, 1 ascending
+            // },
+            // Paginate over documents
+            {
+                $skip: skip // equiv to page
+            },
+            {
+                $limit: limit // same as limit
+            }
 
-        const options = {page: req.query.page, limit: req.query.limit}
-        console.log(options);
-        const response = await Text.aggregatePaginate(textAggregation, options);
-        res.json(response);
+        ])
+        .allowDiskUse(true)
+        .exec();
+
+        res.json(textAggregation);
+
+
+        // const response = await Text.aggregatePaginate(textAggregation, options);
+        // res.json(response);
         
     }catch(err){
         res.json({ message: err })
