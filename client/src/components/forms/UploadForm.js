@@ -9,19 +9,17 @@ const schema = yup.object().shape({
     projectDescription: yup.string().required(),
   });
   
-  export default function UploadForm({ setShowUpload, setIsSubmitting }) {
-
+export default function UploadForm({ setShowUpload, setIsSubmitting }) {
     const [fileData, setFileData] = useState({'textFile': {'meta': null, 'data': null},
-                                              'enWordFile': {'meta': null, 'data': null},
                                               'dsWordFile': {'meta': null, 'data': null},
-                                              'abrvWordFile': {'meta': null, 'data': null}
-                                            //   'replaceDictFile': {'meta': null, 'data': null}
+                                              'abrvWordFile': {'meta': null, 'data': null},
+                                              'rpFile': {'meta': null, 'data': null}
                                             })
     
     const [dataFileLoaded, setDataFileLoaded] = useState(false);
     const [dsWordFileLoaded, setDsWordFileLoaded] = useState(false);
     const [abrvWordFileLoaded, setAbrvWordFileLoaded] = useState(false);
-    const [enWordFileLoaded, setEnWordFileLoaded] = useState(false);
+    const [rpFileLoaded, setRpWordFileLoaded] = useState(false);
 
     const [formSubmitted, setFormSubmitted] = useState(false);
 
@@ -36,6 +34,7 @@ const schema = yup.object().shape({
                 const newFileData = {"meta": fileMeta, "data": reader.result.split('\n').filter(line => line !== "")}
                 console.log(newFileData);
                 setFileData(prevState => ({...prevState, [fileKey]: newFileData}))
+
                 if (fileKey === 'textFile'){
                     console.log('input data', newFileData);
                     setDataFileLoaded(true);
@@ -47,10 +46,31 @@ const schema = yup.object().shape({
                 }
 
             } else if (fileExtension === 'json'){
-                const newFileData = {"meta": fileMeta, "data": reader.result}
+                // JSON is read as a string - converts to Object
+                const newFileData = {"meta": fileMeta, "data": JSON.parse(reader.result)}
                 console.log('json data', newFileData);
                 setFileData(prevState => ({...prevState, [fileKey]: newFileData}))
-            }   
+
+            } else if (fileExtension === 'csv'){
+                console.log('reading .csv')
+                // console.log(reader.result);
+
+                // Process CSV by splitting on \n and then splitting on commas
+                // Skips empty rows
+                // Rows will the be used to build 
+                // TODO: investigate if this process needs to be made async...
+                const rowsObject = reader.result.split('\n').filter(line => line !== "").map(line => ({[line.split(',')[0].trim()]: line.split(',')[1].trim()}));
+                // console.log(rowsObject);
+
+                // Combine row objects into {str: [array]} objects, merging on the key
+                const csvData = rowsObject.reduce((a, c) => {
+                                                          Object.keys(c).forEach(k => (a[k] || (a[k] = [])).push(c[k]));
+                                                          return a;
+                                                      }, {});
+                console.log(csvData);
+                const newFileData = {"meta": fileMeta, "data": csvData};
+                setFileData(prevState => ({...prevState, [fileKey]: newFileData}));
+            }
         }
     }
 
@@ -72,8 +92,8 @@ const schema = yup.object().shape({
                     "tokens": fileData['abrvWordFile'].data
                   },
                   {
-                  "type": "en",
-                  "tokens": fileData['enWordFile'].data
+                  "type": "rp",
+                  "replacements": fileData['rpFile'].data
                   }
                 ];
 
@@ -86,17 +106,19 @@ const schema = yup.object().shape({
                 
                 console.log('form payload', formPayload)
 
-                if (formSubmitted === false){
-                    console.log('submitting...')
-                    setIsSubmitting(true);
-                    const response = await axios.post('/api/project/create', formPayload)
 
-                    if (response.status === 200){
-                        console.log('response of create project', response);
-                        setFormSubmitted(true);
-                        setShowUpload(false);
-                    }
-                }
+
+                // if (formSubmitted === false){
+                //     console.log('submitting...')
+                //     setIsSubmitting(true);
+                //     const response = await axios.post('/api/project/create', formPayload)
+
+                //     if (response.status === 200){
+                //         console.log('response of create project', response);
+                //         setFormSubmitted(true);
+                //         setShowUpload(false);
+                //     }
+                // }
 
             }
         }
@@ -170,7 +192,7 @@ const schema = yup.object().shape({
                 </Col>
                 <Col>
                     <Form.File
-                        id="exampleFormControlFile3"
+                        id="exampleFormControlFile2"
                         label="Domain-specific words"
                         onChange={(e) => setFileData(prevState => ({...prevState, "dsWordFile": {"meta": e.target.files[0], "data": readFile("dsWordFile", e.target.files[0])}}))}
                     />
@@ -185,12 +207,12 @@ const schema = yup.object().shape({
             <Form.Row>
                 <Col>
                     <Form.File
-                        id="exampleFormControlFile2"
-                        label="English words"
-                        onChange={(e) => setFileData(prevState => ({...prevState, "enWordFile": {"meta": e.target.files[0], "data": readFile("enWordFile", e.target.files[0])}}))}
+                        id="exampleFormControlFile3"
+                        label="Replacements"
+                        onChange={(e) => setFileData(prevState => ({...prevState, "rpFile": {"meta": e.target.files[0], "data": readFile("rpFile", e.target.files[0])}}))}
                         />
                     <Form.Text id="passwordHelpBlock" muted>
-                        English words should be in text (.txt) format.
+                        Replacements should be in .csv or .json file format.
                     </Form.Text>
                 </Col>
                 
@@ -202,8 +224,6 @@ const schema = yup.object().shape({
                     />
                     <Form.Text id="passwordHelpBlock" muted>
                         Abbreviations should be in text (.txt) format.
-                        {/* Initial replacement dictionary that will be modified through the annotation process.
-                        This should be in JSON (.json) format. */}
                     </Form.Text>    
                 </Col>
             </Form.Row>

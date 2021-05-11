@@ -16,12 +16,12 @@ router.post('/', async (req, res) => {
             type: req.body.type,
             tokens: req.body.tokens
         });
-    } else if (req.body.pairs){
-        console.log('Map uses pairs')
+    } else if (req.body.replacements){
+        console.log('Map uses replacements')
         map = new Map({
             project_id: req.body.project_id,
             type: req.body.type,
-            pairs: req.body.pairs
+            replacements: req.body.replacements
         })
     }
 

@@ -10,9 +10,7 @@ const MapSchema = mongoose.Schema({
         type: String,
         required: false
     }],
-    pairs: [{
-    //    "original": { type: Array },
-    //    "replacement": { type: String } 
+    replacements: [{
     }],
     last_modified: {
         type: Date,
