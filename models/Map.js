@@ -8,7 +8,11 @@ const MapSchema = mongoose.Schema({
     },
     tokens: [{
         type: String,
-        required: true
+        required: false
+    }],
+    pairs: [{
+    //    "original": { type: Array },
+    //    "replacement": { type: String } 
     }],
     last_modified: {
         type: Date,

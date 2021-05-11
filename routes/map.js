@@ -4,13 +4,26 @@ const Map = require('../models/Map');
 const StaticMap = require('../models/StaticMap');
 
 
-// Create Mapping
+// Create map
 router.post('/', async (req, res) => {
-    const map = new Map({
-        project_id: req.body.project_id,
-        type: req.body.type,
-        tokens: req.body.tokens
-    });
+    console.log('Creating map');
+
+    let map;
+    if (req.body.tokens){
+        console.log('Map uses token list')
+        map = new Map({
+            project_id: req.body.project_id,
+            type: req.body.type,
+            tokens: req.body.tokens
+        });
+    } else if (req.body.pairs){
+        console.log('Map uses pairs')
+        map = new Map({
+            project_id: req.body.project_id,
+            type: req.body.type,
+            pairs: req.body.pairs
+        })
+    }
 
     try {
         const savedMap = await map.save();
