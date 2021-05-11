@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Map = require('../models/Map');
+const StaticMap = require('../models/StaticMap');
+
 
 // Create Mapping
 router.post('/', async (req, res) => {
@@ -31,5 +33,21 @@ router.post('/:projectId', async(req, res) => {
     }
 })
 
+// Upload static map
+router.post('/static', async (req, res) => {
+    console.log('Adding static map')
+    
+    const map = new StaticMap({
+        type: req.body.type,
+        tokens: req.body.tokens
+    })
+    
+    try{
+        const savedMap = await map.save()
+        res.json(savedMap)
+    }catch(err){
+        res.json({ message: err })
+    }
+})
 
 module.exports = router;
