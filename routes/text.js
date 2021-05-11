@@ -185,46 +185,103 @@ router.get('/filter/:projectId', async (req, res) => {
 })
 
 
-// Patch one token
-// router.post('/one/:tokenId', async (req, res) => {
-//     try{
-//         const response = await Data.find({"tokens._id": req.params.tokenId})
+// Get candidate counts across all documents bucketed by their page number
+router.get('/overview/:projectId', async (req, res) => {
+    console.log('Getting candidate overview');
+    try{
+        const limit = parseInt(req.query.limit)
+        console.log('bucket size', limit);
         
-//         const tokenInfo = response[0].tokens.filter(token => token._id == req.params.tokenId)[0];
-//         console.log(tokenInfo);
-//         // Update token information
-//         console.log(req.body.field, req.body.value)
-//         const field = req.body.field;
-//         const value = req.body.value;
-//         // Note spreading response will give ALL the meta data too, so need to acces just the doc
-//         const tokenInfoUpdated = {...tokenInfo._doc, [field]: value}
-//         console.log(tokenInfoUpdated)
+        // Aggregation
+        const textAggregation = await Text.aggregate([
+            {
+                $match: {  project_id: mongoose.Types.ObjectId(req.params.projectId) }
+            },
+            {
+                $lookup: {
+                    from: 'tokens', // need to use MongoDB collection name - NOT mongoose model name
+                    localField: 'tokens.token',
+                    foreignField: '_id',
+                    as: 'tokens_detail'
+                }
+            },
+            // Merges data in text model and that retrieved from the tokens collection into single object
+            {
+                $project: {
+                    candidates: "$candidates",
+                    tokens: {
+                        $map : {
+                            input: { $zip: { inputs: [ "$tokens", "$tokens_detail"]}},
+                            as: "el",
+                            in: {
+                                $mergeObjects: [{"$arrayElemAt": [ "$$el", 0 ]}, {"$arrayElemAt": [ "$$el", 1 ] }]
+                            }
+                        }
+                    }
+                }
+            },
+            // To sort data based on the number of replacement candidates e.g. those that are not ds, en, abrv, unsure, etc.
+            // First need to addField aggregated over these fields and then sort descending using the calculated field 
+            {
+                $addFields: {
+                    candidates_bool: "$tokens.english_word"
+                }
+            },
+            {
+                $project:
+                {
+                    candidates: {
+                        $map: {
+                            input: "$candidates_bool",
+                            as: "candidate",
+                            in: {$cond: {if: "$$candidate", then: 0, else: 1}}  // 1 if not english word else 0 
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    candidate_count: {$sum: "$candidates"}
+                }
+            },
+            // Sort based on the number of candidates
+            {
+                $sort: {'candidate_count': -1} // -1 descending, 1 ascending
+            },
+            {
+                $project: {
+                    candidate_count: "$candidate_count"
+                }
+            }
+        ])
+        .allowDiskUse(true)
+        .exec();
 
-//         // TODO: update model with new information...
-//         // const updatedReponse = await Data.updateOne({"tokens._id": req.params.tokenId}, })
-        
+        // Chunk results based on limit
+        // https://stackoverflow.com/questions/60007739/splitting-array-into-groups-using-typescript-javascript
+        var chunks = [], i = 0;
+        while (i < textAggregation.length) chunks.push(textAggregation.slice(i, i += parseInt(limit)));
 
-//         res.json(response);
-//     }catch(err){
-//         res.json({ message: err })
-//     }
-// })
+        // If more than chunkLimit then return data for line-chart in react-vis otherwise return data for heatmap
 
-// Get one token
-// router.get('/one/:tokenId', async (req, res) => {
-//     try{
-//         const response = await Data.find({"tokens._id": req.params.tokenId})
-//         console.log(response);
-//         const tokenInfo = response[0].tokens.filter(token => token._id == req.params.tokenId)[0];
-//         console.log(tokenInfo);
-//         res.json(tokenInfo)
-//     }catch(err){
-//         res.json({ message: err })
-//     }
-// })
+        if (chunks.length > 50){
+            // Line data - x: average candidate count for the texts on the given page, y: page number
+            // Note: page number is indexed from 1 for readability.
+            const data = chunks.map((page, pageNumber) => ({x: pageNumber+1, y: (page.map(text => text.candidate_count).reduce((a,b) => a+b, 0) / page.length)}))
+            res.json({'type': 'line', 'data': data});
 
+        } else {
+            // Heat map data - x: text number, y: page number, color: count of candidates
+            // Note: indexes are from 1 not 0 for readability.
+            const data = chunks.map((page, pageNumber) => page.map((text, textIndex) => ({x: textIndex+1, y: pageNumber+1, color: text.candidate_count}))).flat()
+            res.json({'type': 'heatmap', 'data': data});
+        }
 
-// **********************************************************************
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
 
 
 

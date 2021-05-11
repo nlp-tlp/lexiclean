@@ -21,12 +21,11 @@ router.post('/', async (req, res) => {
 });
 
 // Get Mapping using project id and mapping type
-router.post('/:projectId', async(req, res) => {
+router.post('/one/:projectId', async(req, res) => {
     console.log(req.params, req.body);
     try{
-        const response = await Map.find({project_id: req.params.projectId, type: req.body.type})
-        // Should return a single value...
-        res.json(response[0]);
+        const response = await Map.findOne({project_id: req.params.projectId, type: req.body.type})
+        res.json(response);
 
     }catch(err){
         res.json({ message: err })
@@ -34,7 +33,7 @@ router.post('/:projectId', async(req, res) => {
 })
 
 // Upload static map
-router.post('/static', async (req, res) => {
+router.post('/static/', async (req, res) => {
     console.log('Adding static map')
     
     const map = new StaticMap({

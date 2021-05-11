@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Project = require('../models/Project');
 const Map = require('../models/Map');
+const StaticMap = require('../models/StaticMap');
+
 const Text = require('../models/Text');
 const Token = require('../models/Token');
 
@@ -48,13 +50,17 @@ router.post('/create', async (req, res) => {
     console.log('creating project')
     try{
 
+        // Load static English map
+        console.log('Loading English map')
+        const enMap = await StaticMap.findOne({ type: "en"}).lean();
+        console.log(enMap);
+
         // Build maps
         console.log('Building maps')
-        // console.log(req.body.maps)
         const mapResponse = await Map.insertMany(req.body.maps);
         const dsMap = mapResponse.filter(map => map.type === 'ds')[0];
         const abrvMap = mapResponse.filter(map => map.type === 'abrv')[0];
-        const enMap = mapResponse.filter(map => map.type === 'en')[0];
+
         // console.log(dsMap, abrvMap, enMap);
 
         // Build texts and tokens including filtering
@@ -80,13 +86,16 @@ router.post('/create', async (req, res) => {
 
         // console.log(tokenTextMap);
 
-        console.log(tokenizedTexts.flat()[3452], tokenizedTexts.flat()[4210])
+        // Convert maps to Sets
+        const dsMapSet = new Set(dsMap.tokens);
+        const abrvMapSet = new Set(abrvMap.tokens);
+        const enMapSet = new Set(enMap.tokens);
 
         console.log('Building token list');
         const tokenList = tokenizedTexts.flat().map((token, index) => {
-            const domainSpecific = dsMap.tokens.includes(token)
-            const abbreviation = abrvMap.tokens.includes(token)
-            const englishWord = enMap.tokens.includes(token)
+            const domainSpecific = dsMapSet.has(token);
+            const abbreviation = abrvMapSet.has(token);
+            const englishWord = enMapSet.has(token);
 
             return({
                     value: token,
@@ -104,8 +113,6 @@ router.post('/create', async (req, res) => {
         // console.log('tokens without value', tokenList.filter(token => !token.value).length)
 
         const tokenListResponse = await Token.insertMany(tokenList);
-
-        // console.log('token list response',tokenListResponse)
 
         // Build texts
         console.log('Building texts');
@@ -126,7 +133,6 @@ router.post('/create', async (req, res) => {
         // Create texts
         console.log('creating many texts')
         const textResponse = await Text.insertMany(builtTexts);
-
 
         // Build project
         console.log('Building project');
