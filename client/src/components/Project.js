@@ -12,6 +12,8 @@ import DownloadModal from './modals/DownloadModal'
 import ProgressModal from './modals/ProgressModal'
 import SettingsModal from './modals/SettingsModal'
 import OverviewModal from './modals/OverviewModal'
+import LegendModal from './modals/LegendModal'
+
 
 
 const PAGE_LIMIT = 10;
@@ -25,6 +27,8 @@ export default function Project() {
     const [showProgress, setShowProgress] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const [showOverview, setShowOverview] = useState(false);
+    const [showLegend, setShowLegend] = useState(false);
+
 
 
     const [saved, setSaved] = useState(false)
@@ -49,6 +53,7 @@ export default function Project() {
 
     return (
         <>
+        { showLegend ? <LegendModal showLegend={showLegend} setShowLegend={setShowLegend}/> : null }
         { (showOverview && project) ? <OverviewModal showOverview={showOverview} setShowOverview={setShowOverview} projectId={project._id} pageLimit={pageLimit}/> : null }
         { showDownload ? <DownloadModal showDownload={showDownload} setShowDownload={setShowDownload}/> : null }
         { showProgress ? <ProgressModal showProgress={showProgress} setShowProgress={setShowProgress}/> : null }
@@ -62,6 +67,7 @@ export default function Project() {
                 setShowProgress={setShowProgress}
                 setShowSettings={setShowSettings}
                 setShowOverview={setShowOverview}
+                setShowLegend={setShowLegend}
                 setSaved={setSaved}
                 pageChanged={pageChanged}
                 />

@@ -49,6 +49,10 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     const [suggestedToken, setSuggestedToken] = useState(tokenInfo.suggested_replacement);
     const [currentToken, setCurrentToken] = useState(replacedToken ? replacedToken : suggestedToken ? suggestedToken : value); // Populate with replaced token if its available
     
+    if(value === 'a/c'){
+        console.log(tokenInfo);
+    }
+
     // Token classification and colouring
     const [tokenClf, setTokenClf] = useState();
     const [bgColor, setBgColor] = useState()

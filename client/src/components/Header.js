@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import { useHistory } from 'react-router-dom'
 import { createUseStyles } from 'react-jss';
-import { Dropdown } from 'react-bootstrap';
-import { FaSave } from 'react-icons/fa'
+import { Dropdown, Button } from 'react-bootstrap';
+import { MdPlaylistAddCheck } from 'react-icons/md'
 
 const useStyles = createUseStyles({
     header: {
@@ -13,9 +13,9 @@ const useStyles = createUseStyles({
         maxWidth: '100%',
         display: 'flex',
         justifyContent: 'space-between',
-        borderBottom: '1px #D9D9D9 solid',
+        borderBottom: '2px #D9D9D9 solid',
         position: 'sticky',
-        top: '0'
+        top: '0',
     },
     title: {
         fontWeight: 'bolder',
@@ -34,42 +34,26 @@ const useStyles = createUseStyles({
         padding: '0.2em 0.5em 0em 0.5em',
         borderRadius: '0.5em'
     },
-    legend: {
-        fontSize: '16px',
-        display: 'flex',
-        padding: '0.25em',
-        justifyContent: 'space-between',
-    },
-    legendItem: {
-        textAlign: 'center',
-        width: '8em',
-        margin: '0.5em',
-        borderRadius: '0.25em',
-        padding: '0.2em'
-    },
-    actions: {
-        display: 'flex'
-    },
     menu: {
         marginRight: '1em',
         padding: '0.25em',
+        display: 'flex',
     },
     save: {
-        padding: '0.25em',
-        fontSize: '26px',
-        color: '#F8F9FA',
-        cursor: 'pointer'
+        marginLeft: '0.25em',
+        fontSize: '36px',
+        color: 'green',
+        cursor: 'pointer',
     },
 })
 
-export default function Header({project, replacementDict, setShowDownload, setShowProgress, setShowSettings, setShowOverview, setSaved, pageChanged}) {
+export default function Header({project, replacementDict, setShowDownload, setShowProgress, setShowSettings, setShowOverview, setShowLegend, setSaved, pageChanged}) {
     const history = useHistory();
     const classes = useStyles();
 
     const [progress, setProgress] = useState();
 
     const changeCount = Object.keys(replacementDict).map(textIndex => Object.keys(replacementDict[textIndex]).length).reduce((a, b) => a + b, 0);
-
     const showSaveBtn = Object.keys(replacementDict).length > 0;
 
     useEffect(() => {
@@ -88,48 +72,28 @@ export default function Header({project, replacementDict, setShowDownload, setSh
 
     return (
         <div className={classes.header}>
-            <div className={classes.title}>
-                Lexiclean
-            </div>
-
-            <div style={{display: 'flex', flexDirection: 'column', textAlign: 'center'}}>
-                <div style={{fontSize: '2em', color: '#F8F9FA', fontWeight: 'bolder'}}>
-                    { project.name }
+                <div className={classes.title}>
+                    Lexiclean
                 </div>
-                {
-                    progress ?
-                    <div style={{fontSize: '1.5em', color: '#F8F9FA'}}>
-                        {progress.annotated} / {progress.total}
+                <div style={{display: 'flex', flexDirection: 'column'}}>
+                    <div style={{fontSize: '2em', color: '#F8F9FA', fontWeight: 'bolder', display: 'flex'}}>
+                        <p>{ project.name }</p>
+                        {
+                            showSaveBtn ?
+                            <p className={classes.save} onClick={() => setSaved(true)} title={`${changeCount} changes waiting`}>
+                                <MdPlaylistAddCheck/>
+                            </p>
+                            : null
+                        }
                     </div>
-                    : null
-                }
-                <div className={classes.legend}>
-                    <div className={classes.legendItem} style={{backgroundColor: '#F2A477'}}>
-                        Candidate
-                    </div>
-                    <div className={classes.legendItem} style={{backgroundColor: '#99BF9C'}}>
-                        Replaced
-                    </div>
-                    <div className={classes.legendItem} style={{backgroundColor: '#D9D9D9'}}>
-                        Normalised
-                    </div>
-                    <div className={classes.legendItem} style={{backgroundColor: '#6BB0BF'}}>
-                        Suggestion
-                    </div>
-                    <div className={classes.legendItem} style={{backgroundColor: '#8F8EBF'}}>
-                        Meta Suggestion
-                    </div>
+                    {
+                        progress ?
+                        <div style={{fontSize: '1em', color: '#F8F9FA'}}>
+                            {progress.annotated} / {progress.total}
+                        </div>
+                        : null
+                    }
                 </div>
-            </div>
-
-            <div className={classes.actions}>
-                {
-                    showSaveBtn ?
-                    <div className={classes.save} onClick={() => setSaved(true)}>
-                        <FaSave/>
-                    </div>
-                    : null
-                }
                 <div className={classes.menu}>
                     <Dropdown>
                         <Dropdown.Toggle variant="light" id="dropdown-basic">
@@ -137,6 +101,7 @@ export default function Header({project, replacementDict, setShowDownload, setSh
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                             <Dropdown.Item onClick={() => setShowOverview(true)}>Overview</Dropdown.Item>
+                            <Dropdown.Item onClick={() => setShowLegend(true)}>Legend</Dropdown.Item>
                             <Dropdown.Item onClick={() => setShowDownload(true)}>Download Results</Dropdown.Item>
                             <Dropdown.Item onClick={() => setShowProgress(true)}>Review Progress</Dropdown.Item>
                             <Dropdown.Item onClick={() => setShowSettings(true)}>Settings</Dropdown.Item>
@@ -144,7 +109,8 @@ export default function Header({project, replacementDict, setShowDownload, setSh
                         </Dropdown.Menu>
                     </Dropdown>
                 </div>
-            </div>
+
+
         </div>
     )
 }

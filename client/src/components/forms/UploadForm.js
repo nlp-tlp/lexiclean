@@ -108,15 +108,13 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
 
                 if (formSubmitted === false){
                     console.log('submitting...')
-                    setFormSubmitted(false);
                     setIsSubmitting(true);
                     const response = await axios.post('/api/project/create', formPayload)
 
                     if (response.status === 200){
                         console.log('response of create project', response);
                         setFormSubmitted(true);
-                        // setShowUpload(false);
-                        setIsSubmitting(false);
+                        setShowUpload(false);
                     }
                 }
 

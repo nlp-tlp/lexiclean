@@ -1,6 +1,9 @@
 import React from 'react'
 import { OverlayTrigger, Popover, Button } from 'react-bootstrap';
 import { createUseStyles } from 'react-jss';
+import { MdDelete, MdBrush, MdBookmark } from 'react-icons/md'
+import { BsArrowRightShort } from 'react-icons/bs'
+
 
 const useStyles = createUseStyles({
     token: {
@@ -13,28 +16,85 @@ const useStyles = createUseStyles({
         '&:hover': {
             opacity: '0.8'
         }
+    },
+    popoverContainer: {
+        minWidth: '120px',
+        padding: '0.5em',
+
+    },
+    textContainer: {
+        display: 'flex',
+        justifyContent: 'space-around',
+        borderBottom: '1px solid lightgrey'
+    },
+    originalText: {
+        fontSize: '16px',
+        fontWeight: 'bold',
+        padding: '4px',
+        borderRadius: '4px',
+        verticalAlign: 'middle',
+        textDecoration: 'line-through 3px rgba(191, 88, 78, 0.5)' //light red: #BF584E
+    },
+    arrow: {
+        fontSize: '22px',
+        fontWeight: 'bold'
+    },
+    suggestedText: {
+        backgroundColor: '#99BF9C',
+        fontSize: '16px',
+        fontWeight: 'bold',
+        padding: '4px',
+        borderRadius: '4px',
+    },
+    actionContainer: {
+    },
+    actionBtn: {
+        fontSize: '16px',
+        cursor: 'pointer',
+        '&:hover': {
+            backgroundColor: 'lightgrey'
+        }
+    },
+    actionText: {
+        margin: '0.2em 0 0.2em 0',
+        textAlign: 'center'
     }
 })
 
 export default function TokenInput({showContextMenu, showPopover, tokenIndex, modifyToken, edited, bgColor, inputWidth, addReplacement, cancelChange, originalToken, currentToken, bgColorMap}) {
     const classes = useStyles();
 
+
+    const addOne = () => {
+        // TODO: Make this not cascade
+        addReplacement();
+    }
+
+    const addAll = () => {
+        addReplacement();
+    }
+
+    const ignore = () => {
+        cancelChange();
+    }
+
     const addReplacementPopover = <Popover
                                     id={`popover`}
                                     onKeyDown={(event) => console.log(event)}
                                     >
-                                    <Popover.Title as="p" style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', padding: '0.5em'}}>
-                                            <Button onClick={() => addReplacement()} size="sm" variant="info">Yes</Button>
-                                            <Button onClick={() => cancelChange()} size="sm" variant="secondary">No</Button>
-                                        </Popover.Title>
-                                    <Popover.Content>
-                                        <p>Add to dictionary?</p>
-                                        <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', margin: 'auto', height: '2em'}}>
-                                            <div>
-                                                <strong>{originalToken}</strong> to <strong>{currentToken}</strong>
-                                            </div>
+                                    <div className={classes.popoverContainer}>
+                                        <div className={classes.textContainer}>
+                                            <p className={classes.originalText}>{originalToken}</p>
+                                            <p className={classes.arrow}><BsArrowRightShort/></p>
+                                            <p className={classes.suggestedText}>{currentToken}</p>
                                         </div>
-                                    </Popover.Content>
+                                        <div className={classes.actionContainer}>
+                                            <div className={classes.actionBtn} onClick={() => addOne()}><p className={classes.actionText}><MdBookmark/>Add one</p></div>
+                                            <div className={classes.actionBtn} onClick={() => addAll()}><p className={classes.actionText}><MdBrush/>Apply all</p></div>
+                                            <div className={classes.actionBtn} onClick={() => ignore()}><p className={classes.actionText}><MdDelete/>Ignore</p></div>
+
+                                        </div>
+                                    </div>
                                 </Popover>
 
 
