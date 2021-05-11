@@ -34,6 +34,7 @@ const bgColorMap = {
     'rp': 'yellow',
     'rt': '#99BF9C',
     'st': '#6BB0BF',
+    'stm': 'aqua',
     'ua': '#F2A477',
 }
 
@@ -46,8 +47,9 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     const tokenIndex = index;
     const [originalToken] = useState(value);
     const [replacedToken, setReplacedToken] = useState(tokenInfo.replacement);
-    const [suggestedToken, setSuggestedToken] = useState(tokenInfo.suggested_replacement);
-    const [currentToken, setCurrentToken] = useState(replacedToken ? replacedToken : suggestedToken ? suggestedToken : value); // Populate with replaced token if its available
+    const [suggestedToken, setSuggestedToken] = useState(tokenInfo.suggested_replacement.length ? tokenInfo.suggested_replacement : null);  // If array is empty set to null.
+    // Set current token as replacement if it's available, otherwise as suggestion if only one is made. If multiple are made then currentToken remains as the original value.
+    const [currentToken, setCurrentToken] = useState(replacedToken ? replacedToken : (suggestedToken && suggestedToken.length === 1)  ? suggestedToken : value);
     
     if(value === 'a/c'){
         console.log(tokenInfo);
@@ -95,9 +97,10 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
         } else if (replacedToken){
             setTokenClf('rt')
     
-        } else if (suggestedToken){
+        } else if (suggestedToken && suggestedToken.length === 1){
             setTokenClf('st')
-        
+        } else if (suggestedToken && suggestedToken.length > 1){
+            setTokenClf('stm'); // suggested token - multiple
         } else {
             setTokenClf('ua')
         }
@@ -128,11 +131,16 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
         }
     }, [currentToken])
 
+
     useEffect(() => {
         // Updates suggested token based on replacment dictionary content
         if(Object.keys(replacementDict).includes(currentToken)){
+            // TODO: make suggested token logic array based
             setSuggestedToken(replacementDict[currentToken])
             setCurrentToken(replacementDict[currentToken])
+
+            // setSuggestedToken(prevState => ([...prevState, replacementDict[currentToken]]))
+
         }
 
     }, [replacementDict])
