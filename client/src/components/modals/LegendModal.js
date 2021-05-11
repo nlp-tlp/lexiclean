@@ -29,6 +29,7 @@ const useStyles = createUseStyles({
 // 'rp': 'yellow',
 // 'rt': '#99BF9C',
 // 'st': '#6BB0BF',
+// 'stm': 'aqua',
 // 'ua': '#F2A477',
 
 export default function LegendModal({showLegend, setShowLegend}) {
