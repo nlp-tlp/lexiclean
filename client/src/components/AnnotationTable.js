@@ -25,12 +25,20 @@ const useStyles = createUseStyles({
     minHeight: '2em'
   },
   indexColumn: {
+    display: 'flex',
+    justifyContent: 'center',
+    textAlign: 'center',
+    verticalAlign: 'middle'
+    // marginLeft: '2em',
+    // paddingRight: '2em',
+    // marginRight: '1em',
+  },
+  indexIcon: {
     fontSize: '22px',
     fontWeight: 'bold',
-    marginLeft: '2em',
-    paddingRight: '2em',
-    marginRight: '1em',
-    width: '1em'
+    width: '2em',
+    height: '2em',
+    margin: 'auto'
   }
 });
 
@@ -193,8 +201,20 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
           :
           texts.map((text, textIndex) => {
             return(
-              <div className={classes.row} key={textIndex} style={{background: text.annotated ? '#8F8F8F': null, opacity: text.annotated ? 0.5 : 1.0}}>
-                <div className={classes.indexColumn} >{textIndex+1 + ((page-1)*pageLimit)}</div>
+              <div
+                className={classes.row}
+                key={textIndex}
+                style={{background: text.annotated ? 'rgba(153,191,156,0.2)': null}}
+
+              >
+                <div
+                  className={classes.indexColumn}
+                >
+                  <p className={classes.indexIcon}>
+                    {textIndex+1 + ((page-1)*pageLimit)}
+                  </p>
+                </div>
+                
                 <div className={classes.textColumn}>
                   <Text
                     text={text}

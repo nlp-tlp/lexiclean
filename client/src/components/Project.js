@@ -11,6 +11,8 @@ import Footer from './Footer'
 import DownloadModal from './modals/DownloadModal'
 import ProgressModal from './modals/ProgressModal'
 import SettingsModal from './modals/SettingsModal'
+import OverviewModal from './modals/OverviewModal'
+
 
 const PAGE_LIMIT = 10;
 
@@ -22,6 +24,8 @@ export default function Project() {
     const [showDownload, setShowDownload] = useState(false);
     const [showProgress, setShowProgress] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const [showOverview, setShowOverview] = useState(false);
+
 
     const [saved, setSaved] = useState(false)
 
@@ -45,9 +49,10 @@ export default function Project() {
 
     return (
         <>
+        { (showOverview && project) ? <OverviewModal showOverview={showOverview} setShowOverview={setShowOverview} projectId={project._id} pageLimit={pageLimit}/> : null }
         { showDownload ? <DownloadModal showDownload={showDownload} setShowDownload={setShowDownload}/> : null }
         { showProgress ? <ProgressModal showProgress={showProgress} setShowProgress={setShowProgress}/> : null }
-        { showSettings ? <SettingsModal showSettings={showSettings} setShowSettings={setShowSettings} pageLimit={pageLimit} setPageLimit={setPageLimit}/> : null }
+        { showSettings ? <SettingsModal showSettings={showSettings} setShowSettings={setShowSettings} pageLimit={pageLimit} setPageLimit={setPageLimit} /> : null }
 
         <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
             <Header
@@ -56,6 +61,7 @@ export default function Project() {
                 setShowDownload={setShowDownload}
                 setShowProgress={setShowProgress}
                 setShowSettings={setShowSettings}
+                setShowOverview={setShowOverview}
                 setSaved={setSaved}
                 pageChanged={pageChanged}
                 />

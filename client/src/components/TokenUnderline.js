@@ -3,8 +3,7 @@ import { OverlayTrigger, Popover, Button } from 'react-bootstrap';
 import { createUseStyles } from 'react-jss';
 
 const useStyles = createUseStyles({
-    underline: {
-
+    underlineReplaceToken: {
     }
 })
 
@@ -27,19 +26,19 @@ export default function TokenUnderline({ savedChange,
     const classes = useStyles();
 
     const removeReplacementPopover = <Popover id={`remove-popover`}>
-                            <Popover.Title as="p" style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', padding: '0.5em'}}>
-                                    <Button onClick={() => removeReplacement()} size="sm" variant="info">Yes</Button>
-                                    <Button onClick={() => setShowRemovePopover(false)} size="sm" variant="secondary">No</Button>
-                                </Popover.Title>
-                            <Popover.Content>
-                                <p>Remove replacement?</p>
-                                <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', margin: 'auto', height: '2em'}}>
-                                    <div>
-                                        <strong>{currentToken}</strong> to <strong>{originalToken}</strong>
-                                    </div>
-                                </div>
-                            </Popover.Content>
-                        </Popover>
+                                        <Popover.Title as="p" style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', padding: '0.5em'}}>
+                                                <Button onClick={() => removeReplacement()} size="sm" variant="info">Yes</Button>
+                                                <Button onClick={() => setShowRemovePopover(false)} size="sm" variant="secondary">No</Button>
+                                            </Popover.Title>
+                                        <Popover.Content>
+                                            <p>Remove replacement?</p>
+                                            <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', margin: 'auto', height: '2em'}}>
+                                                <div>
+                                                    <strong>{currentToken}</strong> to <strong>{originalToken}</strong>
+                                                </div>
+                                            </div>
+                                        </Popover.Content>
+                                    </Popover>
 
     const addSuggestionPopover = <Popover id={`add-suggestion-popover`}
                                     onKeyDown={(event) => console.log(event)}
@@ -52,11 +51,11 @@ export default function TokenUnderline({ savedChange,
                                         <p>Add suggested replacement?</p>
                                         <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', margin: 'auto', height: '2em'}}>
                                             <div>
-                                                <strong>{currentToken}</strong> to <strong>{suggestedToken}</strong>
+                                                <strong>{originalToken}</strong> to <strong>{suggestedToken}</strong>
                                             </div>
                                         </div>
                                     </Popover.Content>
-                                    </Popover>
+                                </Popover>
 
 
     return (
@@ -64,12 +63,18 @@ export default function TokenUnderline({ savedChange,
             {
                 (( savedChange && originalToken !== currentToken && edited ) || replacedToken ) ?
                 <OverlayTrigger trigger="click" placement="bottom" overlay={removeReplacementPopover} show={showRemovePopover}>
-                    <div style={{cursor: 'pointer', width: inputWidth, backgroundColor: bgColorMap['rp'], height: '6px', borderRadius: '2px', marginTop: '2px', marginBottom: '0.5em'}} onClick={() => setShowRemovePopover(!showRemovePopover)}></div>
+                    <div
+                        style={{cursor: 'pointer', width: inputWidth, backgroundColor: bgColorMap['rt'], height: '6px', borderRadius: '2px', marginTop: '2px', marginBottom: '0.5em'}}
+                        onClick={() => setShowRemovePopover(!showRemovePopover)}
+                    />
                 </OverlayTrigger>
                 : (suggestedToken)
                 ?
                 <OverlayTrigger trigger="click" placement="bottom" overlay={addSuggestionPopover} show={showAddSuggestionPopover}>
-                    <div style={{cursor: 'pointer', width: inputWidth, backgroundColor: bgColorMap['sr'], height: '6px', borderRadius: '2px', marginTop: '2px', marginBottom: '0.5em'}} onClick={() => setShowAddSuggestionPopover(!showAddSuggestionPopover)}></div>
+                    <div
+                        style={{cursor: 'pointer', width: inputWidth, backgroundColor: bgColorMap['st'], height: '6px', borderRadius: '2px', marginTop: '2px', marginBottom: '0.5em'}}
+                        onClick={() => setShowAddSuggestionPopover(!showAddSuggestionPopover)}
+                    />
                 </OverlayTrigger>
                 : null
             }

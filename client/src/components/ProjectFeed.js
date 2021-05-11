@@ -98,33 +98,36 @@ export default function ProjectFeed() {
             />
             : null
         }
-        
-        <div className={classes.header}>
-            <div className={classes.title}>
-            Lexiclean
-            </div>
-            <div className={classes.menu}>
-                <Button variant="light" onClick={() => setShowUpload(true)}>Create Project</Button>
-            </div>
-        </div>
 
-        {
-            !projectsLoaded ? 
-            <div style={{margin: 'auto', marginTop: '5em'}}>
-              <Spinner animation="border" />
+        <div style={{display: 'flex', flexDirection: 'column', height: '1000px', minHeight: '100%'}}> 
+
+            <div className={classes.header}>
+                <div className={classes.title}>
+                Lexiclean
+                </div>
+                <div className={classes.menu}>
+                    <Button variant="light" onClick={() => setShowUpload(true)}>Create Project</Button>
+                </div>
             </div>
-            : projects.length === 0 ?
-            <div style={{margin: 'auto', textAlign: 'center', marginTop: '5em', fontSize: '2em'}}>No projects</div>
-            :
-            <ProjectList 
+
+            {
+                !projectsLoaded ? 
+                <div style={{margin: 'auto', marginTop: '5em'}}>
+                <Spinner animation="border" />
+                </div>
+                : projects.length === 0 ?
+                <div style={{margin: 'auto', textAlign: 'center', marginTop: '5em', fontSize: '2em'}}>No projects</div>
+                :
+                <ProjectList 
                 projects={projects}
                 setSelectedProject={setSelectedProject}
                 setShowAnnotate={setShowAnnotate}
                 setShowProjectDelete={setShowProjectDelete}
-            />
-        }
+                />
+            }
 
-        <Footer />
+            <Footer />
+        </div>
         </>
     )
 }

@@ -16,7 +16,7 @@ const useStyles = createUseStyles({
     }
 })
 
-export default function TokenInput({showContextMenu, showPopover, tokenIndex, modifyToken, edited, bgColor, inputWidth, addReplacement, cancelChange, originalToken, currentToken}) {
+export default function TokenInput({showContextMenu, showPopover, tokenIndex, modifyToken, edited, bgColor, inputWidth, addReplacement, cancelChange, originalToken, currentToken, bgColorMap}) {
     const classes = useStyles();
 
     const addReplacementPopover = <Popover
@@ -39,7 +39,12 @@ export default function TokenInput({showContextMenu, showPopover, tokenIndex, mo
 
 
     return (
-        <OverlayTrigger trigger="click" placement="bottom" overlay={addReplacementPopover} show={showPopover}>
+        <OverlayTrigger
+            trigger="click"
+            placement="bottom"
+            overlay={addReplacementPopover}
+            show={showPopover}
+        >
         <input
             type="text"
             name="token"
@@ -47,7 +52,9 @@ export default function TokenInput({showContextMenu, showPopover, tokenIndex, mo
             value={currentToken}
             onChange={e => modifyToken(e.target.value)}
             key={tokenIndex}
-            style={{backgroundColor: edited ? '#99BF9C': bgColor, width: inputWidth}}
+            // Style - if token is edited (user modified token in place so show as green), if original token and current token are different 
+            //         then the token has been modified due to a suggestion so colour accordingly.
+            style={{backgroundColor: edited ? bgColorMap['rt']: (originalToken !== currentToken) ? bgColorMap['st'] : bgColor, width: inputWidth}}
             className={classes.token}
             autoComplete="off"
             title={`original: ${originalToken}`}

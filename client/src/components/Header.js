@@ -13,7 +13,9 @@ const useStyles = createUseStyles({
         maxWidth: '100%',
         display: 'flex',
         justifyContent: 'space-between',
-        borderBottom: '1px #D9D9D9 solid'
+        borderBottom: '1px #D9D9D9 solid',
+        position: 'sticky',
+        top: '0'
     },
     title: {
         fontWeight: 'bolder',
@@ -60,7 +62,7 @@ const useStyles = createUseStyles({
     },
 })
 
-export default function Header({project, replacementDict, setShowDownload, setShowProgress, setShowSettings, setSaved, pageChanged}) {
+export default function Header({project, replacementDict, setShowDownload, setShowProgress, setShowSettings, setShowOverview, setSaved, pageChanged}) {
     const history = useHistory();
     const classes = useStyles();
 
@@ -134,7 +136,7 @@ export default function Header({project, replacementDict, setShowDownload, setSh
                             Menu
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
-                            {/* <Dropdown.Item onClick={() => setShowUpload(true)}>Start New Project</Dropdown.Item> */}
+                            <Dropdown.Item onClick={() => setShowOverview(true)}>Overview</Dropdown.Item>
                             <Dropdown.Item onClick={() => setShowDownload(true)}>Download Results</Dropdown.Item>
                             <Dropdown.Item onClick={() => setShowProgress(true)}>Review Progress</Dropdown.Item>
                             <Dropdown.Item onClick={() => setShowSettings(true)}>Settings</Dropdown.Item>

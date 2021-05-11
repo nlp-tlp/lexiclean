@@ -15,7 +15,7 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
     }
     
     return (
-        <div style={{width: '50%', margin: 'auto', marginTop: '2em'}}>
+        <div style={{width: '75%', margin: 'auto', marginTop: '2em'}}>
             <ListGroup>
             {
                 projects.map((project, index) => {
@@ -23,8 +23,10 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
                         <>
                         <ListGroup.Item action key={index}>
                             <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                                <div style={{fontSize: '22px', fontWeight: 'bold'}} >
+                                <div style={{fontSize: '22px', fontWeight: 'bold'}} onClick={() => confirmationAction(index)}>
                                     {project.name}
+                                    <br/>
+                                    <small>{project.description}</small>
                                 </div>
                                 <div style={{fontSize: '22px'}}>
                                     <MdEdit onClick={() => confirmationAction(index)}/>

@@ -23,10 +23,19 @@ const useStyles = createUseStyles({
     }
 })
 
-
 // Color map for token classifications
 // ua - unassigned, rp - replacement, sr - suggested replacemtn
-const bgColorMap = { 'ds_abrv_en_no_un': '#D9D9D9', 'ua': '#F2A477', 'rp': '#99BF9C', 'sr': '#6BB0BF'}
+const bgColorMap = {
+    'ds': 'red',
+    'ab': 'purple',
+    'ew': '#D9D9D9',
+    'no': 'blue',
+    'un': 'brown', 
+    'rp': 'yellow',
+    'rt': '#99BF9C',
+    'st': '#6BB0BF',
+    'ua': '#F2A477',
+}
 
 export default function Token({tokenInfo, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap}) {
     const classes = useStyles();
@@ -38,9 +47,11 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     const [originalToken] = useState(value);
     const [replacedToken, setReplacedToken] = useState(tokenInfo.replacement);
     const [suggestedToken, setSuggestedToken] = useState(tokenInfo.suggested_replacement);
-    const [currentToken, setCurrentToken] = useState(replacedToken ? replacedToken : value); // Populate with replaced token if its available
-    const tokenClassification = (tokenInfo.domain_specific || tokenInfo.abbreviation || tokenInfo.english_word || tokenInfo.noise || tokenInfo.unsure) ? 'ds_abrv_en_no_un' : replacedToken ? 'rp' : suggestedToken ? 'sr' : 'ua';
-    const [bgColor, setBgColor] = useState(bgColorMap[tokenClassification])
+    const [currentToken, setCurrentToken] = useState(replacedToken ? replacedToken : suggestedToken ? suggestedToken : value); // Populate with replaced token if its available
+    
+    // Token classification and colouring
+    const [tokenClf, setTokenClf] = useState();
+    const [bgColor, setBgColor] = useState()
     
     // Meta Tag
     const [hasSuggestedMetaTag, setHasSuggestedMetaTag] = useState(tokenInfo.suggested_meta_tag ? Object.keys(tokenInfo.suggested_meta_tag).length > 0 : null);
@@ -61,10 +72,34 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
 
 
     useEffect(() => {
-        // Updates token colour based on state of token information
-        const tokenClassification = (tokenInfo.domain_specific || tokenInfo.abbreviation || tokenInfo.english_word || tokenInfo.noise || tokenInfo.unsure) ? 'ds_abrv_en_no_un' : replacedToken ? 'rp' : suggestedToken ? 'sr' : 'ua';
-        setBgColor(bgColorMap[tokenClassification])
-    }, [replacedToken, suggestedToken, tokenInfo])
+        // Updates token colour based on state of token information and subsequent classification
+        // TODO: update with something better
+        if (tokenInfo.domain_specific){
+            setTokenClf('ds')
+        } else if (tokenInfo.abbreviation){
+            setTokenClf('ab')
+    
+        } else if (tokenInfo.english_word){
+            setTokenClf('ew')
+    
+        } else if (tokenInfo.noise){
+            setTokenClf('no')
+    
+        } else if (tokenInfo.unsure){
+            setTokenClf('un')
+    
+        } else if (replacedToken){
+            setTokenClf('rt')
+    
+        } else if (suggestedToken){
+            setTokenClf('st')
+        
+        } else {
+            setTokenClf('ua')
+        }
+        setBgColor(bgColorMap[tokenClf])
+
+    }, [tokenClf, bgColorMap, replacedToken, suggestedToken, tokenInfo, hasSuggestedMetaTag, metaTagSuggestionMap])
     
     useEffect(() => {
         // Set input field width
@@ -79,7 +114,8 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
 
     useEffect(() => {
         // Detect state change
-        if(originalToken !== currentToken){
+        if( originalToken !== currentToken && suggestedToken !== currentToken){
+            // Checks whether the token has been edited by user or if the token value has changed due to a suggestion.
             setEdited(true);
         } else {
             // Remove from dictionary if the currentToken is reverted to its original form
@@ -92,6 +128,7 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
         // Updates suggested token based on replacment dictionary content
         if(Object.keys(replacementDict).includes(currentToken)){
             setSuggestedToken(replacementDict[currentToken])
+            setCurrentToken(replacementDict[currentToken])
         }
 
     }, [replacementDict])
@@ -130,7 +167,12 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     }
 
     const cancelChange = () => {
-        setCurrentToken(originalToken);
+        // Cancel of dictionary add action
+        if (suggestedToken){
+            setCurrentToken(suggestedToken);
+        } else {
+            setCurrentToken(originalToken);
+        }
         setSavedChange(false);
     }
 
@@ -151,6 +193,7 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
             console.log('succesfully removed suggested replacement.');
             setShowAddSuggestionPopover(false)
             setSuggestedToken(null);
+            setCurrentToken(originalToken);
         }
     }
 
@@ -189,52 +232,60 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '0.5em'}} key={tokenIndex}>
-            <TokenInput
-                showContextMenu={showContextMenu}
-                showPopover={showPopover}
-                tokenIndex={tokenIndex}
-                modifyToken={modifyToken}
-                edited={edited}
-                bgColor={bgColor}
-                inputWidth={inputWidth}
-                addReplacement={addReplacement}
-                cancelChange={cancelChange}
-                originalToken={originalToken}
-                currentToken={currentToken}            
-            />
-            <div style={{display: 'flex', flexDirection: 'row', justifyContent: (hasSuggestedMetaTag && !suggestedToken) ? 'space-between' : null, width: inputWidth}}>
-                <TokenUnderline
-                    savedChange={savedChange}
+        <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '0.5em'}} key={tokenIndex} id={`token-${tokenClf}`}>
+            {
+                tokenClf ?
+                <>
+                <TokenInput
+                    showContextMenu={showContextMenu}
+                    showPopover={showPopover}
+                    tokenIndex={tokenIndex}
+                    modifyToken={modifyToken}
+                    edited={edited}
+                    bgColor={bgColor}
+                    inputWidth={inputWidth}
+                    addReplacement={addReplacement}
+                    cancelChange={cancelChange}
                     originalToken={originalToken}
                     currentToken={currentToken}
-                    edited={edited}
-                    replacedToken={replacedToken}
-                    removeReplacement={removeReplacement}
-                    showRemovePopover={showRemovePopover}
-                    setShowRemovePopover={setShowRemovePopover}
-                    inputWidth={hasSuggestedMetaTag ? parseInt(inputWidth) - 12 : inputWidth}   // Note: 1em = 16px
                     bgColorMap={bgColorMap}
-                    suggestedToken={suggestedToken}
-                    showAddSuggestionPopover={showAddSuggestionPopover}
-                    setShowAddSuggestionPopover={setShowAddSuggestionPopover}   
-                    addSuggestedReplacement={addSuggestedReplacement}
-                    removeSuggestedReplacement={removeSuggestedReplacement}         
                 />
-                {
-                    hasSuggestedMetaTag ?
-                    <div className={classes.tokenCircle}></div>
-                    : null
-                }   
+                <div style={{display: 'flex', flexDirection: 'row', justifyContent: (hasSuggestedMetaTag && !suggestedToken) ? 'space-between' : null, width: inputWidth}}>
+                    <TokenUnderline
+                        savedChange={savedChange}
+                        originalToken={originalToken}
+                        currentToken={currentToken}
+                        edited={edited}
+                        replacedToken={replacedToken}
+                        removeReplacement={removeReplacement}
+                        showRemovePopover={showRemovePopover}
+                        setShowRemovePopover={setShowRemovePopover}
+                        inputWidth={hasSuggestedMetaTag ? parseInt(inputWidth) - 12 : inputWidth}   // Note: 1em = 16px
+                        bgColorMap={bgColorMap}
+                        suggestedToken={suggestedToken}
+                        showAddSuggestionPopover={showAddSuggestionPopover}
+                        setShowAddSuggestionPopover={setShowAddSuggestionPopover}   
+                        addSuggestedReplacement={addSuggestedReplacement}
+                        removeSuggestedReplacement={removeSuggestedReplacement}         
+                    />
+                    {
+                        hasSuggestedMetaTag ?
+                        <div className={classes.tokenCircle}></div>
+                        : null
+                    }   
+    
+    
+                </div>
+    
+                <ContextMenu
+                    menu_id={MENU_ID}
+                    tokenInfo={tokenInfo}
+                    addMetaTag={addMetaTag}
+                />
+                </>
+                : <p>...</p>
 
-
-            </div>
-
-            <ContextMenu
-                menu_id={MENU_ID}
-                tokenInfo={tokenInfo}
-                addMetaTag={addMetaTag}
-            />
+            }
         </div>
     )
 }
