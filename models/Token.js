@@ -12,7 +12,7 @@ const TokenSchema = mongoose.Schema({
         default: null
     },
     suggested_replacement: {
-        type: String,
+        type: Array,
         required: false,
         default: null
     },    

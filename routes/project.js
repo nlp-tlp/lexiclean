@@ -53,13 +53,14 @@ router.post('/create', async (req, res) => {
         // Load static English map
         console.log('Loading English map')
         const enMap = await StaticMap.findOne({ type: "en"}).lean();
-        console.log(enMap);
+        // console.log(enMap);
 
         // Build maps
         console.log('Building maps')
         const mapResponse = await Map.insertMany(req.body.maps);
         const dsMap = mapResponse.filter(map => map.type === 'ds')[0];
         const abrvMap = mapResponse.filter(map => map.type === 'abrv')[0];
+        const rpMap = mapResponse.filter(map => map.type === 'rp')[0];
 
         // console.log(dsMap, abrvMap, enMap);
 
@@ -90,20 +91,31 @@ router.post('/create', async (req, res) => {
         const dsMapSet = new Set(dsMap.tokens);
         const abrvMapSet = new Set(abrvMap.tokens);
         const enMapSet = new Set(enMap.tokens);
+        const rpMapSet = new Set(Object.keys(rpMap.replacements[0]));
+
 
         console.log('Building token list');
         const tokenList = tokenizedTexts.flat().map((token, index) => {
             const domainSpecific = dsMapSet.has(token);
             const abbreviation = abrvMapSet.has(token);
             const englishWord = enMapSet.has(token);
+            const hasReplacement = rpMapSet.has(token);
+
+
+            if(hasReplacement){
+                console.log(token, rpMap.replacements[0][token])
+            }
 
             return({
                     value: token,
                     domain_specific: domainSpecific,
                     abbreviation: abbreviation,
                     english_word: englishWord,
-                    replacement: null, // TODO: pre-populate with existing dictionaries in the future.
-                    suggested_replacement: null // TODO: pre-populate with existing dictionaries in the future.
+                    // Replacement is pre-filled if only one replacement is available
+                    replacement: (hasReplacement && rpMap.replacements[0][token].length === 1)  ? rpMap.replacements[0][token][0] : null,
+                    // In the instance multiple replacements are available, they are added to the suggested
+                    // tokens for the user to remedy
+                    suggested_replacement: (hasReplacement && rpMap.replacements[0][token].length > 1) ? rpMap.replacements[0][token] : null
                     })
 
             })
@@ -191,6 +203,7 @@ router.delete('/:projectId', async (req, res) => {
     try{
         const projectResponse = await Project.findOne({_id: req.params.projectId}).populate('texts')
 
+        console.log(projectResponse)
         // Get ids of associated documents
         const textIds = projectResponse.texts.map(text => text._id);
         const tokenIds = projectResponse.texts.map(text => text.tokens.map(token => token.token)).flat();
