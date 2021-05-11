@@ -115,7 +115,8 @@ router.post('/create', async (req, res) => {
                     replacement: (hasReplacement && rpMap.replacements[0][token].length === 1)  ? rpMap.replacements[0][token][0] : null,
                     // In the instance multiple replacements are available, they are added to the suggested
                     // tokens for the user to remedy
-                    suggested_replacement: (hasReplacement && rpMap.replacements[0][token].length > 1) ? rpMap.replacements[0][token] : null
+                    // otherwise set as an empty array to do operations on in the future.
+                    suggested_replacement: (hasReplacement && rpMap.replacements[0][token].length > 1) ? rpMap.replacements[0][token] : []  
                     })
 
             })

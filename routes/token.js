@@ -27,7 +27,7 @@ router.post('/upload', async (req, res) => {
 router.patch('/replace/:tokenId', async (req, res) => {
     try{
         const updatedReponse = await Token.updateOne({ _id: req.params.tokenId},
-                                                        { replacement: req.body.replacement, last_modified: Date.now()},
+                                                        { $push: {replacement: req.body.replacement}, last_modified: Date.now()},
                                                         { upsert: true })
         
         res.json(updatedReponse);
@@ -38,6 +38,7 @@ router.patch('/replace/:tokenId', async (req, res) => {
 
 // Convert suggested replacement to replacement on one token
 router.patch('/suggestion-add/:tokenId', async (req, res) => {
+    console.log('Converting suggested token into replacement and removing suggestions associated with token')
     try{
         const updatedReponse = await Token.updateOne(
                                                 {
