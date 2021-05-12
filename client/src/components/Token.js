@@ -38,7 +38,7 @@ const bgColorMap = {
     'ua': '#F2A477',
 }
 
-export default function Token({tokenInfo, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap}) {
+export default function Token({tokenInfo, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap, updateSingleToken, setUpdateSingleToken}) {
     const classes = useStyles();
 
     // Token
@@ -47,14 +47,11 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     const tokenIndex = index;
     const [originalToken] = useState(value);
     const [replacedToken, setReplacedToken] = useState(tokenInfo.replacement);
-    const [suggestedToken, setSuggestedToken] = useState(tokenInfo.suggested_replacement.length ? tokenInfo.suggested_replacement : null);  // If array is empty set to null.
+    // If array is empty set to null.
+    const [suggestedToken, setSuggestedToken] = useState((tokenInfo.suggested_replacement && tokenInfo.suggested_replacement.length) ? tokenInfo.suggested_replacement : null);  
     // Set current token as replacement if it's available, otherwise as suggestion if only one is made. If multiple are made then currentToken remains as the original value.
     const [currentToken, setCurrentToken] = useState(replacedToken ? replacedToken : (suggestedToken && suggestedToken.length === 1)  ? suggestedToken : value);
     
-    if(value === 'a/c'){
-        console.log(tokenInfo);
-    }
-
     // Token classification and colouring
     const [tokenClf, setTokenClf] = useState();
     const [bgColor, setBgColor] = useState()
@@ -110,7 +107,7 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     
     useEffect(() => {
         // Set input field width
-        const minWidth = 50;
+        const minWidth = 60;
         const width = (currentToken.length + 2) * 10
         if (width < minWidth){
             setInputWidth(`${minWidth}px`)
@@ -131,50 +128,93 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
         }
     }, [currentToken])
 
-
-    useEffect(() => {
-        // Updates suggested token based on replacment dictionary content
-        if(Object.keys(replacementDict).includes(currentToken)){
-            // TODO: make suggested token logic array based
-            setSuggestedToken(replacementDict[currentToken])
-            setCurrentToken(replacementDict[currentToken])
-
-            // setSuggestedToken(prevState => ([...prevState, replacementDict[currentToken]]))
-
-        }
-
-    }, [replacementDict])
-
     const modifyToken = (targetValue) => {
         setShowPopover(true);
         setCurrentToken(targetValue);
+        localStorage.setItem('id', tokenId) // this is used to help keep track of the current token being interacted with
     }
 
-    const addReplacement = async () => {
-        const response = await axios.patch(`/api/token/replace/${tokenId}`, {replacement: currentToken});
+    const modifyReplacmentDict = () => {
+        // Check if replacement exists for originalToken
+        const replacementKeyExists = Object.keys(replacementDict).includes(originalToken);
+        if (tokenId === localStorage.getItem('id')){
+            console.log('updating replacement dictionary!!')
+            if (!replacementKeyExists){
+                // console.log('Adding first key to replacement dictionary')
+                const firstReplacementArr = [currentToken];
+                // Update replacement dictionary
+                setReplacementDict(prevState => ({...prevState, [originalToken]: firstReplacementArr}));
+    
+            } else {
+                console.log('additional keys', originalToken, currentToken, replacementDict, replacementDict[originalToken], replacementDict[originalToken].push(currentToken))
+                // Update replacement dictionary
+                setReplacementDict(prevState => ({...prevState, [originalToken]: prevState[originalToken]}));
+            }
+
+            setUpdateSingleToken(null);
+        }
+    }
+
+
+    useEffect(() => {
+        if (!edited && !updateSingleToken && updateSingleToken !== null){    // !u... is true whther false or null...
+            // Making suggested replacements on tokens
+            console.log(replacementDict);
+            console.log(currentToken);
+            
+            if (Object.keys(replacementDict).includes(currentToken)){
+                // If replacement map is one-one then update the current token, else don't update (user has to drill down to determine best choice)
+                console.log('rd se', currentToken, replacementDict[currentToken])
+
+                if(replacementDict[currentToken].length > 1){
+                    console.log('multiple suggestions available')
+                    setSuggestedToken(replacementDict[currentToken])
+
+                } else {
+                    // Only one replacement
+                    console.log('only have one suggested replacement');
+                    setSuggestedToken(replacementDict[currentToken][0])
+                    setCurrentToken(replacementDict[currentToken][0])
+                }
+            }
+        }
+
+    }, [updateSingleToken])
+
+
+    const addReplacement = async (isSingle) => {
+        // Adds a replacement based on user input into token input field
+        const response = await axios.patch(`/api/token/replace/${tokenId}`, { replacement: currentToken });
+
         if (response.status === 200){
             console.log('replacement response', response);
             setSavedChange(true);
             setShowPopover(false);
-
-            // Add replacement to replacementDict (used to update other tokens)
-            setReplacementDict(prevState => ({...prevState, [originalToken]: currentToken}));
+            setUpdateSingleToken(isSingle);
+            modifyReplacmentDict();
 
         }
     }
 
+
+
+
+
+
     const removeReplacement = async () => {
         const response = await axios.delete(`/api/token/replace-remove/${tokenId}`)
         if (response.status === 200){
-            console.log('Replacement was successfully removed.')
+            // Remove replacement from dictionary (used to update other tokens)
+            if (replacementDict[originalToken]){
+                // If page is refreshed - replacements will be lost so removing will error out. TODO: add replacement dict into local storage.
+                setReplacementDict(prevState => ({...prevState, [originalToken]: prevState[originalToken].filter(token => token !== currentToken)}));
+            }
             setCurrentToken(originalToken);
             setShowRemovePopover(false);
             setSavedChange(false);
             setReplacedToken(null);
             setEdited(false);
-
-            // Remove replacement from dictionary (used to update other tokens)
-            setReplacementDict(Object.keys(replacementDict).filter(token => token !== originalToken));
+            console.log('Replacement was successfully removed.')
         }
     }
 
@@ -188,13 +228,15 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
         setSavedChange(false);
     }
 
-    const addSuggestedReplacement = async () => {
-        const response = await axios.patch(`/api/token/suggestion-add/${tokenId}`, {suggested_replacement: suggestedToken});
+    const addSuggestedReplacement = async (suggestReplacementToken) => {
+        // Converts a suggested token into an actual replacement
+
+        const response = await axios.patch(`/api/token/suggestion-add/${tokenId}`, {suggested_replacement: suggestReplacementToken});
         if (response.status === 200){
             console.log('succesfully added suggested replacement.');
             setSuggestedToken(null);
-            setReplacedToken(suggestedToken);
-            setCurrentToken(suggestedToken);
+            setReplacedToken(suggestReplacementToken);
+            setCurrentToken(suggestReplacementToken);
             setShowAddSuggestionPopover(false)
         }
     }
@@ -261,6 +303,7 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
                     originalToken={originalToken}
                     currentToken={currentToken}
                     bgColorMap={bgColorMap}
+                    tokenClf={tokenClf}
                 />
                 <div style={{display: 'flex', flexDirection: 'row', justifyContent: (hasSuggestedMetaTag && !suggestedToken) ? 'space-between' : null, width: inputWidth}}>
                     <TokenUnderline
@@ -278,7 +321,8 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
                         showAddSuggestionPopover={showAddSuggestionPopover}
                         setShowAddSuggestionPopover={setShowAddSuggestionPopover}   
                         addSuggestedReplacement={addSuggestedReplacement}
-                        removeSuggestedReplacement={removeSuggestedReplacement}         
+                        removeSuggestedReplacement={removeSuggestedReplacement}
+                        setSuggestedToken={setSuggestedToken}
                     />
                     {
                         hasSuggestedMetaTag ?

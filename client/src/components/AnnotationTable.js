@@ -49,7 +49,9 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
   const [maps, setMaps] = useState();
   const [metaTagSuggestionMap, setMetaTagSuggestionMap] = useState({"abbreviation": {}, "domain_specific": {}, "english_word": {}, "noise": {}, "unsure": {}});
 
-  console.log(metaTagSuggestionMap)
+  const [updateSingleToken, setUpdateSingleToken] = useState(null);
+
+  // console.log(metaTagSuggestionMap)
 
   const [loaded, setLoaded] = useState(false);
   const [mapsLoaded, setMapsLoaded] = useState(false);
@@ -138,24 +140,25 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
   }, [page, pageLimit])
 
 
-  useEffect(() => {
-    // Cascades replacements as suggested replacements across tokens
-    const updateTokens = async () => {
-      console.log('suggesting replacements with', replacementDict);
-      if (Object.keys(replacementDict).length > 0){
+  // TODO: Uncomment once single/multi has been resolved
+  // useEffect(() => {
+  //   // Cascades replacements as suggested replacements across tokens
+  //   const updateTokens = async () => {
+  //     console.log('suggesting replacements with', replacementDict);
+  //     if (Object.keys(replacementDict).length > 0){
 
-        const response = await axios.patch(`/api/token/suggest-many/${project._id}`, {replacement_dict: replacementDict});
+  //       const response = await axios.patch(`/api/token/suggest-many/${project._id}`, {replacement_dict: replacementDict});
 
-        if (response.status === 200){
-          console.log('Updated tokens with suggested replacements')
+  //       if (response.status === 200){
+  //         console.log('Updated tokens with suggested replacements')
 
-          setReplacementDict({});
+  //         setReplacementDict({});
 
-        }
-      }
-    }
-    updateTokens();
-  }, [page])
+  //       }
+  //     }
+  //   }
+  //   updateTokens();
+  // }, [page])
 
 
   useEffect(() => {
@@ -226,6 +229,8 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
                     page={page}
                     metaTagSuggestionMap={metaTagSuggestionMap}
                     setMetaTagSuggestionMap={setMetaTagSuggestionMap}
+                    updateSingleToken={updateSingleToken}
+                    setUpdateSingleToken={setUpdateSingleToken}
                     />
                 </div>
               </div>

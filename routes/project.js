@@ -111,7 +111,7 @@ router.post('/create', async (req, res) => {
                     domain_specific: domainSpecific,
                     abbreviation: abbreviation,
                     english_word: englishWord,
-                    // Replacement is pre-filled if only one replacement is available
+                    // Replacement is pre-filled if only one replacement is available (user can remove in UI if necessary)
                     replacement: (hasReplacement && rpMap.replacements[0][token].length === 1)  ? rpMap.replacements[0][token][0] : null,
                     // In the instance multiple replacements are available, they are added to the suggested
                     // tokens for the user to remedy

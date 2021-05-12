@@ -7,12 +7,12 @@ import { BsArrowRightShort } from 'react-icons/bs'
 const useStyles = createUseStyles({
     popoverContainer: {
         minWidth: '120px',
-        padding: '0.5em',
     },
     textContainer: {
         display: 'flex',
         justifyContent: 'space-around',
-        borderBottom: '1px solid lightgrey'
+        borderBottom: '1px solid lightgrey',
+        padding: '0.5em 0.5em 0em 0.5em',
     },
     originalText: {
         fontSize: '16px',
@@ -59,7 +59,8 @@ const useStyles = createUseStyles({
     },
     actionText: {
         margin: '0.2em 0 0.2em 0',
-        textAlign: 'center'
+        textAlign: 'center',
+        padding: '0em 0.5em 0em 0.5em'
     }
 })
 
@@ -77,22 +78,28 @@ export default function TokenUnderline({ savedChange,
                                          showAddSuggestionPopover,
                                          setShowAddSuggestionPopover,
                                          addSuggestedReplacement,
-                                         removeSuggestedReplacement}) {
+                                         removeSuggestedReplacement,
+                                         setSuggestedToken}) {
 
     const classes = useStyles();
 
-    const [multipleSuggestions, setMultipleSuggestions] = useState();
+    const [multipleSuggestions, setMultipleSuggestions] = useState(false);
     const [selectedSuggestion, setSelectedSuggestion] = useState();
-    
+
+
+    // console.log(suggestedToken);
+
     useEffect(() => {
         if (suggestedToken){
             setMultipleSuggestions(suggestedToken.length > 1)
         }   
-    }, [])
+    }, [suggestedToken])
 
     const addOne = () => {
-        // TODO: Make this not cascade
-        addSuggestedReplacement();
+        // TODO: Make the replacement not cascade
+        console.log('adding single replacement', selectedSuggestion);
+        // setSuggestedToken(selectedSuggestion);
+        addSuggestedReplacement(selectedSuggestion);
     }
 
     const addAll = () => {
@@ -101,24 +108,24 @@ export default function TokenUnderline({ savedChange,
 
     const ignore = () => {
         removeSuggestedReplacement();
+    }
 
+    const remove = () => {
+        removeReplacement();
     }
     
-    console.log(originalToken, suggestedToken)
-
     const removeReplacementPopover = <Popover id={`remove-popover`}>
-                                        <Popover.Title as="p" style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', padding: '0.5em'}}>
-                                                <Button onClick={() => removeReplacement()} size="sm" variant="info">Yes</Button>
-                                                <Button onClick={() => setShowRemovePopover(false)} size="sm" variant="secondary">No</Button>
-                                            </Popover.Title>
-                                        <Popover.Content>
-                                            <p>Remove replacement?</p>
-                                            <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', margin: 'auto', height: '2em'}}>
-                                                <div>
-                                                    <strong>{currentToken}</strong> to <strong>{originalToken}</strong>
-                                                </div>
+                                        <div className={classes.popoverContainer}>
+                                            <div className={classes.textContainer}>
+                                                <p className={classes.originalText}>{originalToken}</p>
+                                                <p className={classes.arrow}><BsArrowRightShort/></p>
+                                                <p className={classes.suggestedTextSingle}>{currentToken}</p>
                                             </div>
-                                        </Popover.Content>
+                                            <div className={classes.actionContainer}>
+                                                <div className={classes.actionBtnActive} onClick={() => remove()}><p className={classes.actionText}><MdDelete/>Remove</p></div>
+
+                                            </div>
+                                        </div>
                                     </Popover>
 
     const addSuggestionPopover = <Popover id={`add-suggestion-popover`}
@@ -155,9 +162,9 @@ export default function TokenUnderline({ savedChange,
                                             }
                                         </div>
                                         <div className={classes.actionContainer}>
-                                            <div className={(selectedSuggestion || !multipleSuggestions) ? classes.actionBtnActive : classes.actionBtnDisabled} onClick={() => addOne()}><p className={classes.actionText}><MdBookmark/>Add one</p></div>
-                                            <div className={(selectedSuggestion || !multipleSuggestions) ? classes.actionBtnActive : classes.actionBtnDisabled} onClick={() => addAll()}><p className={classes.actionText}><MdBrush/>Apply all</p></div>
-                                            <div className={(selectedSuggestion || !multipleSuggestions) ? classes.actionBtnActive : classes.actionBtnDisabled} onClick={() => ignore()}><p className={classes.actionText}><MdDelete/>Ignore</p></div>
+                                            <div className={(selectedSuggestion || !multipleSuggestions) ? classes.actionBtnActive : classes.actionBtnDisabled} onClick={() => addOne()}><p className={classes.actionText}><MdBookmark/>Accept one</p></div>
+                                            <div className={(selectedSuggestion || !multipleSuggestions) ? classes.actionBtnActive : classes.actionBtnDisabled} onClick={() => addAll()}><p className={classes.actionText}><MdBrush/>Accept and apply all</p></div>
+                                            <div className={classes.actionBtnActive} onClick={() => ignore()}><p className={classes.actionText}><MdDelete/>Ignore</p></div>
                                         </div>
                                     </div>
                                 </Popover>
@@ -167,7 +174,7 @@ export default function TokenUnderline({ savedChange,
         <div>
             {
                 (( savedChange && originalToken !== currentToken && edited ) || replacedToken ) ?
-                <OverlayTrigger trigger="click" placement="bottom" overlay={removeReplacementPopover} show={showRemovePopover}>
+                <OverlayTrigger trigger="focus" placement="bottom" overlay={removeReplacementPopover} show={showRemovePopover}>
                     <div
                         style={{cursor: 'pointer', width: inputWidth, backgroundColor: bgColorMap['rt'], height: '6px', borderRadius: '2px', marginTop: '2px', marginBottom: '0.5em'}}
                         onClick={() => setShowRemovePopover(!showRemovePopover)}
@@ -175,7 +182,7 @@ export default function TokenUnderline({ savedChange,
                 </OverlayTrigger>
                 : (suggestedToken)
                 ?
-                <OverlayTrigger trigger="click" placement="bottom" overlay={addSuggestionPopover} show={showAddSuggestionPopover}>
+                <OverlayTrigger trigger="focus" placement="bottom" overlay={addSuggestionPopover} show={showAddSuggestionPopover}>
                     <div
                         style={{cursor: 'pointer', width: inputWidth, backgroundColor: bgColorMap['st'], height: '6px', borderRadius: '2px', marginTop: '2px', marginBottom: '0.5em'}}
                         onClick={() => setShowAddSuggestionPopover(!showAddSuggestionPopover)}

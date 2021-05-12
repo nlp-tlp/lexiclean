@@ -61,17 +61,17 @@ const useStyles = createUseStyles({
     }
 })
 
-export default function TokenInput({showContextMenu, showPopover, tokenIndex, modifyToken, edited, bgColor, inputWidth, addReplacement, cancelChange, originalToken, currentToken, bgColorMap}) {
+export default function TokenInput({showContextMenu, showPopover, tokenIndex, modifyToken, edited, bgColor, inputWidth, addReplacement, cancelChange, originalToken, currentToken, bgColorMap, tokenClf}) {
     const classes = useStyles();
 
 
     const addOne = () => {
         // TODO: Make this not cascade
-        addReplacement();
+        addReplacement(true);
     }
 
     const addAll = () => {
-        addReplacement();
+        addReplacement(false);
     }
 
     const ignore = () => {
@@ -90,17 +90,15 @@ export default function TokenInput({showContextMenu, showPopover, tokenIndex, mo
                                         </div>
                                         <div className={classes.actionContainer}>
                                             <div className={classes.actionBtn} onClick={() => addOne()}><p className={classes.actionText}><MdBookmark/>Add one</p></div>
-                                            <div className={classes.actionBtn} onClick={() => addAll()}><p className={classes.actionText}><MdBrush/>Apply all</p></div>
+                                            <div className={classes.actionBtn} onClick={() => addAll()}><p className={classes.actionText}><MdBrush/>Add and apply all</p></div>
                                             <div className={classes.actionBtn} onClick={() => ignore()}><p className={classes.actionText}><MdDelete/>Ignore</p></div>
-
                                         </div>
                                     </div>
                                 </Popover>
 
-
     return (
         <OverlayTrigger
-            trigger="click"
+            trigger = "click"
             placement="bottom"
             overlay={addReplacementPopover}
             show={showPopover}
@@ -117,7 +115,7 @@ export default function TokenInput({showContextMenu, showPopover, tokenIndex, mo
             style={{backgroundColor: edited ? bgColorMap['rt']: (originalToken !== currentToken) ? bgColorMap['st'] : bgColor, width: inputWidth}}
             className={classes.token}
             autoComplete="off"
-            title={`original: ${originalToken}`}
+            title={`original: ${originalToken}\nClass: ${tokenClf}`}
             onContextMenu={(e) => showContextMenu(e)}
         />
     </OverlayTrigger>

@@ -53,8 +53,8 @@ export default function Header({project, replacementDict, setShowDownload, setSh
 
     const [progress, setProgress] = useState();
 
-    const changeCount = Object.keys(replacementDict).map(textIndex => Object.keys(replacementDict[textIndex]).length).reduce((a, b) => a + b, 0);
-    const showSaveBtn = Object.keys(replacementDict).length > 0;
+    // const changeCount = Object.keys(replacementDict).map(textIndex => Object.keys(replacementDict[textIndex]).length).reduce((a, b) => a + b, 0);
+    // const showSaveBtn = Object.keys(replacementDict).length > 0;
 
     useEffect(() => {
         const fetchProgressInfo = async () => {
@@ -78,13 +78,13 @@ export default function Header({project, replacementDict, setShowDownload, setSh
                 <div style={{display: 'flex', flexDirection: 'column'}}>
                     <div style={{fontSize: '2em', color: '#F8F9FA', fontWeight: 'bolder', display: 'flex'}}>
                         <p>{ project.name }</p>
-                        {
+                        {/* {
                             showSaveBtn ?
                             <p className={classes.save} onClick={() => setSaved(true)} title={`${changeCount} changes waiting`}>
                                 <MdPlaylistAddCheck/>
                             </p>
                             : null
-                        }
+                        } */}
                     </div>
                     {
                         progress ?

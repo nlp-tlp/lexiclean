@@ -25,9 +25,11 @@ router.post('/upload', async (req, res) => {
 
 // Patch replacement on one token
 router.patch('/replace/:tokenId', async (req, res) => {
+    console.log('Patching replacement on token')
     try{
+        console.log('req body', req.body);
         const updatedReponse = await Token.updateOne({ _id: req.params.tokenId},
-                                                        { $push: {replacement: req.body.replacement}, last_modified: Date.now()},
+                                                        { replacement: req.body.replacement, last_modified: Date.now()},
                                                         { upsert: true })
         
         res.json(updatedReponse);
@@ -76,7 +78,7 @@ router.delete('/replace-remove/:tokenId', async (req, res) => {
 router.delete('/suggestion-remove/:tokenId', async (req, res) => {
     console.log('removing suggested replacement on token');
     try {
-        const response = await Token.updateOne({ _id: req.params.tokenId}, {suggested_replacement: null})
+        const response = await Token.updateOne({ _id: req.params.tokenId}, {suggested_replacement: []})
         res.json(response);
     }catch(err){
         res.json({ message: err })
