@@ -78,16 +78,12 @@ export default function TokenUnderline({ savedChange,
                                          showAddSuggestionPopover,
                                          setShowAddSuggestionPopover,
                                          addSuggestedReplacement,
-                                         removeSuggestedReplacement,
-                                         setSuggestedToken}) {
+                                         removeSuggestedReplacement}) {
 
     const classes = useStyles();
 
     const [multipleSuggestions, setMultipleSuggestions] = useState(false);
     const [selectedSuggestion, setSelectedSuggestion] = useState();
-
-
-    // console.log(suggestedToken);
 
     useEffect(() => {
         if (suggestedToken){
@@ -96,9 +92,7 @@ export default function TokenUnderline({ savedChange,
     }, [suggestedToken])
 
     const addOne = () => {
-        // TODO: Make the replacement not cascade
         console.log('adding single replacement', selectedSuggestion);
-        // setSuggestedToken(selectedSuggestion);
         addSuggestedReplacement(selectedSuggestion);
     }
 
@@ -136,7 +130,7 @@ export default function TokenUnderline({ savedChange,
                                             <p className={classes.originalText}>{originalToken}</p>
                                             
                                             {
-                                                (suggestedToken && multipleSuggestions) ?
+                                                (suggestedToken && Array.isArray(suggestedToken) && multipleSuggestions) ?
                                                 <div style={{display: 'flex', flexDirection: 'column'}}>
                                                     {suggestedToken.map(suggestion => {return(
                                                         <>

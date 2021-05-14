@@ -12,7 +12,8 @@ const useStyles = createUseStyles({
     flexDirection: 'column',
     justifyContent: 'center',
     width: '80%',
-    margin: 'auto'
+    margin: 'auto',
+    userSelect: 'none', // Stops text from being selected on click
   },
   row: {
     display: 'flex',
@@ -60,6 +61,10 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
   const [paginatorLoaded, setPaginatorLoaded] = useState();
   const [totalPages, setTotalPages] = useState();
   const [page, setPage] = useState(1);
+
+  // TOKEN SELECT HANDLER
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedTokens, setSelectedTokens] = useState();
 
 
   useEffect(() => {
@@ -192,10 +197,35 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
   // }, [page, saved])
 
 
+
+
+
+  // SEGMENTATION HANDLERS
+  useEffect(() => {
+    console.log(selectedTokens)
+  }, [selectedTokens])
+
+
+  // const toggleAction = event => {
+  //   console.log(event);
+  //   if (event.ctrlKey){
+  //     // In select mode - user can click on tokens to concatenate them.
+  //     console.log('control down?', event.ctrlKey)
+  //     setSelectMode(true);
+
+  //   } else {
+  //     // When select mode is off - popover will confirm selected tokens are correct before concatenation. 
+  //     console.log('control down?', event.ctrlKey)
+  //     setSelectMode(false)
+  //   }
+  // }
+
   return (
     <>
       {/* // Need to add icon to indicate that the document has no detected non-canonical tokens */}
-      <div className={classes.container}>
+      {/* onClick={toggleFunction} onKeyPress={toggleFunction}> */}
+        {/* </div>onMouseDown={(e) => toggleAction(e)}> */}
+      <div className={classes.container} >
         {
           (!loaded && !replacementsLoaded) ? 
             <div style={{margin: 'auto', marginTop: '5em'}}>
@@ -222,8 +252,6 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
                   <Text
                     text={text}
                     textIndex={text._id}
-                    maps={maps}
-                    setMaps={setMaps}
                     replacementDict={replacementDict}
                     setReplacementDict={setReplacementDict}
                     page={page}
@@ -231,6 +259,8 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
                     setMetaTagSuggestionMap={setMetaTagSuggestionMap}
                     updateSingleToken={updateSingleToken}
                     setUpdateSingleToken={setUpdateSingleToken}
+                    selectMode={selectMode}
+                    setSelectedTokens={setSelectedTokens}
                     />
                 </div>
               </div>

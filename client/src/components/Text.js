@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { createUseStyles } from 'react-jss';
 import Token from './Token'
 
@@ -10,8 +10,10 @@ const useStyles = createUseStyles({
     }
 })
 
-export default function Text({text, textIndex, maps, setMaps, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap, updateSingleToken, setUpdateSingleToken}) {
+
+export default function Text({text, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap, updateSingleToken, setUpdateSingleToken, selectMode, setSelectedTokens}) {
     const classes = useStyles();
+
     return (
         <div id="text-container" className={classes.container} key={textIndex}>
             {
@@ -27,6 +29,8 @@ export default function Text({text, textIndex, maps, setMaps, replacementDict, s
                                 setMetaTagSuggestionMap={setMetaTagSuggestionMap}
                                 updateSingleToken={updateSingleToken}
                                 setUpdateSingleToken={setUpdateSingleToken}
+                                selectMode={selectMode}
+                                setSelectedTokens={setSelectedTokens}
                             />
                             )})
                 : <p>Loading...</p>

@@ -38,7 +38,7 @@ const bgColorMap = {
     'ua': '#F2A477',
 }
 
-export default function Token({tokenInfo, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap, updateSingleToken, setUpdateSingleToken}) {
+export default function Token({tokenInfo, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap, updateSingleToken, setUpdateSingleToken, selectMode, setSelectedTokens}) {
     const classes = useStyles();
 
     // Token
@@ -72,6 +72,25 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     const [showPopover, setShowPopover] = useState(false);
     const [showRemovePopover, setShowRemovePopover] = useState(false);
     const [showAddSuggestionPopover, setShowAddSuggestionPopover] = useState(false);
+
+
+    // Segmentation handler
+    const [selectTokenMode, setSelectTokenMode] = useState(false);
+
+    const toggleAction = (event) => {
+        console.log(event);
+        if (event.ctrlKey){
+          // In select mode - user can click on tokens to concatenate them.
+          console.log('control down?', event.ctrlKey)
+          setSelectTokenMode(true);
+        //   setSelectedTokens(prevState => ({...prevState, [tokenIndex]: currentToken}))
+    
+        } else {
+          // When select mode is off - popover will confirm selected tokens are correct before concatenation. 
+          console.log('control down?', event.ctrlKey)
+          setSelectTokenMode(false)
+        }
+      }
 
 
     useEffect(() => {
@@ -148,7 +167,9 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
             } else {
                 console.log('additional keys', originalToken, currentToken, replacementDict, replacementDict[originalToken], replacementDict[originalToken].push(currentToken))
                 // Update replacement dictionary
-                setReplacementDict(prevState => ({...prevState, [originalToken]: prevState[originalToken]}));
+                // TODO: Understand why we don't need to push into the array... the token just magically appears
+                const updatedReplacementsSet = new Set(replacementDict[originalToken])
+                setReplacementDict(prevState => ({...prevState, [originalToken]: Array.from(updatedReplacementsSet)}));
             }
 
             setUpdateSingleToken(null);
@@ -164,22 +185,25 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
             
             if (Object.keys(replacementDict).includes(currentToken)){
                 // If replacement map is one-one then update the current token, else don't update (user has to drill down to determine best choice)
-                console.log('rd se', currentToken, replacementDict[currentToken])
+                console.log('in replace dict side effect -', currentToken, replacementDict[currentToken])
 
                 if(replacementDict[currentToken].length > 1){
+                    // Multiple candidate replaceaments
+                    // For multiple replacements - array is passed to child as they will be rendered as selections for the user.
                     console.log('multiple suggestions available')
                     setSuggestedToken(replacementDict[currentToken])
 
                 } else {
                     // Only one replacement
-                    console.log('only have one suggested replacement');
+                    // For single replacements, no array is passed to children.
+                    console.log('only have one suggested replacement:', currentToken, ' to ', replacementDict[currentToken][0]);
                     setSuggestedToken(replacementDict[currentToken][0])
                     setCurrentToken(replacementDict[currentToken][0])
                 }
             }
         }
 
-    }, [updateSingleToken])
+    }, [updateSingleToken, replacementDict])
 
 
     const addReplacement = async (isSingle) => {
@@ -286,7 +310,7 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '0.5em'}} key={tokenIndex} id={`token-${tokenClf}`}>
+        <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '0.5em'}} key={tokenIndex} id={`token-${tokenClf}`} onMouseDown={toggleAction}>
             {
                 tokenClf ?
                 <>
