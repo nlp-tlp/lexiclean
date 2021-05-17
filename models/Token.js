@@ -12,7 +12,7 @@ const TokenSchema = mongoose.Schema({
         default: null
     },
     suggested_replacement: {
-        type: Array,
+        type: String,
         required: false,
         default: null
     },    
@@ -32,6 +32,11 @@ const TokenSchema = mongoose.Schema({
         default: false
     },
     noise: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
+    sensitive: {
         type: Boolean,
         required: true,
         default: false
