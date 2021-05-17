@@ -70,7 +70,8 @@ router.post('/create', async (req, res) => {
         // TOOD: review the use of lowercasing texts here. Should this be done or should
         // casing be kept but for matching to ds, en, rp the lowercasing be used?
         // removes white space between tokens as this will break the validation of the Token model.
-        const tokenizedTexts = req.body.texts.map(text => text.toLowerCase().replace(/\s+/g,' ').replace(/\.$/, '').trim().split(' '));
+        const normalisedTexts = req.body.texts.map(text => text.toLowerCase().replace(/\s+/g,' ').replace(/\.$/, '').trim()); 
+        const tokenizedTexts = normalisedTexts.map(text => text.split(' '));
         
         let globalTokenIndex = -1;  // this is used to index the tokenlist that is posted to mongo as a flat list when reconstructing texts
         const tokenTextMap = tokenizedTexts.map((text, textIndex) => text.map((token, tokenIndex) => {
@@ -93,6 +94,9 @@ router.post('/create', async (req, res) => {
         const enMapSet = new Set(enMap.tokens);
         const rpMapSet = new Set(Object.keys(rpMap.replacements[0]));
 
+        // console.log('ds map set', dsMapSet)
+        // console.log('rp map set',rpMapSet)
+
 
         console.log('Building token list');
         const tokenList = tokenizedTexts.flat().map((token, index) => {
@@ -101,22 +105,18 @@ router.post('/create', async (req, res) => {
             const englishWord = enMapSet.has(token);
             const hasReplacement = rpMapSet.has(token);
 
-
-            if(hasReplacement){
-                console.log(token, rpMap.replacements[0][token])
-            }
+            // if(hasReplacement){
+            //     console.log(token, 'replaced with', rpMap.replacements[0][token])
+            // }
 
             return({
                     value: token,
                     domain_specific: domainSpecific,
                     abbreviation: abbreviation,
                     english_word: englishWord,
-                    // Replacement is pre-filled if only one replacement is available (user can remove in UI if necessary)
-                    replacement: (hasReplacement && rpMap.replacements[0][token].length === 1)  ? rpMap.replacements[0][token][0] : null,
-                    // In the instance multiple replacements are available, they are added to the suggested
-                    // tokens for the user to remedy
-                    // otherwise set as an empty array to do operations on in the future.
-                    suggested_replacement: (hasReplacement && rpMap.replacements[0][token].length > 1) ? rpMap.replacements[0][token] : []  
+                    // Replacement is pre-filled if only replacement is found in map (user can remove in UI if necessary)
+                    replacement: hasReplacement ? rpMap.replacements[0][token] : null,
+                    suggested_replacement: null
                     })
 
             })
@@ -129,9 +129,10 @@ router.post('/create', async (req, res) => {
 
         // Build texts
         console.log('Building texts');
-        const builtTexts = tokenTextMap.map(text => {
+        const builtTexts = tokenTextMap.map((text, index) => {
             return({
                     // project_id: 'ph', // Cannot insert real project_id here as the project hasn't been created. This is done below as an updateMany. Uses placeholder is null. 
+                    original: normalisedTexts[index],
                     tokens: text.map(token => {
                         return({
                             index: token.index,

@@ -11,6 +11,10 @@ const TextSchema = mongoose.Schema({
         ref: 'Project',
         required: false 
     },
+    original: {
+        type: String,
+        required: true
+    },
     tokens: [{
         index: { 
             type: Number,
