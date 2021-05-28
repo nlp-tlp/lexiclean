@@ -19,6 +19,35 @@ router.get('/', async (req, res) => {
     }
 })
 
+// Fetch projects for project feed
+router.get('/feed', async(req, res) => {
+    console.log('fetching projects for feed');
+    try{
+        // TODO: Add current token count to project feed response - currently being difficult
+
+        const projects = await Project.find().populate('texts').lean();
+        // .populate('texts.tokens.token')
+        const feedInfo = projects.map(project => ({created_on: project.created_on,
+            description: project.description,
+            last_modified: project.last_modified,
+            name: project.name,
+            starting_token_count: project.starting_token_count,
+            // current_token_count: project.texts.map(text => text.tokens.map(token => token.token.replacement ? token.token.replacement : token.token.value )).flat(),
+            _id: project._id,
+            text_count: project.texts.length,
+            annotated_texts: project.texts.filter(text => text.annotated).length
+        }))
+
+        res.json(feedInfo)
+
+
+
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+
 
 // UPDATE PROJECT
 router.patch('/:projectId', async (req, res) => {
@@ -152,12 +181,14 @@ router.post('/create', async (req, res) => {
         console.log('Building project');
         const textObjectIds = textResponse.map(text => text._id);
         const mapObjectIds = mapResponse.map(map => map._id);
+        const tokenCount = new Set(tokenizedTexts.flat().map(token => token))
 
         const projectResponse = await Project.create({
             name: req.body.name,
             description: req.body.description,
             texts: textObjectIds,
-            maps: mapObjectIds
+            maps: mapObjectIds,
+            starting_token_count: tokenCount.size
         })
 
 
@@ -226,5 +257,62 @@ router.delete('/:projectId', async (req, res) => {
         res.json({ message: err })
     }
 })
+
+
+// Get count of unique tokens within project
+router.get('/token-count/:projectId', async (req, res) => {
+    console.log('Getting token count');
+    try{
+        const textRes = await Text.find({ project_id: req.params.projectId })
+                                        .populate('tokens.token')
+                                        .lean()
+
+        const uniqueTokens = new Set(textRes.map(text => text.tokens.map(token => token.token.replacement ? token.token.replacement : token.token.value )).flat());
+
+        res.json({'count': uniqueTokens.size});
+
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+
+// Download results
+router.get('/results-download/:projectId', async (req, res) => {
+    console.log('Preparing annotation results')
+    try{
+        const texts = await Text.find({ project_id : req.params.projectId }).populate('tokens.token').lean();
+        console.log(texts[0])
+
+        // Format results similar to WNUT 2015 (see: http://noisy-text.github.io/2015/norm-shared-task.html), with some modifications
+        // {"tid": <text_id>, "input": [<token>, <token>, ...], "output": [<token>, <token>, ...], "class": [[<class_1>,<class_n>], [<class_1>,<class_n>], ...]}
+
+        const results = texts.map(text => (
+            {
+                "tid": text._id,
+                "input": text.tokens.map(token => token.token.value),
+                // Here tokens marked with 'replace' should be converted to an empty string
+                "output": text.tokens.map(token => token.token.removed ? '' : token.token.replacement ? token.token.replacement : token.token.value),
+                "class": text.tokens.map(token => ([
+                    ... token.token.domain_specific ? ["domain_specific"] : [],
+                    ... token.token.abbreviation ? ["abbreviation"] : [],
+                    ... token.token.english_word ? ["english_word"] : [],
+                    ... token.token.noise ? ["noise"] : [],
+                    ... token.token.sensitive ? ["sensitive"] : [],
+                    ... token.token.unsure ? ["unsure"] : [],
+                    ... token.token.removed ? ["removed"] : []
+                ]))
+            }
+            
+            ))
+
+
+        res.json(results)
+
+    }catch(err){
+        res.json({ message: json })
+    }
+})
+
 
 module.exports = router;
