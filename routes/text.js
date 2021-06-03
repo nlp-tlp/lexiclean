@@ -101,66 +101,67 @@ router.get('/filter/:projectId', async (req, res) => {
                     // annotated: false
                 }
             },
-            {
-                $lookup: {
-                    from: 'tokens', // need to use MongoDB collection name - NOT mongoose model name
-                    localField: 'tokens.token',
-                    foreignField: '_id',
-                    as: 'tokens_detail'
-                }
-            },
-            // Merges data in text model and that retrieved from the tokens collection into single object
-            {
-                $project: {
-                    annotated: "$annotated",
-                    candidates: "$candidates",
-                    tokens: {
-                        $map : {
-                            input: { $zip: { inputs: [ "$tokens", "$tokens_detail"]}},
-                            as: "el",
-                            in: {
-                                $mergeObjects: [{"$arrayElemAt": [ "$$el", 0 ]}, {"$arrayElemAt": [ "$$el", 1 ] }]
-                            }
-                        }
-                    }
-                }
-            },
-            // To sort data based on the number of replacement candidates e.g. those that are not ds, en, abrv, unsure, etc.
-            // First need to addField aggregated over these fields and then sort descending using the calculated field 
-            {
-                $addFields: {
-                    candidates_bool: "$tokens.english_word"
-                }
-            },
-            {
-                $project:
-                {
-                    annotated: "$annotated",
-                    tokens: "$tokens",
-                    candidates: {
-                        $map: {
-                            input: "$candidates_bool",
-                            as: "candidate",
-                            in: {$cond: {if: "$$candidate", then: 0, else: 1}}  // 1 if not english word else 0 
-                        }
-                    }
-                }
-            },
-            {
-                $addFields: {
-                    candidate_count: {$sum: "$candidates"}
-                }
-            },
+            // COMMENTED OUT SECTION BELOW WAS USED FOR CANDIDATE CAPTURING AND FILTERING. THIS IS REMOVED IN PLACE OF TF-IDF
+            // {
+            //     $lookup: {
+            //         from: 'tokens', // need to use MongoDB collection name - NOT mongoose model name
+            //         localField: 'tokens.token',
+            //         foreignField: '_id',
+            //         as: 'tokens_detail'
+            //     }
+            // },
+            // // Merges data in text model and that retrieved from the tokens collection into single object
+            // {
+            //     $project: {
+            //         annotated: "$annotated",
+            //         candidates: "$candidates",
+            //         tokens: {
+            //             $map : {
+            //                 input: { $zip: { inputs: [ "$tokens", "$tokens_detail"]}},
+            //                 as: "el",
+            //                 in: {
+            //                     $mergeObjects: [{"$arrayElemAt": [ "$$el", 0 ]}, {"$arrayElemAt": [ "$$el", 1 ] }]
+            //                 }
+            //             }
+            //         }
+            //     }
+            // },
+            // // To sort data based on the number of replacement candidates e.g. those that are not ds, en, abrv, unsure, etc.
+            // // First need to addField aggregated over these fields and then sort descending using the calculated field 
+            // {
+            //     $addFields: {
+            //         candidates_bool: "$tokens.english_word"
+            //     }
+            // },
+            // {
+            //     $project:
+            //     {
+            //         annotated: "$annotated",
+            //         tokens: "$tokens",
+            //         candidates: {
+            //             $map: {
+            //                 input: "$candidates_bool",
+            //                 as: "candidate",
+            //                 in: {$cond: {if: "$$candidate", then: 0, else: 1}}  // 1 if not english word else 0 
+            //             }
+            //         }
+            //     }
+            // },
+            // {
+            //     $addFields: {
+            //         candidate_count: {$sum: "$candidates"}
+            //     }
+            // },
+
             // Sort based on the number of candidates
+            // Note: sort order is left to right
             // Note doing sequential sorts just overrides the n-1 sort operation.
             // TODO: also sort by the first token alphabetically.
             // 
             {
-                $sort: {'candidate_count': -1, 'annotated': 1} // -1 descending, 1 ascending
+                // $sort: {'annotated': -1, 'candidate_count': -1} // -1 descending, 1 ascending
+                $sort: {'annotated': -1, 'weight': 1}   // weight is sorted smallest to highest
             },
-            // {
-            //     $sort: {'annotated': 1} // -1 descending, 1 ascending
-            // },
             // Paginate over documents
             {
                 $skip: skip // equiv to page
@@ -283,6 +284,41 @@ router.get('/overview/:projectId', async (req, res) => {
 })
 
 
+
+// Check if text has been annotated - if so, patch the annotated field on the text
+router.patch('/check-annotations/', async (req, res) => {
+    console.log('Checking annotation states of texts')
+    try{
+
+        console.log(req.body.textIds)
+
+        const textsRes = await Text.find({ _id : { $in: req.body.textIds}}).populate('tokens.token').lean();
+
+
+        const checkTextState = (text) => {
+            // Checks whether the tokens in a text have been annotated - if so, the text will be marked
+            // as annotated.
+
+
+            //  dont include token.token.english_word
+            const textHasCandidates = text.tokens.filter(token => (
+                token.token.unsure || token.token.sensitive || token.token.noise || token.token.abbreviation || token.token.domain_specific || token.token.replacement
+                )).length > 0
+            return textHasCandidates
+        }
+
+        const annotatedTextIds = textsRes.filter(text => checkTextState(text)).map(text => text._id);
+
+        // Patch annotated field on texts
+        const testUpdateRes = await Text.updateMany({ _id: { $in : annotatedTextIds}}, {"annotated": true})
+
+        res.json(testUpdateRes);
+
+
+    }catch(err){
+        res.json({ message: err })
+    }
+})
 
 
 module.exports = router;
