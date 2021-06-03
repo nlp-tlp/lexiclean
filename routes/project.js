@@ -48,7 +48,6 @@ router.get('/feed', async(req, res) => {
 })
 
 
-
 // UPDATE PROJECT
 router.patch('/:projectId', async (req, res) => {
     try{
@@ -197,6 +196,29 @@ router.post('/create', async (req, res) => {
         const textsUpdateResponse = await Text.updateMany({ _id: { $in: textObjectIds }}, {project_id: projectId}, {upsert: true});
 
 
+        // Update texts in texts collection with their inverse tf-idf weight
+        let termDocMap = []
+        tokenizedTexts.map((doc, docId) => doc.map(token => termDocMap.push({token: token, docId: docId})))
+
+        // - sort array alphabetically
+        termDocMap.sort((a, b) => (a.token > b.token ? 1 : -1))
+        console.log(termDocMap);
+
+        // - merge tokens and their document counts
+        // let termDocCount = {};
+        // termDocMap.map(value => Object.keys(termDocCount).includes(value.token) ? termDocCount[value.token].push(value.docId) : termDocCount[value.token] = [docId])
+
+        // console.log(termDocCount)
+
+
+        // Add weight to text
+        // TODO: make this work properly, current just dummy weights.
+        const textWeights = Array.from({length: textObjectIds.length}, () => Math.random() * 10);
+        console.log(textWeights)
+
+
+
+
         // Return
         // res.json(textsUpdateResponse)
         res.json('Project created successfully.')
@@ -311,8 +333,49 @@ router.get('/results-download/:projectId', async (req, res) => {
 
     }catch(err){
         res.json({ message: json })
-    }
+    } 
 })
 
+
+// Download maps and lists
+// builds replacement map
+// builds domain-specific terms, noise, abbreviation, sensitive, and unsure lists
+router.get('/maps-download/:projectId', async (req, res) => {
+    console.log('Preparing project maps');
+    try{
+
+        // Fetch texts and then strip markups from tokens on texts
+        const texts = await Text.find({ project_id: req.params.projectId }).populate('tokens.token').lean();
+        console.log(texts[0])
+
+        // build replacement map - currently array of objects (TODO: build 1-to-N objects)
+        // note: filter removes nulls
+        const replacements = texts.map(text => text.tokens.map(token => token.token.replacement ? {[token.token.value]: token.token.replacement} : null)).flat().filter(ele => ele)
+
+        // Build lists
+        // note: filter removes nulls
+        // set is used to get unique tokens
+        const dsList = [...new Set(texts.map(text => text.tokens.map(token => (token.token.domain_specific && token.token.replacement) ? token.token.replacement : token.token.domain_specific ? token.token.value : null)).flat().filter(ele => ele))]
+        const noiseList = [...new Set(texts.map(text => text.tokens.map(token => (token.token.noise && token.token.replacement) ? token.token.replacement : token.token.noise ? token.token.value : null)).flat().filter(ele => ele))]
+        const abrvList = [...new Set(texts.map(text => text.tokens.map(token => (token.token.abbreviation && token.token.replacement) ? token.token.replacement : token.token.abbreviation ? token.token.value : null)).flat().filter(ele => ele))]
+        const sensitiveList = [...new Set(texts.map(text => text.tokens.map(token => (token.token.sensitive && token.token.replacement) ? token.token.replacement : token.token.sensitive ? token.token.value : null)).flat().filter(ele => ele))]
+        const unsureList = [...new Set(texts.map(text => text.tokens.map(token => (token.token.unsure && token.token.replacement) ? token.token.replacement : token.token.unsure ? token.token.value : null)).flat().filter(ele => ele))]
+
+        const output = {
+            'replacement_map': replacements,
+            'domain_specific_tokens': dsList,
+            'noise_tokens': noiseList,
+            'abbreviation_tokens': abrvList,
+            'sensitive_tokens': sensitiveList,
+            'unsure_tokens': unsureList,
+        }
+
+        res.json(output);
+
+
+    }catch(err){
+        res.json({ message: err })
+    }
+})
 
 module.exports = router;

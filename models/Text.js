@@ -26,6 +26,10 @@ const TextSchema = mongoose.Schema({
             required: true
         },
     }],
+    weight: {
+        type: Number,
+        required: false,
+    },
     annotated: {
         type: Boolean,
         required: false,
