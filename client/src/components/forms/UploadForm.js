@@ -98,51 +98,46 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
 
     const createProject = async (values) => {
 
-        if (Object.keys(fileData).filter(file => fileData[file].data).length === Object.keys(fileData).length){
-            console.log('all data processed')
-            if (Object.values(values).length === Object.keys(values).length && dataFileLoaded){
-                console.log('form data ready');
-                console.log('has form been submitted?', formSubmitted);
+      console.log(values);
+      console.log(fileData)
+      console.log(metaTags)
 
-                const maps = [
-                  {
-                    "type": "ds",
-                    "tokens": fileData['dsWordFile'].data
-                  },
-                  {
-                    "type": "abrv",
-                    "tokens": fileData['abrvWordFile'].data
-                  },
-                  {
-                  "type": "rp",
-                  "replacements": fileData['rpFile'].data
-                  }
-                ];
+        if (fileData['textFile'].data.length > 0){
+          // Only require raw texts, users might not have any other artifacts.
+          console.log('raw texts loaded')
 
-                const formPayload = {
-                  name: values.projectName,
-                  description: values.projectDescription,
-                  texts: fileData['textFile'].data,
-                  maps: maps
-                }
-                
-                console.log('form payload', formPayload)
+          const maps = Object.keys(metaTags).map(tagKey => ({"type": tagKey, "tokens": metaTags[tagKey].data}))
 
-                if (formSubmitted === false){
-                    console.log('submitting...')
-                    setIsSubmitting(true);
-                    const response = await axios.post('/api/project/create', formPayload)
+          if (Object.keys(fileData["rpFile"].data).length > 0){
+            // add replacements to maps if they exist
+            maps.push({"type": "rp", "tokens": fileData["rpFile"].data})
+          } else {
+            maps.push({"type": "rp", "tokens": []})
+          }
 
-                    if (response.status === 200){
-                        console.log('response of create project', response);
-                        setFormSubmitted(true);
-                        setShowUpload(false);
-                    }
-                }
+          console.log('maps', maps);
 
+          const formPayload = {
+            name: values.projectName,
+            description: values.projectDescription,
+            texts: fileData['textFile'].data,
+            maps: maps
+          }
+
+          console.log('form payload', formPayload)
+
+          if (formSubmitted === false){
+            console.log('submitting...');
+            setIsSubmitting(true);
+            const response = await axios.post('/api/project/create', formPayload);
+
+            if (response.status === 200){
+                console.log('response of create project', response);
+                setFormSubmitted(true);
+                setShowUpload(false);
             }
+          }
         }
-
     }
 
     return (
