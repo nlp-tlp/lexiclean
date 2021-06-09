@@ -9,6 +9,7 @@ import { CompactPicker } from 'react-color';
 
 
 const DEFAULT_COLOUR = "#9B9B9B"
+const REPLACE_COLOUR = "#99BF9C"
 
 const schema = yup.object().shape({
     projectName: yup.string().required(),
@@ -105,22 +106,17 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
     }
 
     const createProject = async (values) => {
-
-      console.log(values);
-      console.log(fileData)
-      console.log(metaTags)
-
         if (fileData['textFile'].data.length > 0){
           // Only require raw texts, users might not have any other artifacts.
           console.log('raw texts loaded')
 
-          const maps = Object.keys(metaTags).map(tagKey => ({"type": tagKey, "tokens": metaTags[tagKey].data}))
+          const maps = Object.keys(metaTags).map(tagKey => ({"type": tagKey, "colour": metaTags[tagKey].colour,"tokens": metaTags[tagKey].data}))
 
           if (Object.keys(fileData["rpFile"].data).length > 0){
             // add replacements to maps if they exist
-            maps.push({"type": "rp", "tokens": fileData["rpFile"].data})
+            maps.push({"type": "rp", "colour": REPLACE_COLOUR, "replacements": fileData["rpFile"].data})
           } else {
-            maps.push({"type": "rp", "tokens": []})
+            maps.push({"type": "rp", "color": REPLACE_COLOUR,"replacements": {}})
           }
 
           console.log('maps', maps);

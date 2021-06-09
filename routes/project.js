@@ -112,7 +112,7 @@ router.post('/create', async (req, res) => {
         let mapSets = Object.assign(...mapResponse.map(map => ({[map.type]: new Set(map.tokens)}))) // TODO: include construction of rp map instead of doing separately. use ternary.
         mapSets['rp'] = new Set(Object.keys(rpMap.replacements[0]));
         mapSets['en'] = new Set(enMap.tokens);
-        // console.log('map sets -> ', mapSets);
+        // console.log('map sets -> ', mapSets);    // too large with enMap
 
         console.log('Building token list');
         const tokenList = tokenizedTexts.flat().map((token, index) => {
@@ -240,9 +240,7 @@ router.post('/create', async (req, res) => {
 
         // Return
         // res.json('Project created successfully.')
-        res.json(tfidfs)
-
-
+        res.json({'word tfids': tfidfs})
 
     }catch(err){
         res.json({ message: err })
