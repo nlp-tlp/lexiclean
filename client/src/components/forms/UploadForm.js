@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { Button, Form, Col, Table } from 'react-bootstrap';
+import { Button, Form, Col, Table, OverlayTrigger, Popover } from 'react-bootstrap';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import axios from 'axios';
-import { MdAddCircle, MdRemoveCircle } from 'react-icons/md';
+import { MdAddCircle, MdRemoveCircle, MdBrush } from 'react-icons/md';
+import { CompactPicker } from 'react-color';
+
+
+
+const DEFAULT_COLOUR = "#9B9B9B"
 
 const schema = yup.object().shape({
     projectName: yup.string().required(),
@@ -15,8 +20,9 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
     const [dataFileLoaded, setDataFileLoaded] = useState(false);
     
     // States for handling metatag creation
-    const [tempMetaTag, setTempMetaTag] = useState(''); 
+    const [tempMetaTag, setTempMetaTag] = useState('');
     const [tempData, setTempData] = useState({meta: null, data: null});
+    const [tempColour, setTempColour] = useState(DEFAULT_COLOUR)
     const [metaTags, setMetaTags] = useState({});
     
 
@@ -80,12 +86,14 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
       console.log('adding meta tag')
       if (tempMetaTag !== '' && tempData){
         console.log('adding ', tempData, 'to meta tags')
+        tempData[tempMetaTag]['colour'] = tempColour
         setMetaTags(prevState => ({...prevState, ...tempData}));
 
         // Reset states
         setTempMetaTag('');
+        setTempColour(DEFAULT_COLOUR)
         document.getElementById('formControlTempMetaTag').value = null; // essentially resets form
-        setTempData({meta: null, data: null});
+        setTempData({meta: null, data: null, colour: null});
       }
     }
 
@@ -139,6 +147,24 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
           }
         }
     }
+
+
+    const popover = (
+      <Popover id="popover-colour">
+        <Popover.Title>
+          Select Colour
+          </Popover.Title>
+        <Popover.Content>
+          <CompactPicker
+            color={tempColour}
+            onChange={color => setTempColour(color.hex)}
+            onChangeComplete={color => setTempColour(color.hex)}
+
+          />
+        </Popover.Content>
+      </Popover>
+    )
+
 
     return (
     <Formik
@@ -227,6 +253,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
             <tr>
               <th>Name</th>
               <th>Upload</th>
+              <th>Colour</th>
               <th>Add</th>
             </tr>
           </thead>
@@ -240,6 +267,13 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
                 />
               </td>
               <td>
+                <OverlayTrigger trigger="click" placement="right" overlay={popover}>
+                  <Button style={{borderColor: tempColour, backgroundColor: tempColour, padding: '0.2em'}}>
+                    <MdBrush/>
+                  </Button>
+                </OverlayTrigger>
+              </td>
+              <td>
                 {
                   tempMetaTag !== '' ?
                   <MdAddCircle style={{fontSize: '22px', color: '#28a745'}} onClick={() => addMetaTag()}/>
@@ -248,10 +282,15 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
               </td>
             </tr>
             {
-              Object.keys(metaTags).length > 0 ?
+              Object.keys(metaTags).length > 0?
               Object.keys(metaTags).map(key => (<tr>
                 <td>{key}</td>
                 <td>{metaTags[key].meta.name}</td>
+                <td>
+                  <Button style={{borderColor: metaTags[key].colour, backgroundColor: metaTags[key].colour, padding: '0.2em'}}>
+                    <MdBrush style={{color: 'white'}}/>
+                  </Button>
+                </td>
                 <td>
                   <MdRemoveCircle style={{fontSize: '22px', color: '#dc3545'}} onClick={() => removeMetaTag(key)}/>
                 </td>

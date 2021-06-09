@@ -12,7 +12,7 @@ export default function UploadModal({showUpload, setShowUpload}) {
             onHide={() => setShowUpload(false)}
             backdrop="static"
             keyboard={false}
-            style={{}}
+            size="lg"
         >
             <Modal.Header closeButton>
                 <Modal.Title>Create Project</Modal.Title>
