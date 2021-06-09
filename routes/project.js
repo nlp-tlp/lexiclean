@@ -80,20 +80,15 @@ router.post('/create', async (req, res) => {
         // Load static English map
         console.log('Loading English map')
         const enMap = await StaticMap.findOne({ type: "en"}).lean();
-        // console.log(enMap);
 
         // Build maps
         console.log('Building maps')
         const mapResponse = await Map.insertMany(req.body.maps);
-        const dsMap = mapResponse.filter(map => map.type === 'ds')[0];
-        const abrvMap = mapResponse.filter(map => map.type === 'abrv')[0];
-        const rpMap = mapResponse.filter(map => map.type === 'rp')[0];
-
-        // console.log(dsMap, abrvMap, enMap);
-
+        const rpMap = mapResponse.filter(map => map.type === 'rp')[0];  // this should always be present in the maps
+        
         // Build texts and tokens including filtering
         console.log('Building texts and tokens');
-
+        
         // TOOD: review the use of lowercasing texts here. Should this be done or should
         // casing be kept but for matching to ds, en, rp the lowercasing be used?
         // removes white space between tokens as this will break the validation of the Token model.
@@ -113,43 +108,29 @@ router.post('/create', async (req, res) => {
             })
         );
 
-        // console.log(tokenTextMap);
-
         // Convert maps to Sets
-        const dsMapSet = new Set(dsMap.tokens);
-        const abrvMapSet = new Set(abrvMap.tokens);
-        const enMapSet = new Set(enMap.tokens);
-        const rpMapSet = new Set(Object.keys(rpMap.replacements[0]));
-
-        // console.log('ds map set', dsMapSet)
-        // console.log('rp map set',rpMapSet)
-
+        let mapSets = Object.assign(...mapResponse.map(map => ({[map.type]: new Set(map.tokens)}))) // TODO: include construction of rp map instead of doing separately. use ternary.
+        mapSets['rp'] = new Set(Object.keys(rpMap.replacements[0]));
+        mapSets['en'] = new Set(enMap.tokens);
+        // console.log('map sets -> ', mapSets);
 
         console.log('Building token list');
         const tokenList = tokenizedTexts.flat().map((token, index) => {
-            const domainSpecific = dsMapSet.has(token);
-            const abbreviation = abrvMapSet.has(token);
-            const englishWord = enMapSet.has(token);
-            const hasReplacement = rpMapSet.has(token);
 
-            // if(hasReplacement){
-            //     console.log(token, 'replaced with', rpMap.replacements[0][token])
-            // }
+            const metaTags = Object.assign(...Object.keys(mapSets).filter(key => key !== 'rp').map(key => ({[key]: mapSets[key].has(token)})));
+            const hasReplacement = mapSets.rp.has(token);
 
             return({
                     value: token,
-                    domain_specific: domainSpecific,
-                    abbreviation: abbreviation,
-                    english_word: englishWord,
+                    meta_tags: metaTags,
                     // Replacement is pre-filled if only replacement is found in map (user can remove in UI if necessary)
                     replacement: hasReplacement ? rpMap.replacements[0][token] : null,
                     suggested_replacement: null
                     })
-
             })
 
         console.log('token list length', tokenList.length);
-
+        
         // console.log('tokens without value', tokenList.filter(token => !token.value).length)
 
         const tokenListResponse = await Token.insertMany(tokenList);

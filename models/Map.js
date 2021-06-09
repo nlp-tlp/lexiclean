@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
 const MapSchema = mongoose.Schema({
     type: {
@@ -12,6 +11,10 @@ const MapSchema = mongoose.Schema({
     }],
     replacements: [{
     }],
+    colour: {
+        type: String,
+        required: true
+    },
     last_modified: {
         type: Date,
         required: true,

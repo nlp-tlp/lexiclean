@@ -6,6 +6,10 @@ const TokenSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    meta_tags: {
+        type: Schema.Types.Mixed,
+        required: false
+    },
     replacement: {
         type: String,
         required: false,
@@ -15,43 +19,8 @@ const TokenSchema = mongoose.Schema({
         type: String,
         required: false,
         default: null
-    },    
-    domain_specific: {
-        type: Boolean,
-        required: true,
-        default: false
     },
-    abbreviation: {
-        type: Boolean,
-        required: true,
-        default: false
-    },
-    english_word: {
-        type: Boolean,
-        required: true,
-        default: false
-    },
-    noise: {
-        type: Boolean,
-        required: true,
-        default: false
-    },
-    sensitive: {
-        type: Boolean,
-        required: true,
-        default: false
-    },
-    unsure: {
-        type: Boolean,
-        required: true,
-        default: false
-    },
-    removed: {
-        type: Boolean,
-        required: true,
-        default: false
-    },
-    suggested_meta_tag: [{
+    suggested_meta_tags: [{
         name: { type: String, required: false },
         value: { type: String, required: false }
     }],
