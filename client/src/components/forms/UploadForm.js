@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
-import { Button, Form, Col } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react'
+import { Button, Form, Col, Table } from 'react-bootstrap';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import axios from 'axios';
+import { MdAddCircle, MdRemoveCircle } from 'react-icons/md';
 
 const schema = yup.object().shape({
     projectName: yup.string().required(),
@@ -21,6 +22,19 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
 
     const [formSubmitted, setFormSubmitted] = useState(false);
 
+    // States for handling metatag creation
+    const [tempMetaTag, setTempMetaTag] = useState(''); 
+    const [tempData, setTempData] = useState({meta: null, data: null});
+    const [metaTags, setMetaTags] = useState({});
+
+
+    useEffect(() => {
+
+      console.log('meta tags', metaTags);
+
+    }, [metaTags])
+
+
     const readFile = (fileKey, fileMeta) => {
         let reader = new FileReader();
         reader.readAsText(fileMeta);
@@ -30,8 +44,10 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
             if (fileExtension === 'txt'){
                 // Split lines and remove any documents that are empty
                 const newFileData = {"meta": fileMeta, "data": reader.result.split('\n').filter(line => line !== "")}
-                console.log(newFileData);
+                console.log('file data for', fileKey, newFileData);
                 setFileData(prevState => ({...prevState, [fileKey]: newFileData}))
+
+                setTempData(prevState => ({...prevState, [fileKey]: newFileData}))  // NEW
 
                 if (fileKey === 'textFile'){
                     console.log('input data', newFileData);
@@ -68,6 +84,26 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
                 setFileData(prevState => ({...prevState, [fileKey]: newFileData}));
             }
         }
+    }
+
+
+    const addMetaTag = () => {
+      console.log('adding meta tag')
+      if (tempMetaTag !== '' && tempData){
+        console.log('adding ', tempData, 'to meta tags')
+        setMetaTags(prevState => ({...prevState, ...tempData}));
+
+        // Reset states
+        setTempMetaTag('');
+        setTempData({meta: null, data: null});
+      }
+    }
+
+    const removeMetaTag = (tagName) => {
+      console.log(`removing ${tagName} tag`);
+      setMetaTags(prevState => Object.fromEntries(Object.entries(prevState).filter(([key, value]) => key !== tagName)));
+
+      console.log(metaTags);
     }
 
     const createProject = async (values) => {
@@ -172,7 +208,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
         </Form.Row>
 
         <Form.Group>
-            <Form.Row>
+          <Form.Row>
                 <Col>
                     <Form.File
                         id="exampleFormControlFile1"
@@ -184,6 +220,57 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
                         These should be in text (.txt) format.
                     </Form.Text>
                 </Col>
+
+          </Form.Row>
+        </Form.Group>
+
+        <h5>{tempMetaTag}</h5>
+
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Upload</th>
+              <th>Add</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td ><input type="text" style={{width: '8em'}} value={tempMetaTag} onChange={e => setTempMetaTag(e.target.value)}></input></td>
+              <td>
+                <Form.File
+                    id="formControlTempMetaTag"
+                    onChange={(e) => setTempData({[tempMetaTag]: {"meta": e.target.files[0], "data": readFile(tempMetaTag, e.target.files[0])}})}
+                />
+              </td>
+              <td>
+                {
+                  tempMetaTag !== '' ?
+                  <MdAddCircle style={{fontSize: '22px', color: '#28a745'}} onClick={() => addMetaTag()}/>
+                  : null
+                }
+              </td>
+            </tr>
+            {
+              Object.keys(metaTags).length > 0 ?
+              Object.keys(metaTags).map(key => (<tr>
+                <td>{key}</td>
+                <td>{metaTags[key].meta.name}</td>
+                <td>
+                  <MdRemoveCircle style={{fontSize: '22px', color: '#dc3545'}} onClick={() => removeMetaTag(key)}/>
+                </td>
+              </tr>))
+              : null
+            }
+          </tbody>
+        </Table>
+
+        <small>Please use underscores between words instead of white space.</small>
+
+
+
+        {/* <Form.Group>
+            <Form.Row>
                 <Col>
                     <Form.File
                         id="exampleFormControlFile2"
@@ -221,9 +308,9 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
                     </Form.Text>    
                 </Col>
             </Form.Row>
-        </Form.Group>
+        </Form.Group> */}
 
-        <div style={{display: 'flex', justifyContent: 'space-evenly'}}>
+        <div style={{display: 'flex', justifyContent: 'space-evenly', marginTop: '4em'}}>
           <Button variant="secondary" onClick={() => setShowUpload(false)}>Cancel</Button>
           <Button type="submit">Create Project</Button>
         </div>
