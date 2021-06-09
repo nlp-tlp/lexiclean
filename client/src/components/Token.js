@@ -23,10 +23,6 @@ const useStyles = createUseStyles({
     }
 })
 
-// Color map for token classifications
-// ds- domain specific, ab - abbreviation, ew - english word
-// no - noise, un - unsure, rm - removed, rt - replaced token
-// st - suggested replaced token, sn - sensitive, ua - unassigned
 const bgColorMap = {
     'ds': 'red',
     'ab': 'purple',
@@ -40,7 +36,7 @@ const bgColorMap = {
     'ua': '#F2A477',
 }
 
-export default function Token({tokenInfo, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap, updateSingleToken, setUpdateSingleToken, selectedTokens, setSelectedTokens}) {
+export default function Token({tokenInfo, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap, updateSingleToken, setUpdateSingleToken, selectedTokens, setSelectedTokens, bgColourMap}) {
     const classes = useStyles();
 
     
@@ -118,43 +114,18 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
 
     useEffect(() => {
         // Updates token colour based on state of token information and subsequent classification
-        // TODO: update with something better
-        if (tokenInfo1.domain_specific){
-            setTokenClf('ds')
-        } else if (tokenInfo1.abbreviation){
-            setTokenClf('ab')
-    
-        } else if (tokenInfo1.english_word){
-            setTokenClf('ew')
-    
-        } else if (tokenInfo1.noise){
-            setTokenClf('no')
-
-        } else if (tokenInfo1.unsure){
-            setTokenClf('un')
-
-        } else if (tokenInfo1.removed){
-            setTokenClf('rm')
-
-        } else if (tokenInfo1.sensitive){
-            setTokenClf('sn')
-
-        } else if (replacedToken){
-            setTokenClf('rt')
-
-        } else if (suggestedToken){
-            setTokenClf('st')
-
+        // console.log('tokeninfo1', tokenInfo1)
+        const bgColour = Object.keys(tokenInfo1.meta_tags).filter(tag => tokenInfo1.meta_tags[tag])
+        if (bgColour.length > 0){
+            // Has at least one meta tag (first tag currently dictates colour - TODO: fix with preferential treatment)
+            setTokenClf(bgColour[0])
+            setBgColor(bgColourMap[bgColour[0]])
         } else {
-            setTokenClf('ua')
-
+            setTokenClf('ua');
+            setBgColor(bgColourMap['ua'])
         }
-        setBgColor(bgColorMap[tokenClf]);
-
     }, [tokenClf, metaTagUpdated, replacedToken, suggestedToken, tokenInfo1, metaTagSuggestionMap])
     
-
-
 
     useEffect(() => {
         // Set input field width
@@ -246,8 +217,6 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
         }
     }
 
-
-
     const removeReplacement = async () => {
         const response = await axios.delete(`/api/token/replace-remove/${tokenId}`)
         if (response.status === 200){
@@ -303,15 +272,15 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
 
 
     // --- Meta Tag Logic ---
-    useEffect(() => {
-        // Updates token meta-tags when suggestion map changes
+    // useEffect(() => {
+    //     // Updates token meta-tags when suggestion map changes
 
-        // Run tokens over meta tag suggestion map
-        Object.keys(metaTagSuggestionMap)
-                .filter(metaTag => Object.keys(metaTagSuggestionMap[metaTag]).length > 0)
-                .map(metaTag => Object.keys(metaTagSuggestionMap[metaTag]).includes(currentToken) ? setTokenInfo1(prevState => ({...prevState, [metaTag]: metaTagSuggestionMap[metaTag]})) : null)
+    //     // Run tokens over meta tag suggestion map
+    //     Object.keys(metaTagSuggestionMap)
+    //             .filter(metaTag => Object.keys(metaTagSuggestionMap[metaTag]).length > 0)
+    //             .map(metaTag => Object.keys(metaTagSuggestionMap[metaTag]).includes(currentToken) ? setTokenInfo1(prevState => ({...prevState, [metaTag]: metaTagSuggestionMap[metaTag]})) : null)
 
-    }, [metaTagSuggestionMap])
+    // }, [metaTagSuggestionMap])
 
     const addMetaTag = async (field, value, isSingle) => {
         
@@ -334,23 +303,20 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
             console.log('sub meta map updated', subMetaTagMapUpdated)
             setMetaTagSuggestionMap(prevState => ({...prevState, [field]: subMetaTagMapUpdated}))
             setMetaTagUpdated(true)
-
-        }
-
-
-    }
-
-    const removeMetaTag = async (field) => {
-        // Removes meta-tag from token (set to false)
-        setMetaTagUpdated(false);
-        const response = await axios.patch(`/api/token/remove-one-meta-tag/${tokenId}`, { field: field });
-        if (response.status === 200){
-            console.log('succesfully removed meta-tag from token', response.data);
-            setTokenInfo1(prevState => ({...prevState, [field]: false}))
-            // setMetaTagSuggestionMap(Object.keys(metaTagSuggestionMap).filter())
-            setMetaTagUpdated(true);
         }
     }
+
+    // const removeMetaTag = async (field) => {
+    //     // Removes meta-tag from token (set to false)
+    //     setMetaTagUpdated(false);
+    //     const response = await axios.patch(`/api/token/remove-one-meta-tag/${tokenId}`, { field: field });
+    //     if (response.status === 200){
+    //         console.log('succesfully removed meta-tag from token', response.data);
+    //         setTokenInfo1(prevState => ({...prevState, [field]: false}))
+    //         // setMetaTagSuggestionMap(Object.keys(metaTagSuggestionMap).filter())
+    //         setMetaTagUpdated(true);
+    //     }
+    // }
 
 
     return (
@@ -400,9 +366,10 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     
                 <ContextMenu
                     menu_id={MENU_ID}
+                    bgColourMap={bgColourMap}
                     tokenInfo={tokenInfo1}
                     addMetaTag={addMetaTag}
-                    removeMetaTag={removeMetaTag}
+                    // removeMetaTag={removeMetaTag}
                 />
                 </>
                 : <p>...</p>

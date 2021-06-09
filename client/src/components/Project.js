@@ -13,8 +13,6 @@ import SettingsModal from './modals/SettingsModal'
 import OverviewModal from './modals/OverviewModal'
 import LegendModal from './modals/LegendModal'
 
-
-
 const PAGE_LIMIT = 10;
 
 export default function Project() {
@@ -28,8 +26,6 @@ export default function Project() {
     const [showOverview, setShowOverview] = useState(false);
     const [showLegend, setShowLegend] = useState(false);
 
-
-
     const [saved, setSaved] = useState(false)
 
     const [project, setProject] = useState();
@@ -38,7 +34,6 @@ export default function Project() {
     const [pageChanged, setPageChanged] = useState(); // uses page number to update state...
 
     useEffect(() => {
-        // Fetches project
         const fetchProject = async () => {
             const response = await axios.get(`/api/project/${projectId}`);
             if (response.status === 200){

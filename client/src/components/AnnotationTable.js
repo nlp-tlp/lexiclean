@@ -60,10 +60,12 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
 
   const [texts, setTexts] = useState();
   const [loaded, setLoaded] = useState(false);
-  const [metaTagSuggestionMap, setMetaTagSuggestionMap] = useState(META_TAG_MAP_INIT);
+  const [metaTagSuggestionMap, setMetaTagSuggestionMap] = useState();
   const [mapsLoaded, setMapsLoaded] = useState(false);
   
   const [updateSingleToken, setUpdateSingleToken] = useState(null);
+
+  const [bgColourMap, setBgColourMap] = useState();
 
 
   const [paginatorLoaded, setPaginatorLoaded] = useState();
@@ -79,7 +81,6 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
     setPageChanged(page);
   }, [page])
 
-
   useEffect(() => {
     // Fetch pagination metadata
     const fetchPaginationInfo = async () => {
@@ -87,7 +88,7 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
         // note large page is used as it will index to a page without any active data...
           const response = await axios.get(`/api/text/filter/pages/${project._id}`, { params: {limit: pageLimit }})
           if (response.status === 200){
-            console.log('pagination meta data response', response.data)
+            // console.log('pagination meta data response', response.data)
             setTotalPages(response.data.totalPages);
             setPaginatorLoaded(true);
           }
@@ -100,14 +101,16 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
   useEffect(() => {
     // TODO: Update based on context menu having state change e.g. adding to domain specific terms, abbreviations ect.
     const fetchProjectMaps = async () => {
-      if (!mapsLoaded){
+      if (!mapsLoaded && project){
         // Fetch maps
         console.log('fetching maps...');
-        const maps = await axios.get(`/api/project/maps/${project._id}`)
-        if (maps.status === 200){
+        const response = await axios.get(`/api/map/${project._id}`)
+        if (response.status === 200){
+          console.log(response.data)
+          setMetaTagSuggestionMap(Object.fromEntries(response.data.map_keys.map(key => ([[key], {}]))))
+          setBgColourMap(response.data.colour_map);
+          console.log('colour map ->', response.data.colour_map);
           console.log('maps loaded')
-          // console.log('maps', maps.data);
-          // setMaps(maps.data);
           setMapsLoaded(true);
         }
       }
@@ -116,13 +119,12 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
   }, [mapsLoaded])
 
 
-
   useEffect(() => {
     const fetchData = async () => {
         setLoaded(false);
         const response = await axios.get(`/api/text/filter/${project._id}`,{ params: { page: page, limit: pageLimit }})
         if (response.status === 200){
-          console.log('texts response', response.data)
+          // console.log('texts response', response.data)
           setTexts(response.data);
           setLoaded(true);
         }
@@ -139,8 +141,8 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
         console.log('suggesting replacements with ->', replacementDict);
         const response = await axios.patch(`/api/token/suggest-many/${project._id}`, {replacement_dict: replacementDict});
         if (response.status === 200){
-          console.log('suggested replacement response', response)
-          console.log('Updated tokens with suggested replacements')
+          // console.log('suggested replacement response', response)
+          // console.log('Updated tokens with suggested replacements')
           // setReplacementDict({});
         }
       }
@@ -152,14 +154,16 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
   useEffect(() => {
     // Cascades meta-tags across tokens
     const updateMetaTags = async () => {
-      if (Object.keys(metaTagSuggestionMap).filter(metaTag => metaTagSuggestionMap[metaTag].length > 0).length > 0){
-        console.log('updating meta-tags with ->', metaTagSuggestionMap);
-
-        const response = await axios.patch(`/api/token/add-many-meta-tags/${project._id}`, {meta_tag_dict: metaTagSuggestionMap});
-        if (response.status === 200){
-          console.log('updated meta tag response', response)
-          console.log('Updated token meta-tags')
-          setMetaTagSuggestionMap(META_TAG_MAP_INIT);
+      if(mapsLoaded){
+        if (Object.keys(metaTagSuggestionMap).filter(metaTag => metaTagSuggestionMap[metaTag].length > 0).length > 0){
+          // console.log('updating meta-tags with ->', metaTagSuggestionMap);
+          
+          const response = await axios.patch(`/api/token/add-many-meta-tags/${project._id}`, {meta_tag_dict: metaTagSuggestionMap});
+          if (response.status === 200){
+            // console.log('updated meta tag response', response)
+            // console.log('Updated token meta-tags')
+            setMetaTagSuggestionMap(META_TAG_MAP_INIT);
+          }
         }
       }
     }
@@ -175,8 +179,8 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
       if (texts){
         const response = await axios.patch('/api/text/check-annotations/', {textIds: texts.map(text => text._id)});
         if (response.status === 200){
-          console.log('updated text annotation states');
-          console.log(response);
+          // console.log('updated text annotation states');
+          // console.log(response);
         }
       }
     }
@@ -191,20 +195,16 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
 
     const convertSuggestedReplacements = async () => {
       if (texts && page !== 1){ // dont update on first page load...
-        console.log('texts being sent for update on pagination ->', texts)
+        // console.log('texts being sent for update on pagination ->', texts)
         const response = await axios.patch(`/api/token/suggest-confirm`, { replacement_dict: replacementDict, textIds: texts.map(text => text._id)});
         if (response.status === 200){
-            console.log('update suggested tokens to replace tokens');
+            // console.log('update suggested tokens to replace tokens');
         }
 
       }
     }
     convertSuggestedReplacements();
   }, [page])
-
-
-
-
 
 
   // SEGMENTATION HANDLERS
@@ -239,7 +239,7 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
         {/* </div>onMouseDown={(e) => toggleAction(e)}> */}
       <div className={classes.container} >
         {
-          (!loaded) ? // && !replacementsLoaded 
+          (!loaded || !mapsLoaded) ? // && !replacementsLoaded 
             <div style={{margin: 'auto', marginTop: '5em'}}>
               <Spinner animation="border" />
             </div>
@@ -273,6 +273,7 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
                     setUpdateSingleToken={setUpdateSingleToken}
                     selectedTokens={selectedTokens}
                     setSelectedTokens={setSelectedTokens}
+                    bgColourMap={bgColourMap}
                     />
                 </div>
               </div>

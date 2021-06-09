@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { ListGroup } from 'react-bootstrap';
-import { MdDelete, MdEdit, MdFileDownload, MdLibraryBooks } from 'react-icons/md';
-import axios from 'axios';
+import { MdDelete, MdEdit, MdFileDownload } from 'react-icons/md';
 
 import DownloadModal from './modals/DownloadModal';
 

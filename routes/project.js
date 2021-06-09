@@ -248,27 +248,6 @@ router.post('/create', async (req, res) => {
 })
 
 
-
-// Get maps associated to project
-router.get('/maps/:projectId', async (req, res) => {
-    console.log('getting maps');
-    try{
-        const response = await Project.find({_id: req.params.projectId}).populate('maps');
-        const maps = response[0].maps;
-        // console.log('map response', maps);
-
-        // Restructure maps from arary of maps to object of maps with keys based on map type
-        let mapsRestructured = maps.map(map => {return({[map.type]: map})});
-        mapsRestructured = Object.assign(...mapsRestructured)
-        res.json(mapsRestructured);
-
-    }catch(err){
-        res.json({ message: err })
-    }
-})
-
-
-
 // Delete project
 router.delete('/:projectId', async (req, res) => {
     console.log('deleting project');

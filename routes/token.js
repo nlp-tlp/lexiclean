@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Token = require('../models/Token');
 const Text = require('../models/Text');
-const mongoose = require('mongoose');
 
 // NEED INSERT MANY SO WE CAN SLAP X DOCS INTO DATA COLLECTION
 router.post('/upload', async (req, res) => {
@@ -86,15 +85,20 @@ router.delete('/suggestion-remove/:tokenId', async (req, res) => {
 router.patch('/add-one-meta-tag/:tokenId', async (req, res) => {
     // Takes in field, value pair where the field is the axuiliary information key
     console.log('Patching one tokens meta-tag information')
-    // console.log(req.body);
+    console.log(req.params.tokenId);
     try{
+
+        const tokenResponse = await Token.findById({ _id: req.params.tokenId }).lean();
+        const updatedMetaTags = {...tokenResponse.meta_tags, [req.body.field]: req.body.value};
+
         const updatedReponse = await Token.findByIdAndUpdate(
                                                 {
                                                     _id: req.params.tokenId
                                                 },
                                                 {
-                                                    [req.body.field]: req.body.value,
-                                                    last_modified: Date.now()},
+                                                    meta_tags: updatedMetaTags,
+                                                    last_modified: Date.now()
+                                                },
                                                 {
                                                     upsert: true
                                                 }

@@ -3,30 +3,7 @@ import { Menu, Item, Submenu, theme } from "react-contexify";
 import { IoMdArrowDropright} from 'react-icons/io'
 import "react-contexify/dist/ReactContexify.css";
 
-
-const menuItems = [
-    {'key': "domain_specific", 'description': 'Domain Specific Term'},
-    {'key': "abbreviation", 'description': 'Abbreviation'},
-    {'key': "noise", 'description': 'Noise'},
-    {'key': "english_word", 'description': 'English Word'},
-    {'key': "unsure", 'description': 'Unsure'},
-    {'key': "removed", 'description': 'Remove'},
-    {'key': "sensitive", 'description': 'Sensitive'},
-]
-
-// Color map for token classifications
-// TODO: put these somewhere common to all functions using the bg mapping
-const bgColorMap = {
-    'domain_specific': 'red',
-    'abbreviation': 'purple',
-    'noise': 'blue',
-    'english_word': '#D9D9D9',
-    'unsure': 'brown', 
-    'removed': 'yellow',
-    'sensitive': 'pink',
-}
-
-export default function ContextMenu({menu_id, tokenInfo, addMetaTag, removeMetaTag}) {
+export default function ContextMenu({menu_id, bgColourMap, tokenInfo, addMetaTag}) { // , , removeMetaTag
 
     const Apply = (field) => {
         console.log('apply one', field)
@@ -40,23 +17,23 @@ export default function ContextMenu({menu_id, tokenInfo, addMetaTag, removeMetaT
         addMetaTag(field, !tokenInfo[field], isSingle)
     }
 
-    const Remove = (field) => {
-        removeMetaTag(field)
-    }
+    // const Remove = (field) => {
+    //     removeMetaTag(field)
+    // }
 
 
     return (
         <Menu id={menu_id}>
             {
-                menuItems.map(item => (
+                Object.keys(bgColourMap).map(item => (
                     <Submenu
-                        label={<div style={{ backgroundColor: tokenInfo[item.key] ? bgColorMap[item.key] : null, padding: '5px', borderRadius: '5px'}}>{ item.description }</div>}
+                        label={<div style={{ backgroundColor: tokenInfo.meta_tags[item] ? bgColourMap[item] : null, padding: '5px', borderRadius: '5px'}}>{ item }</div>}
                         arrow={<IoMdArrowDropright/>}
                         theme={theme.light}
                     >
-                        <Item onClick={() => Apply(item.key)}>Apply</Item>
-                        <Item onClick={() => ApplyAll(item.key)}>Apply All</Item>
-                        <Item onClick={() => Remove(item.key)}>Remove</Item>
+                        <Item onClick={() => Apply(item)}>Apply</Item>
+                        <Item onClick={() => ApplyAll(item)}>Apply All</Item>
+                        {/* <Item onClick={() => Remove(item)}>Remove</Item> */}
                     </Submenu>
                 ))
             }

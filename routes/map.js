@@ -3,6 +3,7 @@ const router = express.Router();
 const Map = require('../models/Map');
 const StaticMap = require('../models/StaticMap');
 const Text = require('../models/Text');
+const Project = require('../models/Project');
 
 
 // Create map
@@ -82,6 +83,29 @@ router.post('/download/:projectId', async (req, res) => {
         // console.log(tokenValues);
 
         res.json({[req.body.mapName]: tokenValues})
+
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+
+// Get maps associated to project
+router.get('/:projectId', async (req, res) => {
+    console.log('Fetching maps for project');
+    // Here additional classes and colours are defined. TODO: integrate into front-end so the user is aware of these decisions.
+    try{
+        const response = await Project.find({_id: req.params.projectId}).populate('maps');
+        const maps = response[0].maps;
+        // console.log('map response', maps);
+
+        // Restructure maps from arary of maps to object of maps with keys based on map type
+        const mapsRestructured = Object.assign(...maps.map(map => ({[map.type]: map})));
+        
+        const mapKeys = [...Object.keys(mapsRestructured), "ua", "st", "en"]  // ua - unassigned, st - suggested token, en - english word
+        let colourMap = Object.assign(...maps.map(map => ({[map.type]: map.colour})));
+        colourMap = {...colourMap, "ua": "#F2A477", "st": "#6BB0BF", "en": "#D9D9D9"}
+        res.json({"contents": mapsRestructured, "map_keys": mapKeys, "colour_map": colourMap});
 
     }catch(err){
         res.json({ message: err })

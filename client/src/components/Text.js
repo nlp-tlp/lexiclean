@@ -11,7 +11,7 @@ const useStyles = createUseStyles({
 })
 
 
-export default function Text({text, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap, updateSingleToken, setUpdateSingleToken, selectedTokens, setSelectedTokens}) {
+export default function Text({text, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap, updateSingleToken, setUpdateSingleToken, selectedTokens, setSelectedTokens, bgColourMap}) {
     const classes = useStyles();
 
     // console.log('text ', text._id,  ' weight ', text.weight);
@@ -33,6 +33,7 @@ export default function Text({text, textIndex, replacementDict, setReplacementDi
                                 setUpdateSingleToken={setUpdateSingleToken}
                                 selectedTokens={selectedTokens}
                                 setSelectedTokens={setSelectedTokens}
+                                bgColourMap={bgColourMap}
                             />
                             )})
                 : <p>Loading...</p>
