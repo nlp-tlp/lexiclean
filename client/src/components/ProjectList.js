@@ -1,9 +1,14 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { ListGroup } from 'react-bootstrap';
 import { MdDelete, MdEdit, MdFileDownload, MdLibraryBooks } from 'react-icons/md';
 import axios from 'axios';
 
+import DownloadModal from './modals/DownloadModal';
+
 export default function ProjectList({projects, setSelectedProject, setShowAnnotate, setShowProjectDelete}) {
+
+    const [showDownload, setShowDownload] = useState(false);
+    const [downloadProject, setDownloadProject] = useState();
 
     const confirmationAction = (index) => {
         setSelectedProject(projects[index]);
@@ -42,8 +47,26 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
         
     }
 
+    const downloadHandler = async (project) => {
+        console.log('handling download')
+        setDownloadProject(project);
+        setShowDownload(true);
+
+
+    }
+
     
     return (
+        <>
+        {
+            showDownload ?
+            <DownloadModal
+                showDownload={showDownload}
+                setShowDownload={setShowDownload}
+                project={downloadProject}
+            />
+            : null
+        }
         <div style={{width: '75%', margin: 'auto', marginTop: '2em'}}>
             <ListGroup>
             {
@@ -69,8 +92,9 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
                                 </div>
                                 <div style={{fontSize: '22px'}}>
                                     <MdEdit onClick={() => confirmationAction(index)}/>
-                                    <MdFileDownload onClick={() => downloadResults(project)}/>
-                                    <MdLibraryBooks onClick={() => downloadMaps(project)}/>
+                                    <MdFileDownload onClick={() => downloadHandler(project)}/> 
+                                    {/* downloadResults(project) */}
+                                    {/* <MdLibraryBooks onClick={() => downloadMaps(project)}/> */}
                                     <MdDelete style={{color: '#D95F69'}} onClick={() => deleteAction(index)}/>
                                     <br/>
                                     <p style={{fontSize: '12px'}}>{project.created_on}</p>
@@ -83,5 +107,6 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
             }
             </ListGroup>
         </div>
+        </>
     )
 }
