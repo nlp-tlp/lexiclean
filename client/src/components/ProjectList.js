@@ -20,39 +20,10 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
         setShowProjectDelete(true);
     }
 
-    const downloadResults = async (project) => {
-    
-        // Fetch results
-        const resultRes = await axios.get(`/api/project/results-download/${project._id}`);
-
-        if (resultRes.status === 200){
-            console.log('Results fetched successfully')
-
-            // Prepare for file download
-            const fileName = `${project.name}_results`;
-            const json = JSON.stringify(resultRes.data, null, 4);
-            const blob = new Blob([json], {type: 'application/json'});
-            const href = await URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = href;
-            link.download = fileName + '.json';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-    }
-
-    const downloadMaps = async (project) => {
-        console.log('Downloading maps');
-        
-    }
-
     const downloadHandler = async (project) => {
         console.log('handling download')
         setDownloadProject(project);
         setShowDownload(true);
-
-
     }
 
     
@@ -93,8 +64,6 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
                                 <div style={{fontSize: '22px'}}>
                                     <MdEdit onClick={() => confirmationAction(index)}/>
                                     <MdFileDownload onClick={() => downloadHandler(project)}/> 
-                                    {/* downloadResults(project) */}
-                                    {/* <MdLibraryBooks onClick={() => downloadMaps(project)}/> */}
                                     <MdDelete style={{color: '#D95F69'}} onClick={() => deleteAction(index)}/>
                                     <br/>
                                     <p style={{fontSize: '12px'}}>{project.created_on}</p>

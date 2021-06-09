@@ -59,7 +59,7 @@ export default function Project() {
         <>
         { showLegend ? <LegendModal showLegend={showLegend} setShowLegend={setShowLegend}/> : null }
         { (showOverview && project) ? <OverviewModal showOverview={showOverview} setShowOverview={setShowOverview} projectId={project._id} pageLimit={pageLimit}/> : null }
-        { showDownload ? <DownloadModal showDownload={showDownload} setShowDownload={setShowDownload}/> : null }
+        { showDownload ? <DownloadModal showDownload={showDownload} setShowDownload={setShowDownload} project={project}/> : null }
         { showProgress ? <ProgressModal showProgress={showProgress} setShowProgress={setShowProgress}/> : null }
         { showSettings ? <SettingsModal showSettings={showSettings} setShowSettings={setShowSettings} pageLimit={pageLimit} setPageLimit={setPageLimit} /> : null }
 
