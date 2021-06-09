@@ -24,41 +24,44 @@ const useStyles = createUseStyles({
 })
 
 // Color map for token classifications
-// ua - unassigned, rp - replacement, sr - suggested replacemtn
+// ds- domain specific, ab - abbreviation, ew - english word
+// no - noise, un - unsure, rm - removed, rt - replaced token
+// st - suggested replaced token, sn - sensitive, ua - unassigned
 const bgColorMap = {
     'ds': 'red',
     'ab': 'purple',
     'ew': '#D9D9D9',
     'no': 'blue',
     'un': 'brown', 
-    'rp': 'yellow',
+    'rm': 'yellow',
     'rt': '#99BF9C',
     'st': '#6BB0BF',
-    'stm': 'aqua',
+    'sn': 'pink',
     'ua': '#F2A477',
 }
 
-export default function Token({tokenInfo, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap, updateSingleToken, setUpdateSingleToken, selectMode, setSelectedTokens}) {
+export default function Token({tokenInfo, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap, updateSingleToken, setUpdateSingleToken, selectedTokens, setSelectedTokens}) {
     const classes = useStyles();
 
+    
     // Token
-    const { index, value } = tokenInfo;
-    const tokenId = tokenInfo.token;
+    const [tokenInfo1, setTokenInfo1] = useState(tokenInfo);
+    const { index, value } = tokenInfo1;
+    const tokenId = tokenInfo1.token;
     const tokenIndex = index;
     const [originalToken] = useState(value);
-    const [replacedToken, setReplacedToken] = useState(tokenInfo.replacement);
-    // If array is empty set to null.
-    const [suggestedToken, setSuggestedToken] = useState((tokenInfo.suggested_replacement && tokenInfo.suggested_replacement.length) ? tokenInfo.suggested_replacement : null);  
-    // Set current token as replacement if it's available, otherwise as suggestion if only one is made. If multiple are made then currentToken remains as the original value.
-    const [currentToken, setCurrentToken] = useState(replacedToken ? replacedToken : (suggestedToken && suggestedToken.length === 1)  ? suggestedToken : value);
+    const [replacedToken, setReplacedToken] = useState(tokenInfo1.replacement);
+    const [suggestedToken, setSuggestedToken] = useState(tokenInfo1.suggested_replacement ? tokenInfo1.suggested_replacement : null );  
+    // Set current token as replacement or suggested_token if available
+    const [currentToken, setCurrentToken] = useState(replacedToken ? replacedToken : tokenInfo1.suggested_replacement ? tokenInfo1.suggested_replacement : value);
     
     // Token classification and colouring
     const [tokenClf, setTokenClf] = useState();
     const [bgColor, setBgColor] = useState()
     
     // Meta Tag
-    const [hasSuggestedMetaTag, setHasSuggestedMetaTag] = useState(tokenInfo.suggested_meta_tag ? Object.keys(tokenInfo.suggested_meta_tag).length > 0 : null);
-    
+    const [metaTagUpdated, setMetaTagUpdated] = useState(false);    // Used for bg color sideeffect when removing/adding meta-tags
+
     // Menu
     const MENU_ID = `menu-${textIndex}-${tokenIndex}`;
     const { show: showContextMenu } = useContextMenu({ id: MENU_ID });
@@ -74,56 +77,85 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     const [showAddSuggestionPopover, setShowAddSuggestionPopover] = useState(false);
 
 
-    // Segmentation handler
+    // Segmentation handler - used to join ill-formed ngrams
     const [selectTokenMode, setSelectTokenMode] = useState(false);
 
     const toggleAction = (event) => {
-        console.log(event);
-        if (event.ctrlKey){
+        // actions for tokenization and concatenation of texts
+
+
+
+        if (event.shiftKey){
+            // User wants to tokenize token on white space
+            console.log('shift click - Tokenization action');
+
+        } else if (event.ctrlKey){
           // In select mode - user can click on tokens to concatenate them.
-          console.log('control down?', event.ctrlKey)
+          console.log('control click - segmentation handler')
           setSelectTokenMode(true);
-        //   setSelectedTokens(prevState => ({...prevState, [tokenIndex]: currentToken}))
+          setSelectedTokens(prevState => ({...prevState, [tokenIndex]: tokenId}))
     
         } else {
           // When select mode is off - popover will confirm selected tokens are correct before concatenation. 
-          console.log('control down?', event.ctrlKey)
+          console.log('click without key down - clean up')
+          if(selectedTokens && Object.keys(selectedTokens).length > 1){
+              console.log('Do you want to segment these tokens?')
+          }
           setSelectTokenMode(false)
+          setSelectedTokens({})
         }
       }
+
+
+
+
+
+
+      useEffect(() => {
+        // console.log('current rd', replacementDict);
+      }, [replacementDict])
 
 
     useEffect(() => {
         // Updates token colour based on state of token information and subsequent classification
         // TODO: update with something better
-        if (tokenInfo.domain_specific){
+        if (tokenInfo1.domain_specific){
             setTokenClf('ds')
-        } else if (tokenInfo.abbreviation){
+        } else if (tokenInfo1.abbreviation){
             setTokenClf('ab')
     
-        } else if (tokenInfo.english_word){
+        } else if (tokenInfo1.english_word){
             setTokenClf('ew')
     
-        } else if (tokenInfo.noise){
+        } else if (tokenInfo1.noise){
             setTokenClf('no')
-    
-        } else if (tokenInfo.unsure){
+
+        } else if (tokenInfo1.unsure){
             setTokenClf('un')
-    
+
+        } else if (tokenInfo1.removed){
+            setTokenClf('rm')
+
+        } else if (tokenInfo1.sensitive){
+            setTokenClf('sn')
+
         } else if (replacedToken){
             setTokenClf('rt')
-    
-        } else if (suggestedToken && suggestedToken.length === 1){
+
+        } else if (suggestedToken){
             setTokenClf('st')
-        } else if (suggestedToken && suggestedToken.length > 1){
-            setTokenClf('stm'); // suggested token - multiple
+
         } else {
             setTokenClf('ua')
-        }
-        setBgColor(bgColorMap[tokenClf])
 
-    }, [tokenClf, bgColorMap, replacedToken, suggestedToken, tokenInfo, hasSuggestedMetaTag, metaTagSuggestionMap])
+        }
+        setBgColor(bgColorMap[tokenClf]);
+
+    }, [tokenClf, metaTagUpdated, replacedToken, suggestedToken, tokenInfo1, metaTagSuggestionMap])
     
+
+
+
     useEffect(() => {
         // Set input field width
         const minWidth = 60;
@@ -137,7 +169,7 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
 
     useEffect(() => {
         // Detect state change
-        if( originalToken !== currentToken && suggestedToken !== currentToken){
+        if( originalToken !== currentToken && suggestedToken !== currentToken ){
             // Checks whether the token has been edited by user or if the token value has changed due to a suggestion.
             setEdited(true);
         } else {
@@ -157,21 +189,14 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
         // Check if replacement exists for originalToken
         const replacementKeyExists = Object.keys(replacementDict).includes(originalToken);
         if (tokenId === localStorage.getItem('id')){
-            console.log('updating replacement dictionary!!')
-            if (!replacementKeyExists){
-                // console.log('Adding first key to replacement dictionary')
-                const firstReplacementArr = [currentToken];
-                // Update replacement dictionary
-                setReplacementDict(prevState => ({...prevState, [originalToken]: firstReplacementArr}));
-    
-            } else {
-                console.log('additional keys', originalToken, currentToken, replacementDict, replacementDict[originalToken], replacementDict[originalToken].push(currentToken))
-                // Update replacement dictionary
-                // TODO: Understand why we don't need to push into the array... the token just magically appears
-                const updatedReplacementsSet = new Set(replacementDict[originalToken])
-                setReplacementDict(prevState => ({...prevState, [originalToken]: Array.from(updatedReplacementsSet)}));
-            }
 
+            if (updateSingleToken){
+                console.log('do something with single token - these are valuable')
+            } else if (!replacementKeyExists){
+                console.log('Updating replacement dictionary!!')
+                // Update replacement dictionary
+                setReplacementDict(prevState => ({...prevState, [originalToken]: currentToken}));
+            } 
             setUpdateSingleToken(null);
         }
     }
@@ -180,26 +205,15 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     useEffect(() => {
         if (!edited && !updateSingleToken && updateSingleToken !== null){    // !u... is true whther false or null...
             // Making suggested replacements on tokens
-            console.log(replacementDict);
-            console.log(currentToken);
             
             if (Object.keys(replacementDict).includes(currentToken)){
                 // If replacement map is one-one then update the current token, else don't update (user has to drill down to determine best choice)
-                console.log('in replace dict side effect -', currentToken, replacementDict[currentToken])
-
-                if(replacementDict[currentToken].length > 1){
-                    // Multiple candidate replaceaments
-                    // For multiple replacements - array is passed to child as they will be rendered as selections for the user.
-                    console.log('multiple suggestions available')
-                    setSuggestedToken(replacementDict[currentToken])
-
-                } else {
-                    // Only one replacement
-                    // For single replacements, no array is passed to children.
-                    console.log('only have one suggested replacement:', currentToken, ' to ', replacementDict[currentToken][0]);
-                    setSuggestedToken(replacementDict[currentToken][0])
-                    setCurrentToken(replacementDict[currentToken][0])
-                }
+                // console.log('in replace dict side effect -', currentToken, replacementDict[currentToken])
+                // Only one replacement
+                // For single replacements, no array is passed to children.
+                // console.log('only have one suggested replacement:', currentToken, ' to ', replacementDict[currentToken]);
+                setSuggestedToken(replacementDict[currentToken])
+                setCurrentToken(replacementDict[currentToken])
             }
         }
 
@@ -209,19 +223,28 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     const addReplacement = async (isSingle) => {
         // Adds a replacement based on user input into token input field
         const response = await axios.patch(`/api/token/replace/${tokenId}`, { replacement: currentToken });
-
         if (response.status === 200){
             console.log('replacement response', response);
             setSavedChange(true);
             setShowPopover(false);
-            setUpdateSingleToken(isSingle);
-            modifyReplacmentDict();
-
+            if (isSingle){
+                // Do not update the replacement dictionary if user only wants to replace single token
+                // TODO: review - currently just storing in LS for fun
+                // WIll get post processed to join similar original tokens that have multiple mappings
+                // NOTE: cannot get the array to push correctly - keeps turning into a mysterious int
+                // if (localStorage.getItem('singularReplacements')){
+                //     const singularReplacements = JSON.parse(localStorage.getItem('singularReplacements'))
+                //     console.log('singular replacements ls array - ', singularReplacements)
+                //     localStorage.setItem('singularReplacements', JSON.stringify(singularReplacements.push({[originalToken]: currentToken})));
+                // } else {
+                //     localStorage.setItem('singularReplacements', JSON.stringify([{[originalToken]: currentToken}]))
+                // }
+            } else {
+                setUpdateSingleToken(isSingle);
+                modifyReplacmentDict();
+            }
         }
     }
-
-
-
 
 
 
@@ -230,8 +253,11 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
         if (response.status === 200){
             // Remove replacement from dictionary (used to update other tokens)
             if (replacementDict[originalToken]){
-                // If page is refreshed - replacements will be lost so removing will error out. TODO: add replacement dict into local storage.
-                setReplacementDict(prevState => ({...prevState, [originalToken]: prevState[originalToken].filter(token => token !== currentToken)}));
+                // If page is refreshed - replacements will be lost so removing will error out. 
+                // TODO: add replacement dictionary artifact into local storage
+                console.log('remove rd', replacementDict);
+                console.log('updated', Object.keys(replacementDict).filter(key => key !== originalToken).reduce((obj, key) => {obj[key] = replacementDict[key]; return obj;}, {}))
+                setReplacementDict(Object.keys(replacementDict).filter(key => key !== originalToken).reduce((obj, key) => {obj[key] = replacementDict[key]; return obj;}, {}));
             }
             setCurrentToken(originalToken);
             setShowRemovePopover(false);
@@ -252,15 +278,15 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
         setSavedChange(false);
     }
 
-    const addSuggestedReplacement = async (suggestReplacementToken) => {
+    const addSuggestedReplacement = async () => {
         // Converts a suggested token into an actual replacement
 
-        const response = await axios.patch(`/api/token/suggestion-add/${tokenId}`, {suggested_replacement: suggestReplacementToken});
+        const response = await axios.patch(`/api/token/suggestion-add/${tokenId}`, {suggested_replacement: currentToken});
         if (response.status === 200){
             console.log('succesfully added suggested replacement.');
             setSuggestedToken(null);
-            setReplacedToken(suggestReplacementToken);
-            setCurrentToken(suggestReplacementToken);
+            setReplacedToken(currentToken);
+            setCurrentToken(currentToken);
             setShowAddSuggestionPopover(false)
         }
     }
@@ -276,41 +302,62 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     }
 
 
-    // --- Meta Tag Logic 
+    // --- Meta Tag Logic ---
     useEffect(() => {
-        // Updates suggested meta tag based on meta tag suggestion map content
-        
-        // Check if current token exists in any of the sub-maps (first checks if metatag map is initialised)
-        // TODO: currently testing with domain_specific... will do similar process for all sub-maps in the future.
-        if(Object.keys(metaTagSuggestionMap["domain_specific"]).includes(currentToken)){
-            console.log('Suggested meta tag for domain_specific exists');
-            setHasSuggestedMetaTag(true);
-        }
-    
+        // Updates token meta-tags when suggestion map changes
+
+        // Run tokens over meta tag suggestion map
+        Object.keys(metaTagSuggestionMap)
+                .filter(metaTag => Object.keys(metaTagSuggestionMap[metaTag]).length > 0)
+                .map(metaTag => Object.keys(metaTagSuggestionMap[metaTag]).includes(currentToken) ? setTokenInfo1(prevState => ({...prevState, [metaTag]: metaTagSuggestionMap[metaTag]})) : null)
+
     }, [metaTagSuggestionMap])
 
-    const addMetaTag = async (field, value) => {
-        // Adds auxiliary label to tokens
-        const response = await axios.patch(`/api/token/auxiliary/${tokenId}`, {field: field, value: value});
-
+    const addMetaTag = async (field, value, isSingle) => {
+        
+        setMetaTagUpdated(false)
+        const response = await axios.patch(`/api/token/add-one-meta-tag/${tokenId}`, {field: field, value: value});
         if (response.status === 200){
-            console.log('auxilliary updated successfully');
+            setTokenInfo1(prevState => ({...prevState, [field]: value}))
+        }
+
+        if (isSingle){
+            // meta-tag only applied to single token
+            setMetaTagUpdated(true)
+            
+        } else {
+            // meta-tag to cascaded across all tokens that have the same value
+            // TODO: cascade meta-tags across data set when pagianting
 
             // Add meta tag to suggestion map
-            const subMetaTagMap = metaTagSuggestionMap[field]
-            console.log('sub meta map', subMetaTagMap)
             const subMetaTagMapUpdated = {...metaTagSuggestionMap[field], [currentToken]: value}
             console.log('sub meta map updated', subMetaTagMapUpdated)
-
-            // {...metaTagSuggestionMap[field], }
             setMetaTagSuggestionMap(prevState => ({...prevState, [field]: subMetaTagMapUpdated}))
+            setMetaTagUpdated(true)
+
+        }
 
 
+    }
+
+    const removeMetaTag = async (field) => {
+        // Removes meta-tag from token (set to false)
+        setMetaTagUpdated(false);
+        const response = await axios.patch(`/api/token/remove-one-meta-tag/${tokenId}`, { field: field });
+        if (response.status === 200){
+            console.log('succesfully removed meta-tag from token', response.data);
+            setTokenInfo1(prevState => ({...prevState, [field]: false}))
+            // setMetaTagSuggestionMap(Object.keys(metaTagSuggestionMap).filter())
+            setMetaTagUpdated(true);
         }
     }
 
+
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '0.5em'}} key={tokenIndex} id={`token-${tokenClf}`} onMouseDown={toggleAction}>
+        <div
+            style={{ display: 'flex', flexDirection: 'column', marginBottom: '0.5em'}} key={tokenIndex} id={`token-${tokenClf}`}
+            onMouseDown={toggleAction}
+        >
             {
                 tokenClf ?
                 <>
@@ -328,8 +375,9 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
                     currentToken={currentToken}
                     bgColorMap={bgColorMap}
                     tokenClf={tokenClf}
+                    replacedToken={replacedToken}
                 />
-                <div style={{display: 'flex', flexDirection: 'row', justifyContent: (hasSuggestedMetaTag && !suggestedToken) ? 'space-between' : null, width: inputWidth}}>
+                <div style={{display: 'flex', flexDirection: 'row', justifyContent: (!suggestedToken) ? 'space-between' : null, width: inputWidth}}>
                     <TokenUnderline
                         savedChange={savedChange}
                         originalToken={originalToken}
@@ -339,28 +387,22 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
                         removeReplacement={removeReplacement}
                         showRemovePopover={showRemovePopover}
                         setShowRemovePopover={setShowRemovePopover}
-                        inputWidth={hasSuggestedMetaTag ? parseInt(inputWidth) - 12 : inputWidth}   // Note: 1em = 16px
+                        inputWidth={inputWidth}   // Note: 1em = 16px
                         bgColorMap={bgColorMap}
                         suggestedToken={suggestedToken}
                         showAddSuggestionPopover={showAddSuggestionPopover}
-                        setShowAddSuggestionPopover={setShowAddSuggestionPopover}   
+                        setShowAddSuggestionPopover={setShowAddSuggestionPopover}
                         addSuggestedReplacement={addSuggestedReplacement}
                         removeSuggestedReplacement={removeSuggestedReplacement}
                         setSuggestedToken={setSuggestedToken}
                     />
-                    {
-                        hasSuggestedMetaTag ?
-                        <div className={classes.tokenCircle}></div>
-                        : null
-                    }   
-    
-    
                 </div>
     
                 <ContextMenu
                     menu_id={MENU_ID}
-                    tokenInfo={tokenInfo}
+                    tokenInfo={tokenInfo1}
                     addMetaTag={addMetaTag}
+                    removeMetaTag={removeMetaTag}
                 />
                 </>
                 : <p>...</p>

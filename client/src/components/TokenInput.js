@@ -1,5 +1,5 @@
 import React from 'react'
-import { OverlayTrigger, Popover, Button } from 'react-bootstrap';
+import { OverlayTrigger, Popover } from 'react-bootstrap';
 import { createUseStyles } from 'react-jss';
 import { MdDelete, MdBrush, MdBookmark } from 'react-icons/md'
 import { BsArrowRightShort } from 'react-icons/bs'
@@ -61,12 +61,10 @@ const useStyles = createUseStyles({
     }
 })
 
-export default function TokenInput({showContextMenu, showPopover, tokenIndex, modifyToken, edited, bgColor, inputWidth, addReplacement, cancelChange, originalToken, currentToken, bgColorMap, tokenClf}) {
+export default function TokenInput({showContextMenu, showPopover, tokenIndex, modifyToken, edited, bgColor, inputWidth, addReplacement, cancelChange, originalToken, currentToken, bgColorMap, tokenClf, replacedToken}) {
     const classes = useStyles();
 
-
     const addOne = () => {
-        // TODO: Make this not cascade
         addReplacement(true);
     }
 
@@ -89,8 +87,8 @@ export default function TokenInput({showContextMenu, showPopover, tokenIndex, mo
                                             <p className={classes.suggestedText}>{currentToken}</p>
                                         </div>
                                         <div className={classes.actionContainer}>
-                                            <div className={classes.actionBtn} onClick={() => addOne()}><p className={classes.actionText}><MdBookmark/>Add one</p></div>
-                                            <div className={classes.actionBtn} onClick={() => addAll()}><p className={classes.actionText}><MdBrush/>Add and apply all</p></div>
+                                            <div className={classes.actionBtn} onClick={() => addOne()}><p className={classes.actionText}><MdBookmark/>Apply</p></div>
+                                            <div className={classes.actionBtn} onClick={() => addAll()}><p className={classes.actionText}><MdBrush/>Apply all</p></div>
                                             <div className={classes.actionBtn} onClick={() => ignore()}><p className={classes.actionText}><MdDelete/>Ignore</p></div>
                                         </div>
                                     </div>
@@ -112,7 +110,8 @@ export default function TokenInput({showContextMenu, showPopover, tokenIndex, mo
             key={tokenIndex}
             // Style - if token is edited (user modified token in place so show as green), if original token and current token are different 
             //         then the token has been modified due to a suggestion so colour accordingly.
-            style={{backgroundColor: edited ? bgColorMap['rt']: (originalToken !== currentToken) ? bgColorMap['st'] : bgColor, width: inputWidth}}
+            // TODO: make meta-tag override input colour (replace/suggest will be indicated by underline colour)
+            style={{ backgroundColor: (edited || replacedToken) ? bgColorMap['rt']: ( originalToken !== currentToken ) ? bgColorMap['st'] : bgColor, width: inputWidth}}
             className={classes.token}
             autoComplete="off"
             title={`original: ${originalToken}\nClass: ${tokenClf}`}

@@ -5,7 +5,6 @@ import { Spinner } from 'react-bootstrap';
 
 import AnnotationTable from './AnnotationTable'
 import Header from './Header'
-import Sidebar from './Sidebar'
 import Footer from './Footer'
 
 import DownloadModal from './modals/DownloadModal'
@@ -35,7 +34,7 @@ export default function Project() {
 
     const [project, setProject] = useState();
     const [projectLoaded, setProjectLoaded] = useState(false);
-    const [pageLimit, setPageLimit] = useState(PAGE_LIMIT)
+    const [pageLimit, setPageLimit] = useState(localStorage.getItem('pageLimit') ? localStorage.getItem('pageLimit') : PAGE_LIMIT)
     const [pageChanged, setPageChanged] = useState(); // uses page number to update state...
 
     useEffect(() => {
@@ -51,6 +50,11 @@ export default function Project() {
         fetchProject();
     }, [projectLoaded])
 
+    useEffect(() => {
+        // const replacements = localStorage.getItem('replacements');
+        localStorage.setItem('replacements', JSON.stringify(replacementDict))
+    }, [replacementDict])
+
     return (
         <>
         { showLegend ? <LegendModal showLegend={showLegend} setShowLegend={setShowLegend}/> : null }
@@ -59,7 +63,7 @@ export default function Project() {
         { showProgress ? <ProgressModal showProgress={showProgress} setShowProgress={setShowProgress}/> : null }
         { showSettings ? <SettingsModal showSettings={showSettings} setShowSettings={setShowSettings} pageLimit={pageLimit} setPageLimit={setPageLimit} /> : null }
 
-        <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
+        <div style={{display: 'flex', flexDirection: 'column', minHeight: '100%'}}>
             <Header
                 project={project ? project : {}}
                 replacementDict={replacementDict}
@@ -89,10 +93,9 @@ export default function Project() {
                 />
             }   
             </div>
-            <div style={{flexShrink: '0'}}>
+            {/* <div style={{flexShrink: '0'}}>
                 <Footer />
-
-            </div>
+            </div> */}
         </div>
         </>
     )

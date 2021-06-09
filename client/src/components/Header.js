@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import { useHistory } from 'react-router-dom'
 import { createUseStyles } from 'react-jss';
-import { Dropdown, Button } from 'react-bootstrap';
-import { MdPlaylistAddCheck } from 'react-icons/md'
+import { Dropdown } from 'react-bootstrap';
+// import { MdPlaylistAddCheck } from 'react-icons/md'
 
 const useStyles = createUseStyles({
     header: {
@@ -52,6 +52,9 @@ export default function Header({project, replacementDict, setShowDownload, setSh
     const classes = useStyles();
 
     const [progress, setProgress] = useState();
+    const [currentVocabSize, setCurrentVocabSize] = useState();
+    const [currentOOVTokenCount, setCurrentOOVTokenCount] = useState();
+
 
     // const changeCount = Object.keys(replacementDict).map(textIndex => Object.keys(replacementDict[textIndex]).length).reduce((a, b) => a + b, 0);
     // const showSaveBtn = Object.keys(replacementDict).length > 0;
@@ -65,6 +68,13 @@ export default function Header({project, replacementDict, setShowDownload, setSh
                     setProgress(response.data);
                     console.log(response.data)
                 }
+
+                const countResponse = await axios.get(`/api/project/token-count/${project._id}`);
+                if (countResponse){
+                    setCurrentVocabSize(countResponse.data.vocab_size);
+                    setCurrentOOVTokenCount(countResponse.data.oov_tokens);
+                    console.log('count response', countResponse.data);
+                } 
             }   
         }
         fetchProgressInfo();
@@ -76,7 +86,7 @@ export default function Header({project, replacementDict, setShowDownload, setSh
                     Lexiclean
                 </div>
                 <div style={{display: 'flex', flexDirection: 'column'}}>
-                    <div style={{fontSize: '2em', color: '#F8F9FA', fontWeight: 'bolder', display: 'flex'}}>
+                    <div style={{fontSize: '2em', color: '#F8F9FA', fontWeight: 'bolder', display: 'flex', justifyContent: 'center'}}>
                         <p>{ project.name }</p>
                         {/* {
                             showSaveBtn ?
@@ -87,9 +97,18 @@ export default function Header({project, replacementDict, setShowDownload, setSh
                         } */}
                     </div>
                     {
-                        progress ?
-                        <div style={{fontSize: '1em', color: '#F8F9FA'}}>
-                            {progress.annotated} / {progress.total}
+                        project.metrics && progress ?
+                        <div style={{fontSize: '1em', color: '#F8F9FA', textAlign: 'center'}}>
+                            <div>
+                                <strong>Documents Annotated:</strong> {' '}
+                                {progress.annotated} / {progress.total}
+                            </div>
+                            <div>
+                                <strong>Token Reduction:</strong> {' '} {Math.round((1-(currentVocabSize/project.metrics.starting_vocab_size)) * 100)}%
+                            </div>
+                            <div>
+                                <strong>OOV Corrected:</strong> {' '} {project.metrics.starting_oov_token_count - currentOOVTokenCount} / {project.metrics.starting_oov_token_count}
+                            </div>
                         </div>
                         : null
                     }

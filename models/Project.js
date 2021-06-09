@@ -20,6 +20,10 @@ const ProjectSchema = mongoose.Schema({
         ref: 'Map',
         required: true
     }],
+    metrics: {
+        starting_vocab_size: { type: Number, required: true },
+        starting_oov_token_count: { type: Number, required: true }
+    },
     created_on: {
         type: Date,
         required: true,
@@ -30,6 +34,11 @@ const ProjectSchema = mongoose.Schema({
         required: true,
         default: Date.now,
     }
+    // ,
+    // starting_token_count: {
+    //     type: Number,
+    //     required: true,
+    // }
 }, { _id: true})
 
 

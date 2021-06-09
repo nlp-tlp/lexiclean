@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { OverlayTrigger, Popover, Button } from 'react-bootstrap';
+import React from 'react'
+import { OverlayTrigger, Popover } from 'react-bootstrap';
 import { createUseStyles } from 'react-jss';
 import { MdDelete, MdBrush, MdBookmark } from 'react-icons/md'
 import { BsArrowRightShort } from 'react-icons/bs'
@@ -82,18 +82,8 @@ export default function TokenUnderline({ savedChange,
 
     const classes = useStyles();
 
-    const [multipleSuggestions, setMultipleSuggestions] = useState(false);
-    const [selectedSuggestion, setSelectedSuggestion] = useState();
-
-    useEffect(() => {
-        if (suggestedToken){
-            setMultipleSuggestions(suggestedToken.length > 1)
-        }   
-    }, [suggestedToken])
-
     const addOne = () => {
-        console.log('adding single replacement', selectedSuggestion);
-        addSuggestedReplacement(selectedSuggestion);
+        addSuggestedReplacement();
     }
 
     const addAll = () => {
@@ -128,8 +118,10 @@ export default function TokenUnderline({ savedChange,
                                     <div className={classes.popoverContainer}>
                                         <div className={classes.textContainer}>
                                             <p className={classes.originalText}>{originalToken}</p>
+                                            <p className={classes.arrow}><BsArrowRightShort/></p>
+                                            <p className={classes.suggestedTextSingle}>{currentToken}</p>
                                             
-                                            {
+                                            {/* {
                                                 (suggestedToken && Array.isArray(suggestedToken) && multipleSuggestions) ?
                                                 <div style={{display: 'flex', flexDirection: 'column'}}>
                                                     {suggestedToken.map(suggestion => {return(
@@ -149,15 +141,13 @@ export default function TokenUnderline({ savedChange,
                                                     }
                                                 </div>
                                                 :
-                                                <>
-                                                <p className={classes.arrow}><BsArrowRightShort/></p>
-                                                <p className={classes.suggestedTextSingle}>{currentToken}</p>
-                                                </>
-                                            }
+                                                <> */}
+                                                {/* </> */}
+                                            {/* } */}
                                         </div>
                                         <div className={classes.actionContainer}>
-                                            <div className={(selectedSuggestion || !multipleSuggestions) ? classes.actionBtnActive : classes.actionBtnDisabled} onClick={() => addOne()}><p className={classes.actionText}><MdBookmark/>Accept one</p></div>
-                                            <div className={(selectedSuggestion || !multipleSuggestions) ? classes.actionBtnActive : classes.actionBtnDisabled} onClick={() => addAll()}><p className={classes.actionText}><MdBrush/>Accept and apply all</p></div>
+                                            <div className={classes.actionBtnActive} onClick={() => addOne()}><p className={classes.actionText}><MdBookmark/>Accept</p></div>
+                                            <div className={classes.actionBtnActive} onClick={() => addAll()}><p className={classes.actionText}><MdBrush/>Accept all</p></div>
                                             <div className={classes.actionBtnActive} onClick={() => ignore()}><p className={classes.actionText}><MdDelete/>Ignore</p></div>
                                         </div>
                                     </div>

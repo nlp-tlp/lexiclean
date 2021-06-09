@@ -6,6 +6,7 @@ export default function SettingsModal({showSettings, setShowSettings, pageLimit,
     const [selectedLimit, setSelectedLimit] = useState(pageLimit);
 
     const submitHandler = () => {
+        localStorage.setItem('pageLimit', selectedLimit);
         setPageLimit(selectedLimit);
         setShowSettings(false);
     }

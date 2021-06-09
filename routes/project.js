@@ -72,7 +72,6 @@ router.get('/:projectId', async (req, res) => {
 } )
 
 
-
 // Create project
 router.post('/create', async (req, res) => {
     console.log('creating project')
@@ -181,13 +180,17 @@ router.post('/create', async (req, res) => {
         const textObjectIds = textResponse.map(text => text._id);
         const mapObjectIds = mapResponse.map(map => map._id);
         const tokenCount = new Set(tokenizedTexts.flat().map(token => token))
+        const candidateTokens = tokenListResponse.filter(token => (!token.domain_specific && !token.abbreviation && !token.english_word && !token.replacement)).map(token => token.value)
 
         const projectResponse = await Project.create({
             name: req.body.name,
             description: req.body.description,
             texts: textObjectIds,
             maps: mapObjectIds,
-            starting_token_count: tokenCount.size
+            metrics: {
+                starting_vocab_size: tokenCount.size,
+                starting_oov_token_count: candidateTokens.length
+            }
         })
 
 
@@ -196,32 +199,67 @@ router.post('/create', async (req, res) => {
         const textsUpdateResponse = await Text.updateMany({ _id: { $in: textObjectIds }}, {project_id: projectId}, {upsert: true});
 
 
-        // Update texts in texts collection with their inverse tf-idf weight
-        let termDocMap = []
-        tokenizedTexts.map((doc, docId) => doc.map(token => termDocMap.push({token: token, docId: docId})))
+        // IMPLEMENT TF-IDF ALGORITHM
+        console.log('Calculating TF-IDF scores')
+        // - Update texts in texts collection with their inverse tf-idf weight
+        let counts = {};
+        let keys = [];
 
-        // - sort array alphabetically
-        termDocMap.sort((a, b) => (a.token > b.token ? 1 : -1))
-        console.log(termDocMap);
+        for (var i = 0; i < tokenizedTexts.length; i++){
+            var text = tokenizedTexts[i];
 
-        // - merge tokens and their document counts
-        // let termDocCount = {};
-        // termDocMap.map(value => Object.keys(termDocCount).includes(value.token) ? termDocCount[value.token].push(value.docId) : termDocCount[value.token] = [docId])
+            for (var j = 0; j < text.length; j++){
+                var token = text[j];
+                if (counts[token] === undefined){
+                    counts[token] = {
+                        tf: 1,
+                        df: [i] // used to capture index of texts term appears in
+                    };
+                    keys.push(token);
+                } else {
+                    counts[token].tf = counts[token].tf + 1;
+                    if (!counts[token].df.includes(i)){
+                        counts[token].df.push(i);
+                    }
+                }
+            }
+        }
 
-        // console.log(termDocCount)
+        // Aggregate doc counts into df e.g. {key: {tf: #, df #}}
+        Object.keys(counts).map(key => (counts[key].tf = counts[key].tf, counts[key].df = counts[key].df.length));
+        // console.log(counts);
 
+        // Compute tf-idf scores for each token; not assignment is used to flatten array of objects.
+        // console.log('tokenized texts length', tokenizedTexts.length)
+        const tfidfs = Object.assign(...Object.keys(counts).map(key => ({[key]: (counts[key].tf === 0 || tokenizedTexts.length / counts[key].df === 0) ? 0 : counts[key].tf * Math.log10(tokenizedTexts.length / counts[key].df)})));
+        // console.log(tfidfs);
+
+        // Compute average document tf-idf
+        // - 1. get set of candidate tokens (derived up-stream)
+        // - 2. filter texts for only candidate tokens
+        // - 3. compute filtered text average tf-idf score/weight
+
+        const candidateTokensUnique = new Set(candidateTokens)
+
+        // 2. cannot use set operations here as there can be duplicates in the tokenized text; note filter at the end is to remove the nulls
+        // console.log(tokenListResponse)
+        const textsWithTokensPopulated = textResponse.map(text => ({_id: text._id, tokenizedText: text.tokens.map(token => tokenListResponse.filter(resToken => resToken._id === token.token).map(token => token.value)).flat()}))
+        // console.log('texts with candidate tokens', textsWithTokensPopulated.length);
+
+        const textTokenWeights = textsWithTokensPopulated.map(text => ({_id: text._id, tokenWeights: text.tokenizedText.filter(token => candidateTokensUnique.has(token)).map(token => tfidfs[token])}))
+        // If text has no token weights, give its aggregate value an incredibly high number (10000).
+        // Note: text weight is a sum rather than average. THis is because we want to identify when multiple, high, tfidf tokens are present rather than averaging them out.
+        const textWeights = textTokenWeights.map(text => ({_id: text._id, weight: text.tokenWeights.length > 0 ? text.tokenWeights.reduce((a, b) => a + b) : -1}));
 
         // Add weight to text
-        // TODO: make this work properly, current just dummy weights.
-        const textWeights = Array.from({length: textObjectIds.length}, () => Math.random() * 10);
-        console.log(textWeights)
-
-
-
+        // - create update objects
+        console.log('Updating texts with TF-IDF scores')
+        const bwTextWeightObjs = textWeights.map(text => ({updateOne: { filter: { _id: text._id}, update: {weight: text.weight}, options: {upsert: true}}}));
+        const bwTextResponse = await Text.bulkWrite(bwTextWeightObjs);
 
         // Return
-        // res.json(textsUpdateResponse)
-        res.json('Project created successfully.')
+        // res.json('Project created successfully.')
+        res.json(tfidfs)
 
 
 
@@ -290,8 +328,10 @@ router.get('/token-count/:projectId', async (req, res) => {
                                         .lean()
 
         const uniqueTokens = new Set(textRes.map(text => text.tokens.map(token => token.token.replacement ? token.token.replacement : token.token.value )).flat());
+        // Unlike on project creation, the other meta-tags need to be checked such as removed, noise, etc.
+        const candidateTokens = textRes.map(text => text.tokens.filter(token => (!token.token.domain_specific && !token.token.abbreviation && !token.token.english_word && !token.token.noise && !token.token.sensitive && !token.token.unsure && !token.token.removed && !token.token.replacement)).map(token => token.token.value)).flat();
 
-        res.json({'count': uniqueTokens.size});
+        res.json({'vocab_size': uniqueTokens.size, 'oov_tokens': candidateTokens.length});
 
     }catch(err){
         res.json({ message: err })

@@ -3,7 +3,6 @@ const router = express.Router();
 const Token = require('../models/Token');
 const Text = require('../models/Text');
 const mongoose = require('mongoose');
-const { text } = require('express');
 
 // NEED INSERT MANY SO WE CAN SLAP X DOCS INTO DATA COLLECTION
 router.post('/upload', async (req, res) => {
@@ -63,10 +62,8 @@ router.patch('/suggestion-add/:tokenId', async (req, res) => {
 // Remove replacement on one token
 router.delete('/replace-remove/:tokenId', async (req, res) => {
     console.log('removing replacement on token');
-
     try {
         const response = await Token.updateOne({ _id: req.params.tokenId}, {replacement: null})
-
         res.json(response);
 
     }catch(err){
@@ -78,20 +75,20 @@ router.delete('/replace-remove/:tokenId', async (req, res) => {
 router.delete('/suggestion-remove/:tokenId', async (req, res) => {
     console.log('removing suggested replacement on token');
     try {
-        const response = await Token.updateOne({ _id: req.params.tokenId}, {suggested_replacement: []})
+        const response = await Token.updateOne({ _id: req.params.tokenId}, {suggested_replacement: null})
         res.json(response);
     }catch(err){
         res.json({ message: err })
     }
 })
 
-// Patch auxiliary on one token
-router.patch('/auxiliary/:tokenId', async (req, res) => {
+// Patch meta-tag on one token
+router.patch('/add-one-meta-tag/:tokenId', async (req, res) => {
     // Takes in field, value pair where the field is the axuiliary information key
-    console.log('Patching axuiliary information')
+    console.log('Patching one tokens meta-tag information')
     // console.log(req.body);
     try{
-        const updatedReponse = await Token.updateOne(
+        const updatedReponse = await Token.findByIdAndUpdate(
                                                 {
                                                     _id: req.params.tokenId
                                                 },
@@ -102,32 +99,117 @@ router.patch('/auxiliary/:tokenId', async (req, res) => {
                                                     upsert: true
                                                 }
                                                 )
+                                            .lean();
         res.json(updatedReponse);
     }catch(err){
         res.json({ message: err })
     }
 })
 
+
+// Patch meta-tags on all tokens
+router.patch('/add-many-meta-tag/:projectId', async (req, res) => {
+    // Takes in field, value pair where the field is the meta-tag information key
+    // Updates all values in data set that match with meta-tag boolean
+
+    // To do this, each type of meta-tag needs to be searched and mapped to tokens...
+    // we first filter the entire data set of potential tokens and then 
+    // figure out which is correct
+
+    console.log('Patching meta-tags on all tokens')
+    // console.log(req.body);
+
+    try{
+
+        const metaTagDict = req.body.meta_tag_dict;
+        // console.log(metaTagDict)
+
+        const metaTagDictActive = Object.keys(metaTagDict)
+                                        .filter(metaTag => Object.keys(metaTagDict[metaTag]).length > 0)
+
+        // These tokens are used to filter the tokens in the entire dataset
+        const originalTokens = metaTagDictActive.map(metaTag => Object.keys(metaTagDict[metaTag])).flat();
+
+        // Get all tokens
+        // TODO: review below statement...
+        // Note looking just 'value' might make future replacements not aligned with DS terms
+        const tokenResponse = await Token.find({ value: { $in : originalTokens}})
+
+        // console.log(tokenResponse);
+
+        // Now we need to construct update objects from tokens
+        // TODO: review if any of the meta-tags change - this will need to be updated.
+        const updateTokens = tokenResponse.map(token => ({
+
+            updateOne: {
+                filter: { _id: token._id },
+                update: {
+                    "domain_specific": Object.keys(metaTagDict["domain_specific"]).includes(token.value) ? metaTagDict["domain_specific"][token.value] : token.domain_specific,
+                    "abbreviation": Object.keys(metaTagDict["abbreviation"]).includes(token.value) ? metaTagDict["abbreviation"][token.value] : token.abbreviation,
+                    "english_word": Object.keys(metaTagDict["english_word"]).includes(token.value) ? metaTagDict["english_word"][token.value] : token.english_word,
+                    "noise": Object.keys(metaTagDict["noise"]).includes(token.value) ? metaTagDict["noise"][token.value] : token.noise,
+                    "sensitive": Object.keys(metaTagDict["sensitive"]).includes(token.value) ? metaTagDict["sensitive"][token.value] : token.sensitive,
+                    "unsure": Object.keys(metaTagDict["unsure"]).includes(token.value) ? metaTagDict["unsure"][token.value] : token.unsure,
+                    "removed": Object.keys(metaTagDict["removed"]).includes(token.value) ? metaTagDict["removed"][token.value] : token.removed
+                },
+                upsert: true
+            }
+
+        }))
+        
+        const updateResponse = await Token.bulkWrite(updateTokens);
+
+        res.json(updateResponse)
+
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+// Removes meta-tag from one token
+router.patch('/remove-one-meta-tag/:tokenId', async (req, res) => {
+    console.log('removing meta-tag from single token')
+    // sets to false (soft delete)
+    try{
+        const response = await Token.findByIdAndUpdate(
+                                                { _id: req.params.tokenId}, 
+                                                { 
+                                                    [req.body.field]: false,
+                                                    last_modified: Date.now()
+                                                },
+                                                { upsert: true }
+                                                )
+                                    .lean()
+        res.json(response)
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+
+
+
+
+
 // Patch suggested_replacements over all tokens in a project
 router.patch('/suggest-many/:projectId', async (req, res) => {
     console.log('Updating suggested_replacements based on a replacement dictionary for entire project');
     try{
         const replacementDict = req.body.replacement_dict;
-        console.log(replacementDict)
         const replacementDictKeys = Object.keys(replacementDict); // original tokens, not replacements.
-        console.log(replacementDictKeys);
+        // console.log('using replacement dictionary ->', replacementDict)
+        // console.log('searching for keys ->', replacementDictKeys);
         
         const textResponse = await Text.find({ project_id: req.params.projectId })
                                        .populate('tokens.token');
         
         // Do not override existing replacements so these are filter out
         const candidateTokens = textResponse.map(text => text.tokens.filter(tokenInfo => tokenInfo.token.replacement == null).map(tokenInfo => tokenInfo)).flat();
-        console.log(candidateTokens);
-        console.log('candidate tokens for suggested replacement', candidateTokens.length)
+        // console.log(candidateTokens);
+        // console.log('number of candidate tokens (those without replacements) ->', candidateTokens.length)
 
         const suggestReplaceTokens = candidateTokens.filter(tokenInfo => replacementDictKeys.includes(tokenInfo.token.value)).map(tokenInfo => ({"_id": tokenInfo.token._id, "value": tokenInfo.token.value}));
-        console.log(suggestReplaceTokens)
-
+        // console.log('number of matched candidates ->', suggestReplaceTokens)
 
         // Patch suggested_replacement field with replacement
         const suggestedReplaceResponse = await Token.bulkWrite(suggestReplaceTokens.map(token => ({
@@ -150,12 +232,12 @@ router.patch('/suggest-confirm/', async (req, res) => {
     console.log('Converting suggested replacements to replacements on page');
 
     const replacementDict = req.body.replacement_dict;
-    console.log(replacementDict)
+    console.log('replacement dictionary ->', replacementDict)
     const replacementDictKeys = Object.keys(replacementDict); // original tokens, not replacements.
-    console.log(replacementDictKeys);
+    console.log('replacement dictionary keys ->', replacementDictKeys);
 
     const textIdsList = req.body.textIds;
-    console.log(textIdsList);
+    console.log('list of text ids ->', textIdsList);
     
     try{
         const textResponse = await Text.find({ _id: textIdsList})
@@ -165,23 +247,26 @@ router.patch('/suggest-confirm/', async (req, res) => {
 
         // Do not override existing replacements so these are filter out
         const candidateTokens = textResponse.map(text => text.tokens.filter(tokenInfo => tokenInfo.token.replacement == null).map(tokenInfo => tokenInfo)).flat();
-        console.log(candidateTokens);
-        console.log('candidate tokens for suggested replacement', candidateTokens.length)
+        // console.log(candidateTokens);
+        // console.log('candidate tokens for suggested replacement', candidateTokens.length)
 
         const suggestReplaceTokens = candidateTokens.filter(tokenInfo => replacementDictKeys.includes(tokenInfo.token.value)).map(tokenInfo => ({"_id": tokenInfo.token._id, "value": tokenInfo.token.value}));
-        console.log(suggestReplaceTokens)
+        // console.log(suggestReplaceTokens)
 
 
         // Patch suggested_replacement field with replacement
         const suggestedReplaceResponse = await Token.bulkWrite(suggestReplaceTokens.map(token => ({
             updateOne: {
-                filter: {_id: token._id},
+                filter: { _id: token._id },
                 update: {
                     "replacement": replacementDict[token.value],
-                    "suggested_replacement": null},
+                    "suggested_replacement": null
+                },
                 upsert: true
             }
         })))
+
+        // Patch text with annotated status
 
         res.json(suggestedReplaceResponse)
     }catch(err){

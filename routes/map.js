@@ -7,7 +7,6 @@ const StaticMap = require('../models/StaticMap');
 // Create map
 router.post('/', async (req, res) => {
     console.log('Creating map');
-
     let map;
     if (req.body.tokens){
         console.log('Map uses token list')

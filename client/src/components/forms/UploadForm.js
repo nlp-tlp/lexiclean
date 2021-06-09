@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Form, Col, Spinner } from 'react-bootstrap';
+import { Button, Form, Col } from 'react-bootstrap';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import axios from 'axios';
@@ -18,8 +18,6 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
     
     const [dataFileLoaded, setDataFileLoaded] = useState(false);
     const [dsWordFileLoaded, setDsWordFileLoaded] = useState(false);
-    const [abrvWordFileLoaded, setAbrvWordFileLoaded] = useState(false);
-    const [rpFileLoaded, setRpWordFileLoaded] = useState(false);
 
     const [formSubmitted, setFormSubmitted] = useState(false);
 
@@ -60,13 +58,11 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
                 // Rows will the be used to build 
                 // TODO: investigate if this process needs to be made async...
                 const rowsObject = reader.result.split('\n').filter(line => line !== "").map(line => ({[line.split(',')[0].trim()]: line.split(',')[1].trim()}));
-                // console.log(rowsObject);
+                console.log(rowsObject);
 
-                // Combine row objects into {str: [array]} objects, merging on the key
-                const csvData = rowsObject.reduce((a, c) => {
-                                                          Object.keys(c).forEach(k => (a[k] || (a[k] = [])).push(c[k]));
-                                                          return a;
-                                                      }, {});
+                // Combine row objects into { str2: str1} objects
+                const csvData = Object.assign({}, ...rowsObject);
+                
                 console.log(csvData);
                 const newFileData = {"meta": fileMeta, "data": csvData};
                 setFileData(prevState => ({...prevState, [fileKey]: newFileData}));
@@ -78,7 +74,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
 
         if (Object.keys(fileData).filter(file => fileData[file].data).length === Object.keys(fileData).length){
             console.log('all data processed')
-            if (Object.values(values).length == Object.keys(values).length && dataFileLoaded && dsWordFileLoaded){
+            if (Object.values(values).length === Object.keys(values).length && dataFileLoaded && dsWordFileLoaded){
                 console.log('form data ready');
                 console.log('has form been submitted?', formSubmitted);
 

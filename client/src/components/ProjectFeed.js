@@ -58,7 +58,7 @@ export default function ProjectFeed() {
     useEffect(() => {
         // Fetches project on page load and when upload modal is interacted with.
         const fetchProjects = async () => {
-            const response = await axios.get('/api/project/');
+            const response = await axios.get('/api/project/feed');
             if (response.status === 200){
                 console.log('projects', response.data);
                 setProjects(response.data);
@@ -99,7 +99,7 @@ export default function ProjectFeed() {
             : null
         }
 
-        <div style={{display: 'flex', flexDirection: 'column', height: '1000px', minHeight: '100%'}}> 
+        <div style={{display: 'flex', flexDirection: 'column', height: '80vh', minHeight: '100%'}}> 
 
             <div className={classes.header}>
                 <div className={classes.title}>
@@ -113,20 +113,20 @@ export default function ProjectFeed() {
             {
                 !projectsLoaded ? 
                 <div style={{margin: 'auto', marginTop: '5em'}}>
-                <Spinner animation="border" />
+                    <Spinner animation="border" />
                 </div>
                 : projects.length === 0 ?
                 <div style={{margin: 'auto', textAlign: 'center', marginTop: '5em', fontSize: '2em'}}>No projects</div>
                 :
                 <ProjectList 
-                projects={projects}
-                setSelectedProject={setSelectedProject}
-                setShowAnnotate={setShowAnnotate}
-                setShowProjectDelete={setShowProjectDelete}
+                    projects={projects}
+                    setSelectedProject={setSelectedProject}
+                    setShowAnnotate={setShowAnnotate}
+                    setShowProjectDelete={setShowProjectDelete}
                 />
             }
 
-            <Footer />
+            {/* <Footer /> */}
         </div>
         </>
     )

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { createUseStyles } from 'react-jss';
-import { Spinner, Pagination } from 'react-bootstrap';
+import { Spinner } from 'react-bootstrap';
 import axios from 'axios';
 
 import Text from './Text';
 import Paginator from './utils/Paginator';
+
 
 const useStyles = createUseStyles({
   container: {
@@ -43,27 +44,33 @@ const useStyles = createUseStyles({
   }
 });
 
+
+const META_TAG_MAP_INIT = {
+  "domain_specific": {},
+  "abbreviation": {},
+  "noise": {},
+  "english_word": {},
+  "unsure": {},
+  "removed": {},
+  "sensitive": {}
+};
+
 export default function AnnotationTable({project, replacementDict, setReplacementDict, pageLimit, saved, setSaved, setPageChanged}) {
   const classes = useStyles();
 
   const [texts, setTexts] = useState();
-  const [maps, setMaps] = useState();
-  const [metaTagSuggestionMap, setMetaTagSuggestionMap] = useState({"abbreviation": {}, "domain_specific": {}, "english_word": {}, "noise": {}, "unsure": {}});
-
+  const [loaded, setLoaded] = useState(false);
+  const [metaTagSuggestionMap, setMetaTagSuggestionMap] = useState(META_TAG_MAP_INIT);
+  const [mapsLoaded, setMapsLoaded] = useState(false);
+  
   const [updateSingleToken, setUpdateSingleToken] = useState(null);
 
-  // console.log(metaTagSuggestionMap)
-
-  const [loaded, setLoaded] = useState(false);
-  const [mapsLoaded, setMapsLoaded] = useState(false);
-  const [replacementsLoaded, setReplacementsLoaded] = useState(false);
 
   const [paginatorLoaded, setPaginatorLoaded] = useState();
   const [totalPages, setTotalPages] = useState();
   const [page, setPage] = useState(1);
 
   // TOKEN SELECT HANDLER
-  const [selectMode, setSelectMode] = useState(false);
   const [selectedTokens, setSelectedTokens] = useState();
 
 
@@ -71,6 +78,7 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
     // Updates page status anytime pagination occurs. This updates upstream components.
     setPageChanged(page);
   }, [page])
+
 
   useEffect(() => {
     // Fetch pagination metadata
@@ -99,34 +107,13 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
         if (maps.status === 200){
           console.log('maps loaded')
           // console.log('maps', maps.data);
-          setMaps(maps.data);
+          // setMaps(maps.data);
           setMapsLoaded(true);
         }
       }
     }
     fetchProjectMaps();
   }, [mapsLoaded])
-
-
-  useEffect(() => {
-    // On save or page change, any suggested replacements that remain are posted to the backend
-
-    const fetchReplacements = async () => {
-
-
-      // const response = await axios.get(`/api/results/${project._id}`)
-
-      // if (response.status === 200){
-      //   setReplacementMap(response.data, () => {
-      //     console.log('replacements', response.data);
-      //     setReplacementsLoaded(true);
-      //   });
-      // }
-
-    }
-
-    fetchReplacements();
-  }, [page, saved])
 
 
 
@@ -145,65 +132,90 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
   }, [page, pageLimit])
 
 
-  // TODO: Uncomment once single/multi has been resolved
-  // useEffect(() => {
-  //   // Cascades replacements as suggested replacements across tokens
-  //   const updateTokens = async () => {
-  //     console.log('suggesting replacements with', replacementDict);
-  //     if (Object.keys(replacementDict).length > 0){
+  useEffect(() => {
+    // Cascades replacements as suggested replacements across tokens
+    const updateTokens = async () => {
+      if (Object.keys(replacementDict).length > 0){
+        console.log('suggesting replacements with ->', replacementDict);
+        const response = await axios.patch(`/api/token/suggest-many/${project._id}`, {replacement_dict: replacementDict});
+        if (response.status === 200){
+          console.log('suggested replacement response', response)
+          console.log('Updated tokens with suggested replacements')
+          // setReplacementDict({});
+        }
+      }
+    }
+    updateTokens();
+  }, [page]) // saved
 
-  //       const response = await axios.patch(`/api/token/suggest-many/${project._id}`, {replacement_dict: replacementDict});
 
-  //       if (response.status === 200){
-  //         console.log('Updated tokens with suggested replacements')
+  useEffect(() => {
+    // Cascades meta-tags across tokens
+    const updateMetaTags = async () => {
+      if (Object.keys(metaTagSuggestionMap).filter(metaTag => metaTagSuggestionMap[metaTag].length > 0).length > 0){
+        console.log('updating meta-tags with ->', metaTagSuggestionMap);
 
-  //         setReplacementDict({});
+        const response = await axios.patch(`/api/token/add-many-meta-tags/${project._id}`, {meta_tag_dict: metaTagSuggestionMap});
+        if (response.status === 200){
+          console.log('updated meta tag response', response)
+          console.log('Updated token meta-tags')
+          setMetaTagSuggestionMap(META_TAG_MAP_INIT);
+        }
+      }
+    }
+    updateMetaTags();
+  }, [page]) // saved
 
-  //       }
-  //     }
-  //   }
-  //   updateTokens();
-  // }, [page])
+
+
+  useEffect(() => {
+    // Checks if text has been annotated. This helps the sorting algorithm.
+
+    const updateTextAnnotationStates = async () => {
+      if (texts){
+        const response = await axios.patch('/api/text/check-annotations/', {textIds: texts.map(text => text._id)});
+        if (response.status === 200){
+          console.log('updated text annotation states');
+          console.log(response);
+        }
+      }
+    }
+    updateTextAnnotationStates();
+
+  }, [page])
 
 
   useEffect(() => {
     // Converts suggested replacements to replacements for results on page 
     //  (users needs to remove them if they don't want they to persist)
 
+    const convertSuggestedReplacements = async () => {
+      if (texts && page !== 1){ // dont update on first page load...
+        console.log('texts being sent for update on pagination ->', texts)
+        const response = await axios.patch(`/api/token/suggest-confirm`, { replacement_dict: replacementDict, textIds: texts.map(text => text._id)});
+        if (response.status === 200){
+            console.log('update suggested tokens to replace tokens');
+        }
 
-
-    console.log('page changed')
+      }
+    }
+    convertSuggestedReplacements();
   }, [page])
 
-
-  // useEffect(() => {
-  //   const saveResults = async () => {
-  //     // If there are results, save them when paginating, otherwise skip.
-  //     if (Object.keys(replacementDict).length > 0){
-  //         const resultsPayload = Object.keys(replacementDict).map(tokenId => {return{"project_id": project._id,
-  //                                                                                 "doc_id": replacementDict[tokenId].doc_id,
-  //                                                                                 "token_id": tokenId,
-  //                                                                                 "replacement_token": replacementDict[tokenId].replacement_token
-  //                                                                               }})
-  //         const response = await axios.patch('/api/results/add-many', {results: resultsPayload})
-  //         if (response.status === 200){
-  //           console.log('Successfully saved data')
-  //           setReplacementDict({});
-  //           setSaved(false);
-  //         }
-  //     }
-  //   }
-  //   saveResults();
-  // }, [page, saved])
 
 
 
 
 
   // SEGMENTATION HANDLERS
-  useEffect(() => {
-    console.log(selectedTokens)
-  }, [selectedTokens])
+  // useEffect(() => {
+  //   console.log(selectedTokens)
+
+  //   if(selectedTokens && Object.keys(selectedTokens).length > 1){ // has to have at least two tokens
+  //     console.log('do you want to segment?')
+  //   }
+
+  // }, [selectedTokens])
 
 
   // const toggleAction = event => {
@@ -227,7 +239,7 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
         {/* </div>onMouseDown={(e) => toggleAction(e)}> */}
       <div className={classes.container} >
         {
-          (!loaded && !replacementsLoaded) ? 
+          (!loaded) ? // && !replacementsLoaded 
             <div style={{margin: 'auto', marginTop: '5em'}}>
               <Spinner animation="border" />
             </div>
@@ -259,7 +271,7 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
                     setMetaTagSuggestionMap={setMetaTagSuggestionMap}
                     updateSingleToken={updateSingleToken}
                     setUpdateSingleToken={setUpdateSingleToken}
-                    selectMode={selectMode}
+                    selectedTokens={selectedTokens}
                     setSelectedTokens={setSelectedTokens}
                     />
                 </div>

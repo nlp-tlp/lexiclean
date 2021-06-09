@@ -23,7 +23,6 @@ router.post('/upload', async (req, res) => {
 
 // get single text
 router.get('/:textId', async (req, res) => {
-
     try{
         const response = await Text.findOne({ _id: req.params.textId})
                                     .populate('tokens.token');
@@ -61,11 +60,6 @@ router.get('/progress/:projectId', async (req, res) => {
     }
 })
 
-
-
-
-
-
 // Get number of total pages for paginator
 router.get('/filter/pages/:projectId', async (req, res) => {
     console.log('getting number of pages for paginator')
@@ -84,14 +78,10 @@ router.get('/filter/pages/:projectId', async (req, res) => {
 // TODO: Add sort functionality (this will require patching data with annotated status when results are patched)
 router.get('/filter/:projectId', async (req, res) => {
     console.log('Paginating through texts');
-    // console.log(req.query);
     try {
-
         const skip = parseInt((req.query.page - 1) * req.query.limit)
         const limit = parseInt(req.query.limit)
-
-        console.log(skip, limit);
-
+        // console.log(skip, limit);
 
         // Paginate Aggregation
         const textAggregation = await Text.aggregate([
@@ -102,30 +92,31 @@ router.get('/filter/:projectId', async (req, res) => {
                 }
             },
             // COMMENTED OUT SECTION BELOW WAS USED FOR CANDIDATE CAPTURING AND FILTERING. THIS IS REMOVED IN PLACE OF TF-IDF
-            // {
-            //     $lookup: {
-            //         from: 'tokens', // need to use MongoDB collection name - NOT mongoose model name
-            //         localField: 'tokens.token',
-            //         foreignField: '_id',
-            //         as: 'tokens_detail'
-            //     }
-            // },
+            {
+                $lookup: {
+                    from: 'tokens', // need to use MongoDB collection name - NOT mongoose model name
+                    localField: 'tokens.token',
+                    foreignField: '_id',
+                    as: 'tokens_detail'
+                }
+            },
             // // Merges data in text model and that retrieved from the tokens collection into single object
-            // {
-            //     $project: {
-            //         annotated: "$annotated",
-            //         candidates: "$candidates",
-            //         tokens: {
-            //             $map : {
-            //                 input: { $zip: { inputs: [ "$tokens", "$tokens_detail"]}},
-            //                 as: "el",
-            //                 in: {
-            //                     $mergeObjects: [{"$arrayElemAt": [ "$$el", 0 ]}, {"$arrayElemAt": [ "$$el", 1 ] }]
-            //                 }
-            //             }
-            //         }
-            //     }
-            // },
+            {
+                $project: {
+                    annotated: "$annotated",
+                    // candidates: "$candidates",
+                    weight: "$weight",
+                    tokens: {
+                        $map : {
+                            input: { $zip: { inputs: [ "$tokens", "$tokens_detail"]}},
+                            as: "el",
+                            in: {
+                                $mergeObjects: [{"$arrayElemAt": [ "$$el", 0 ]}, {"$arrayElemAt": [ "$$el", 1 ] }]
+                            }
+                        }
+                    }
+                }
+            },
             // // To sort data based on the number of replacement candidates e.g. those that are not ds, en, abrv, unsure, etc.
             // // First need to addField aggregated over these fields and then sort descending using the calculated field 
             // {
@@ -160,7 +151,7 @@ router.get('/filter/:projectId', async (req, res) => {
             // 
             {
                 // $sort: {'annotated': -1, 'candidate_count': -1} // -1 descending, 1 ascending
-                $sort: {'annotated': -1, 'weight': 1}   // weight is sorted smallest to highest
+                $sort: {'annotated': -1, 'weight': -1}   // weight is sorted smallest to highest
             },
             // Paginate over documents
             {
@@ -187,6 +178,8 @@ router.get('/filter/:projectId', async (req, res) => {
 
 
 // Get candidate counts across all documents bucketed by their page number
+// This is used for effort estimation for users
+// TODO: REVIEW
 router.get('/overview/:projectId', async (req, res) => {
     console.log('Getting candidate overview');
     try{
@@ -289,31 +282,19 @@ router.get('/overview/:projectId', async (req, res) => {
 router.patch('/check-annotations/', async (req, res) => {
     console.log('Checking annotation states of texts')
     try{
-
-        console.log(req.body.textIds)
-
         const textsRes = await Text.find({ _id : { $in: req.body.textIds}}).populate('tokens.token').lean();
-
-
         const checkTextState = (text) => {
-            // Checks whether the tokens in a text have been annotated - if so, the text will be marked
-            // as annotated.
-
-
-            //  dont include token.token.english_word
+            // Checks whether the tokens in a text have been annotated - if so, the text will be marked as annotated.
+            // - Dont include token.token.english_word
             const textHasCandidates = text.tokens.filter(token => (
                 token.token.unsure || token.token.sensitive || token.token.noise || token.token.abbreviation || token.token.domain_specific || token.token.replacement
                 )).length > 0
             return textHasCandidates
         }
-
         const annotatedTextIds = textsRes.filter(text => checkTextState(text)).map(text => text._id);
-
         // Patch annotated field on texts
         const testUpdateRes = await Text.updateMany({ _id: { $in : annotatedTextIds}}, {"annotated": true})
-
         res.json(testUpdateRes);
-
 
     }catch(err){
         res.json({ message: err })
