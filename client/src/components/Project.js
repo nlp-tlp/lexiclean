@@ -93,9 +93,6 @@ export default function Project() {
                 />
             }   
             </div>
-            {/* <div style={{flexShrink: '0'}}>
-                <Footer />
-            </div> */}
         </div>
         </>
     )
