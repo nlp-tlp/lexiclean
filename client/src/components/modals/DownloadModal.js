@@ -43,7 +43,26 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
     const downloadMaps = async (project, mapName) => {
         console.log(`Downloading ${mapName} mapping`);
 
-        
+        const response = await axios.post(`/api/map/download/${project._id}`, {mapName: mapName});
+
+        if (response.status === 200){
+            console.log('map was succesfully formatted');
+            console.log(response.data);
+
+            // Prepare for file download
+            const fileName = `${project.name}_map_${mapName}`;
+            const json = JSON.stringify(response.data, null, 4);
+            const blob = new Blob([json], {type: 'application/json'});
+            const href = await URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = href;
+            link.download = fileName + '.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+
         
     }
     

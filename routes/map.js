@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Map = require('../models/Map');
 const StaticMap = require('../models/StaticMap');
+const Text = require('../models/Text');
 
 
 // Create map
@@ -60,5 +61,32 @@ router.post('/static/', async (req, res) => {
         res.json({ message: err })
     }
 })
+
+// Download map
+router.post('/download/:projectId', async (req, res) => {
+    try{    
+        console.log(`Downloading ${req.body.mapName} mapping`)
+        
+        // Get tokens
+        const textResponse = await Text.find({project_id: req.params.projectId}).populate('tokens.token').lean();
+        // console.log(textResponse)
+        const tokens = textResponse.map(text => text.tokens.map(token => token.token)).flat();
+        // console.log(tokens);
+        
+        // Filter tokens for those annotated with map
+        const tokensMapped = tokens.filter(token => token[req.body.mapName])
+        // console.log(tokensMapped);
+
+        // Filter for unique values only.
+        const tokenValues = [... new Set(tokensMapped.map(token => token.value))];
+        // console.log(tokenValues);
+
+        res.json({[req.body.mapName]: tokenValues})
+
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
 
 module.exports = router;
