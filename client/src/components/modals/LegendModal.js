@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Modal, Button } from 'react-bootstrap';
 import { createUseStyles } from 'react-jss';
+import axios from 'axios';
 
 const useStyles = createUseStyles({
     legend: {
@@ -20,20 +21,28 @@ const useStyles = createUseStyles({
 })
 
 
-// TODO: Add all of these into legend container
-// 'ds': 'red',
-// 'ab': 'purple',
-// 'ew': '#D9D9D9',
-// 'no': 'blue',
-// 'un': 'brown', 
-// 'rp': 'yellow',
-// 'rt': '#99BF9C',
-// 'st': '#6BB0BF',
-// 'stm': 'aqua',
-// 'ua': '#F2A477',
-
-export default function LegendModal({showLegend, setShowLegend}) {
+export default function LegendModal({showLegend, setShowLegend, project}) {
     const classes = useStyles();
+
+    const [bgColourMap, setBgColourMap] = useState();
+    const [coloursLoaded, setColoursLoaded] = useState(false);
+
+    useEffect(() => {
+        const fetchProjectMaps = async () => {
+          if (!coloursLoaded){
+            // Fetch maps
+            console.log('fetching maps...');
+            const response = await axios.get(`/api/map/${project._id}`)
+            if (response.status === 200){
+              setBgColourMap(response.data.colour_map);
+              console.log('colour map in legend ->', response.data.colour_map);
+              setColoursLoaded(true);
+            }
+          }
+        }
+        fetchProjectMaps();
+      }, [coloursLoaded])
+
 
     return (
         <Modal
@@ -49,21 +58,13 @@ export default function LegendModal({showLegend, setShowLegend}) {
             <Modal.Body>
             <div style={{display: 'flex', flexDirection: 'column', textAlign: 'center', backgroundColor: 'white'}}>
                             <div className={classes.legend}>
-                                <div className={classes.legendItem} style={{backgroundColor: '#F2A477'}}>
-                                    Candidate
-                                </div>
-                                <div className={classes.legendItem} style={{backgroundColor: '#99BF9C'}}>
-                                    Replaced
-                                </div>
-                                <div className={classes.legendItem} style={{backgroundColor: '#D9D9D9'}}>
-                                    Normalised
-                                </div>
-                                <div className={classes.legendItem} style={{backgroundColor: '#6BB0BF'}}>
-                                    Suggestion
-                                </div>
-                                <div className={classes.legendItem} style={{backgroundColor: '#8F8EBF'}}>
-                                    Meta Suggestion
-                                </div>
+                                {
+                                    Object.keys(bgColourMap).map(key => (
+                                        <div className={classes.legendItem} style={{backgroundColor: bgColourMap[key]}}>
+                                            {key}
+                                        </div>
+                                        ))
+                                }
                             </div>
                         </div>
             </Modal.Body>
