@@ -33,6 +33,10 @@ export default function Project() {
     const [pageLimit, setPageLimit] = useState(localStorage.getItem('pageLimit') ? localStorage.getItem('pageLimit') : PAGE_LIMIT)
     const [pageChanged, setPageChanged] = useState(); // uses page number to update state...
 
+    // tokenization
+    const [keysDown, setKeysDown] = useState(new Set())
+    const [tokenizeMode, setTokenizeMode] = useState(false);
+
     useEffect(() => {
         const fetchProject = async () => {
             const response = await axios.get(`/api/project/${projectId}`);
@@ -50,6 +54,24 @@ export default function Project() {
         localStorage.setItem('replacements', JSON.stringify(replacementDict))
     }, [replacementDict])
 
+
+    // Tokenization handler (changes annotation mode)
+    const handleKeyDown = (e) => {
+        if (e.type === 'keydown'){
+            if (e.key.toLowerCase() === 'shift' || 'control'){
+                setKeysDown(keysDown.add(e.key.toLowerCase()));
+            }
+            if (keysDown.has('shift') && keysDown.has('control') && !tokenizeMode){
+                console.log('TOKENIZE MODE - ON!')
+                setTokenizeMode(true)
+                setKeysDown(new Set())
+            } else if (keysDown.has('shift') && keysDown.has('control') && tokenizeMode){
+                console.log('TOKENIZE MODE - OFF!')
+                setTokenizeMode(false)
+            }
+        } 
+    }
+
     return (
         <>
         { (showLegend && project) ? <LegendModal showLegend={showLegend} setShowLegend={setShowLegend} project={project}/> : null }
@@ -58,7 +80,11 @@ export default function Project() {
         { showProgress ? <ProgressModal showProgress={showProgress} setShowProgress={setShowProgress}/> : null }
         { showSettings ? <SettingsModal showSettings={showSettings} setShowSettings={setShowSettings} pageLimit={pageLimit} setPageLimit={setPageLimit} /> : null }
 
-        <div style={{display: 'flex', flexDirection: 'column', minHeight: '100%'}}>
+        <div
+            style={{display: 'flex', flexDirection: 'column', minHeight: '100%'}}
+            onKeyDown={(e) => handleKeyDown(e)}
+            tabIndex="0"
+        >
             <Header
                 project={project ? project : {}}
                 replacementDict={replacementDict}
@@ -85,6 +111,7 @@ export default function Project() {
                 saved={saved}
                 setSaved={setSaved}
                 setPageChanged={setPageChanged}
+                tokenizeMode={tokenizeMode}
                 />
             }   
             </div>

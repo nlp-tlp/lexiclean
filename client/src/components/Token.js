@@ -91,8 +91,8 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
           console.log('control click - segmentation handler')
           setSelectTokenMode(true);
           setSelectedTokens(prevState => ({...prevState, [tokenIndex]: tokenId}))
-    
-        } else {
+        }
+        else {
           // When select mode is off - popover will confirm selected tokens are correct before concatenation. 
           console.log('click without key down - clean up')
           if(selectedTokens && Object.keys(selectedTokens).length > 1){
@@ -333,7 +333,7 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     return (
         <div
             style={{ display: 'flex', flexDirection: 'column', marginBottom: '0.5em'}} key={tokenIndex} id={`token-${tokenClf}`}
-            onMouseDown={toggleAction}
+            // onMouseDown={toggleAction}
         >
             {
                 tokenClf ?

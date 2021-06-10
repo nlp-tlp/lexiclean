@@ -55,7 +55,7 @@ const META_TAG_MAP_INIT = {
   "sensitive": {}
 };
 
-export default function AnnotationTable({project, replacementDict, setReplacementDict, pageLimit, saved, setSaved, setPageChanged}) {
+export default function AnnotationTable({project, replacementDict, setReplacementDict, pageLimit, saved, setSaved, setPageChanged, tokenizeMode}) {
   const classes = useStyles();
 
   const [texts, setTexts] = useState();
@@ -232,12 +232,16 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
   //   }
   // }
 
+
+
   return (
     <>
       {/* // Need to add icon to indicate that the document has no detected non-canonical tokens */}
       {/* onClick={toggleFunction} onKeyPress={toggleFunction}> */}
         {/* </div>onMouseDown={(e) => toggleAction(e)}> */}
-      <div className={classes.container} >
+      <div
+        className={classes.container}
+        >
         {
           (!loaded || !mapsLoaded) ? // && !replacementsLoaded 
             <div style={{margin: 'auto', marginTop: '5em'}}>
@@ -274,6 +278,7 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
                     selectedTokens={selectedTokens}
                     setSelectedTokens={setSelectedTokens}
                     bgColourMap={bgColourMap}
+                    tokenizeMode={tokenizeMode}
                     />
                 </div>
               </div>
