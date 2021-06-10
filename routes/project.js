@@ -2,8 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Project = require('../models/Project');
 const Map = require('../models/Map');
-const StaticMap = require('../models/StaticMap');
-
 const Text = require('../models/Text');
 const Token = require('../models/Token');
 
@@ -79,7 +77,7 @@ router.post('/create', async (req, res) => {
 
         // Load static English map
         console.log('Loading English map')
-        const enMap = await StaticMap.findOne({ type: "en"}).lean();
+        const enMap = await Map.findOne({ type: "en"}).lean();
 
         // Build maps
         console.log('Building maps')

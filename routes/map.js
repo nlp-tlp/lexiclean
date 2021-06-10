@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const Map = require('../models/Map');
-const StaticMap = require('../models/StaticMap');
 const Text = require('../models/Text');
 const Project = require('../models/Project');
 
@@ -50,9 +49,10 @@ router.post('/one/:projectId', async(req, res) => {
 router.post('/static/', async (req, res) => {
     console.log('Adding static map')
     
-    const map = new StaticMap({
+    const map = new Map({
         type: req.body.type,
-        tokens: req.body.tokens
+        tokens: req.body.tokens,
+        colour: req.body.colour
     })
     
     try{
