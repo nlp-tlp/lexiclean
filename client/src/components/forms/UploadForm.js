@@ -263,7 +263,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
                 />
               </td>
               <td>
-                <OverlayTrigger trigger="click" placement="right" overlay={popover}>
+                <OverlayTrigger trigger="click" placement="left" overlay={popover}>
                   <Button style={{borderColor: tempColour, backgroundColor: tempColour, padding: '0.2em'}}>
                     <MdBrush/>
                   </Button>

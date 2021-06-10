@@ -124,46 +124,73 @@ router.patch('/add-many-meta-tag/:projectId', async (req, res) => {
     // console.log(req.body);
 
     try{
+        const token = req.body.token;
+        const metaTag = req.body.field;
+        const metaTagValue = req.body.value;
+        console.log('token', token, 'meta-tag', metaTag, '->', metaTagValue)
+        
+        // Get all tokens that match body token 
+        const tokenResponse = await Token.find({ value: token })
+        console.log(tokenResponse)
 
-        const metaTagDict = req.body.meta_tag_dict;
-        // console.log(metaTagDict)
+        const updateTokens = tokenResponse.map(token => ({
+            updateOne: {
+                filter: { _id: token._id },
+                update: {
+                    meta_tags: {...token.meta_tags, [metaTag]: metaTagValue }
+                },
+                upsert: true
+            }
+        }))
+        
+        console.log(updateTokens)
+        const updateResponse = await Token.bulkWrite(updateTokens);
+        
+        res.json(updateResponse)
 
-        const metaTagDictActive = Object.keys(metaTagDict)
-                                        .filter(metaTag => Object.keys(metaTagDict[metaTag]).length > 0)
+
+
+
+
+        // OLD CODE \/ \/
+        // const metaTagDict = req.body.meta_tag_dict
+
+        // const metaTagDictActive = Object.keys(metaTagDict)
+        //                                 .filter(metaTag => Object.keys(metaTagDict[metaTag]).length > 0)
 
         // These tokens are used to filter the tokens in the entire dataset
-        const originalTokens = metaTagDictActive.map(metaTag => Object.keys(metaTagDict[metaTag])).flat();
+        // const originalTokens = metaTagDictActive.map(metaTag => Object.keys(metaTagDict[metaTag])).flat();
 
         // Get all tokens
         // TODO: review below statement...
         // Note looking just 'value' might make future replacements not aligned with DS terms
-        const tokenResponse = await Token.find({ value: { $in : originalTokens}})
+        // const tokenResponse = await Token.find({ value: { $in : originalTokens}})
 
         // console.log(tokenResponse);
 
         // Now we need to construct update objects from tokens
         // TODO: review if any of the meta-tags change - this will need to be updated.
-        const updateTokens = tokenResponse.map(token => ({
+        // const updateTokens = tokenResponse.map(token => ({
 
-            updateOne: {
-                filter: { _id: token._id },
-                update: {
-                    "domain_specific": Object.keys(metaTagDict["domain_specific"]).includes(token.value) ? metaTagDict["domain_specific"][token.value] : token.domain_specific,
-                    "abbreviation": Object.keys(metaTagDict["abbreviation"]).includes(token.value) ? metaTagDict["abbreviation"][token.value] : token.abbreviation,
-                    "english_word": Object.keys(metaTagDict["english_word"]).includes(token.value) ? metaTagDict["english_word"][token.value] : token.english_word,
-                    "noise": Object.keys(metaTagDict["noise"]).includes(token.value) ? metaTagDict["noise"][token.value] : token.noise,
-                    "sensitive": Object.keys(metaTagDict["sensitive"]).includes(token.value) ? metaTagDict["sensitive"][token.value] : token.sensitive,
-                    "unsure": Object.keys(metaTagDict["unsure"]).includes(token.value) ? metaTagDict["unsure"][token.value] : token.unsure,
-                    "removed": Object.keys(metaTagDict["removed"]).includes(token.value) ? metaTagDict["removed"][token.value] : token.removed
-                },
-                upsert: true
-            }
+        //     updateOne: {
+        //         filter: { _id: token._id },
+        //         update: {
+        //             "domain_specific": Object.keys(metaTagDict["domain_specific"]).includes(token.value) ? metaTagDict["domain_specific"][token.value] : token.domain_specific,
+        //             "abbreviation": Object.keys(metaTagDict["abbreviation"]).includes(token.value) ? metaTagDict["abbreviation"][token.value] : token.abbreviation,
+        //             "english_word": Object.keys(metaTagDict["english_word"]).includes(token.value) ? metaTagDict["english_word"][token.value] : token.english_word,
+        //             "noise": Object.keys(metaTagDict["noise"]).includes(token.value) ? metaTagDict["noise"][token.value] : token.noise,
+        //             "sensitive": Object.keys(metaTagDict["sensitive"]).includes(token.value) ? metaTagDict["sensitive"][token.value] : token.sensitive,
+        //             "unsure": Object.keys(metaTagDict["unsure"]).includes(token.value) ? metaTagDict["unsure"][token.value] : token.unsure,
+        //             "removed": Object.keys(metaTagDict["removed"]).includes(token.value) ? metaTagDict["removed"][token.value] : token.removed
+        //         },
+        //         upsert: true
+        //     }
 
-        }))
+        // }))
         
-        const updateResponse = await Token.bulkWrite(updateTokens);
+        // const updateResponse = await Token.bulkWrite(updateTokens);
 
-        res.json(updateResponse)
+        // res.json(updateResponse)
 
     }catch(err){
         res.json({ message: err })
@@ -173,12 +200,15 @@ router.patch('/add-many-meta-tag/:projectId', async (req, res) => {
 // Removes meta-tag from one token
 router.patch('/remove-one-meta-tag/:tokenId', async (req, res) => {
     console.log('removing meta-tag from single token')
-    // sets to false (soft delete)
     try{
+
+        const tokenResponse = await Token.findById({ _id: req.params.tokenId }).lean();
+        const updatedMetaTags = {...tokenResponse.meta_tags, [req.body.field]: false};
+
         const response = await Token.findByIdAndUpdate(
                                                 { _id: req.params.tokenId}, 
                                                 { 
-                                                    [req.body.field]: false,
+                                                    meta_tags: updatedMetaTags,
                                                     last_modified: Date.now()
                                                 },
                                                 { upsert: true }

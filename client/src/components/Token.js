@@ -1,7 +1,7 @@
-// color palettee: medium blue: #6F87A6, light orange: #F2A477, light grey: #D9D9D9, light green: #99BF9C, light purple: #8F8EBF
 import React, { useState, useEffect } from 'react'
 import { useContextMenu } from "react-contexify";
 import { createUseStyles } from 'react-jss';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
 import ContextMenu from './utils/ContextMenu';
@@ -39,6 +39,7 @@ const bgColorMap = {
 export default function Token({tokenInfo, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap, updateSingleToken, setUpdateSingleToken, selectedTokens, setSelectedTokens, bgColourMap}) {
     const classes = useStyles();
 
+    const { projectId } = useParams();
     
     // Token
     const [tokenInfo1, setTokenInfo1] = useState(tokenInfo);
@@ -114,7 +115,7 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
 
     useEffect(() => {
         // Updates token colour based on state of token information and subsequent classification
-        // console.log('tokeninfo1', tokenInfo1)
+        console.log('tokeninfo1', tokenInfo1)
         const bgColour = Object.keys(tokenInfo1.meta_tags).filter(tag => tokenInfo1.meta_tags[tag])
         if (bgColour.length > 0){
             // Has at least one meta tag (first tag currently dictates colour - TODO: fix with preferential treatment)
@@ -272,31 +273,41 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
 
 
     // --- Meta Tag Logic ---
-    // useEffect(() => {
-    //     // Updates token meta-tags when suggestion map changes
+    useEffect(() => {
+        // Updates token meta-tags when suggestion map changes
+        console.log('side effect for metatag suggestion map')
+        console.log(metaTagSuggestionMap)
 
-    //     // Run tokens over meta tag suggestion map
-    //     Object.keys(metaTagSuggestionMap)
-    //             .filter(metaTag => Object.keys(metaTagSuggestionMap[metaTag]).length > 0)
-    //             .map(metaTag => Object.keys(metaTagSuggestionMap[metaTag]).includes(currentToken) ? setTokenInfo1(prevState => ({...prevState, [metaTag]: metaTagSuggestionMap[metaTag]})) : null)
+        // Run tokens over meta tag suggestion map
+        Object.keys(metaTagSuggestionMap)
+                .filter(metaTag => Object.keys(metaTagSuggestionMap[metaTag]).length > 0)
+                .map(metaTag => Object.keys(metaTagSuggestionMap[metaTag]).includes(currentToken) ? setTokenInfo1(prevState => ({...prevState, [metaTag]: metaTagSuggestionMap[metaTag]})) : null)
 
-    // }, [metaTagSuggestionMap])
+    }, [metaTagSuggestionMap])
 
     const addMetaTag = async (field, value, isSingle) => {
+        setMetaTagUpdated(false);
         
-        setMetaTagUpdated(false)
-        const response = await axios.patch(`/api/token/add-one-meta-tag/${tokenId}`, {field: field, value: value});
-        if (response.status === 200){
-            setTokenInfo1(prevState => ({...prevState, [field]: value}))
-        }
-
         if (isSingle){
             // meta-tag only applied to single token
+            const response = await axios.patch(`/api/token/add-one-meta-tag/${tokenId}`, {field: field, value: value});
+            if (response.status === 200){
+                console.log('response for single token meta tag update')
+                const metaTagUpdate = {...tokenInfo1.meta_tag, [field]: value}
+                setTokenInfo1(prevState => ({...prevState, meta_tags: metaTagUpdate}))
+            }
             setMetaTagUpdated(true)
             
         } else {
             // meta-tag to cascaded across all tokens that have the same value
             // TODO: cascade meta-tags across data set when pagianting
+
+            const response = await axios.patch(`/api/token/add-many-meta-tag/${projectId}`, { "token": currentToken, "field": field, "value": value });
+            if (response.status === 200){
+                console.log('response for multiple token meta tag update')
+                const metaTagUpdate = {...tokenInfo1.meta_tag, [field]: value}
+                setTokenInfo1(prevState => ({...prevState, meta_tags: metaTagUpdate}))
+            }
 
             // Add meta tag to suggestion map
             const subMetaTagMapUpdated = {...metaTagSuggestionMap[field], [currentToken]: value}
@@ -306,17 +317,17 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
         }
     }
 
-    // const removeMetaTag = async (field) => {
-    //     // Removes meta-tag from token (set to false)
-    //     setMetaTagUpdated(false);
-    //     const response = await axios.patch(`/api/token/remove-one-meta-tag/${tokenId}`, { field: field });
-    //     if (response.status === 200){
-    //         console.log('succesfully removed meta-tag from token', response.data);
-    //         setTokenInfo1(prevState => ({...prevState, [field]: false}))
-    //         // setMetaTagSuggestionMap(Object.keys(metaTagSuggestionMap).filter())
-    //         setMetaTagUpdated(true);
-    //     }
-    // }
+    const removeMetaTag = async (field) => {
+        // Removes meta-tag from token (set to false)
+        setMetaTagUpdated(false);
+        const response = await axios.patch(`/api/token/remove-one-meta-tag/${tokenId}`, { field: field });
+        if (response.status === 200){
+            console.log('succesfully removed meta-tag from token', response.data);
+            setTokenInfo1(prevState => ({...prevState, [field]: false}))
+            // setMetaTagSuggestionMap(Object.keys(metaTagSuggestionMap).filter())
+            setMetaTagUpdated(true);
+        }
+    }
 
 
     return (
@@ -369,7 +380,7 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
                     bgColourMap={bgColourMap}
                     tokenInfo={tokenInfo1}
                     addMetaTag={addMetaTag}
-                    // removeMetaTag={removeMetaTag}
+                    removeMetaTag={removeMetaTag}
                 />
                 </>
                 : <p>...</p>
