@@ -332,7 +332,9 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
 
     return (
         <div
-            style={{ display: 'flex', flexDirection: 'column', marginBottom: '0.5em'}} key={tokenIndex} id={`token-${tokenClf}`}
+            style={{ display: 'flex', flexDirection: 'column', marginBottom: '0.5em'}}
+            key={tokenIndex}
+            id={`token-${tokenClf}`}
             // onMouseDown={toggleAction}
         >
             {

@@ -1,6 +1,10 @@
 import React, { useState } from 'react'
 import { createUseStyles } from 'react-jss';
+import { useContextMenu } from "react-contexify";
 import Token from './Token'
+import TextContextMenu from './utils/TextContextMenu';
+import axios from 'axios';
+
 
 const useStyles = createUseStyles({
     container: {
@@ -27,24 +31,53 @@ const useStyles = createUseStyles({
 
 export default function Text({text, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap, updateSingleToken, setUpdateSingleToken, selectedTokens, setSelectedTokens, bgColourMap, tokenizeMode}) {
     const classes = useStyles();
+    const MENU_ID = `menu-${text._id}`;
+    const { show: showContextMenu } = useContextMenu({ id: MENU_ID });
 
     // console.log('text ', text._id,  'content', text, ' weight ', text.weight);
 
     // If tokenize mode then show full string WITH replacements
     const [textString, setTextString] = useState(text.tokens.map(tokenInfo => tokenInfo.replacement ? tokenInfo.replacement : tokenInfo.value).join(' '))
 
+    const handleTextChange = (e) => {
+        // Modifies white space in textstring and ignores any other character modification
+        // TODO: figure out how to do this.
+        setTextString(e.target.value);
+    }
+
+    const updateText = async (textString, isSingle) => {
+        console.log(textString, isSingle)
+
+        if (isSingle){
+
+            const response = await axios.patch(`/api/text/tokenize/${text._id}`, { 'new_string': textString});
+
+            if (response.status === 200){
+                console.log(' text update response ', response.data);
+            }
+        }   
+    }
+    
+
     return (
         <div id="text-container" className={classes.container} key={textIndex}>
             {
                 tokenizeMode ?
-                <input
-                    type="text"
-                    value={textString}
-                    onChange={e => setTextString(e.target.value)}
-                    autoComplete="off"
-                    className={classes.text}
-                    // onContextMenu={(e) => showContextMenu(e)}
-                />
+                <div>
+                    <input
+                        type="text"
+                        value={textString}
+                        onChange={e => handleTextChange(e)}
+                        autoComplete="off"
+                        className={classes.text}
+                        onContextMenu={(e) => showContextMenu(e)}
+                    />
+                    <TextContextMenu
+                        menu_id={MENU_ID}
+                        textString={textString}
+                        updateText={updateText}
+                    />
+                </div>
                 :
                 text ?
                     text.tokens.map((tokenInfo) => {

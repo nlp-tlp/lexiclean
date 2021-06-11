@@ -35,6 +35,8 @@ const TextSchema = mongoose.Schema({
         required: false,
         default: false
     },
+    tokens_tokenized: [
+    ],
     last_modified: {
         type: Date,
         required: true,

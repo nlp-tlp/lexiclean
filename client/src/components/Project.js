@@ -58,16 +58,19 @@ export default function Project() {
     // Tokenization handler (changes annotation mode)
     const handleKeyDown = (e) => {
         if (e.type === 'keydown'){
-            if (e.key.toLowerCase() === 'shift' || 'control'){
+            // console.log(e.key)
+            if (e.key.toLowerCase() === 'shift' || e.key.toLowerCase() === 'control'){
+                // console.log('adding special key to set')
                 setKeysDown(keysDown.add(e.key.toLowerCase()));
             }
             if (keysDown.has('shift') && keysDown.has('control') && !tokenizeMode){
-                console.log('TOKENIZE MODE - ON!')
-                setTokenizeMode(true)
-                setKeysDown(new Set())
+                // console.log('TOKENIZE MODE - ON!')
+                setTokenizeMode(true);
+                setKeysDown(new Set());
             } else if (keysDown.has('shift') && keysDown.has('control') && tokenizeMode){
-                console.log('TOKENIZE MODE - OFF!')
-                setTokenizeMode(false)
+                // console.log('TOKENIZE MODE - OFF!')
+                setTokenizeMode(false);
+                setKeysDown(new Set());
             }
         } 
     }

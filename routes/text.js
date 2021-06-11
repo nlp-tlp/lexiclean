@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Text = require('../models/Text');
+const Token = require('../models/Token');
+
 const mongoose = require('mongoose');
 
 // NEED INSERT MANY SO WE CAN SLAP X DOCS INTO DATA COLLECTION
@@ -295,6 +297,124 @@ router.patch('/check-annotations/', async (req, res) => {
         // Patch annotated field on texts
         const testUpdateRes = await Text.updateMany({ _id: { $in : annotatedTextIds}}, {"annotated": true})
         res.json(testUpdateRes);
+
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+
+// Tokenization - update single text
+// This requires special logic to determine which tokens changed
+router.patch('/tokenize/:textId', async (req, res) => {
+    console.log('Updating tokenization of a single text')
+    try{
+        const newString = req.body.new_string;
+        const textResponse = await Text.findOne({ _id: req.params.textId}).populate('tokens.token').lean();
+        // TODO: review whether it makes sense to map the replacements (if available)
+        const originalTokenMap = Object.assign(...textResponse.tokens.map((token, index) => ({[index]: token.token.replacement ? token.token.replacement : token.token.value})))
+        const originalString = Object.values(originalTokenMap).join(' ')
+        
+        // console.log(newString === originalString ? 'NO CHANGE IN STRING' : 'CHANGE DETECTED IN STRINGS')
+        console.log(originalTokenMap)
+
+        // Detect modified tokens - new string should have LESS tokens than the original.
+        let tokenCandidates = originalString.split(' ');
+        const diffs = tokenCandidates.map((token, index) => {
+            const substringMatch = newString.split(' ').filter(newToken => newToken.includes(token))[0];
+            if (substringMatch && substringMatch !== token){
+                // Remove matched token from candidates (tokens can only be used once..)
+                tokenCandidates = tokenCandidates.filter(candidateToken => candidateToken !== token);
+                return(
+                    {
+                        "newToken": substringMatch,
+                        "originalIndex": null,
+                        "oldToken": {
+                            "index": index,
+                            "value": token
+                        }
+                    }
+                )
+            } else {
+                return(
+                    {
+                        "newToken": token,
+                        "originalIndex": index,
+                        "oldToken": {}
+                    }
+                )
+            }
+        }).filter(ele => ele);   // filter used to remove nulls
+
+        console.log('diffs', diffs)
+
+        // Remove tokens that have been tokenized propery and add the new token into the correct spot
+        const map = new Map(diffs.map(({newToken, originalIndex, oldToken}) => [newToken, { newToken, originalIndex, oldToken: [] }])); 
+        for (let {newToken, originalIndex, oldToken} of diffs) map.get(newToken).oldToken.push(...[oldToken].flat());
+        const diffsFormatted = [...map.values()]
+        console.log('diffsFormatted -> ', diffsFormatted)
+        
+        
+        // This works, but may fail if there are multiple changes to the SAME token? TODO: review.
+        const tokensToAdd = diffsFormatted.map(diff => ({"index": newString.split(' ').indexOf(diff.newToken), "value": diff.newToken, "originalIndex": diff.originalIndex}))
+        console.log('tokensToAdd -> ', tokensToAdd)
+        
+        
+        // remove old tokens from tokens array
+        // const tokensIdsToRemove = diffsFormatted.filter(diff => diff.originalIndex === null).map(diff => diff.oldToken.map(token => textResponse.tokens[token.index]._id)).flat()
+        // console.log('tokenIdsToRemove -> ', tokensIdsToRemove)
+        // const textResponseAfterRemove = await Text.findByIdAndUpdate({ _id: req.params.textId }, { $pull: { 'tokens' : { "_id": { $in : tokensIdsToRemove}}}}, {"multi": true})
+        // console.log('textResponseAfterRemove -> ', textResponseAfterRemove)
+
+        // add new tokens to tokens array
+        // first need to create new tokens in Token collection (this includes loading maps - TODO! etc.)
+        const tokenList = tokensToAdd.map(token => {
+            // const metaTags = Object.assign(...Object.keys(mapSets).filter(key => key !== 'rp').map(key => ({[key]: mapSets[key].has(token)})));
+            // const hasReplacement = mapSets.rp.has(token);
+
+            if (token.originalIndex){
+                // Tokens that are not modified as simply copied 
+                const origTokenResponse = textResponse.tokens.filter(tokenOrig => tokenOrig.index === token.originalIndex)[0].token;
+                return({
+                    value: origTokenResponse.value,
+                    meta_tags: origTokenResponse.meta_tags,
+                    suggested_replacement: origTokenResponse.suggested_replacement,
+                    suggested_meta_tags: origTokenResponse.suggested_meta_tags
+                }
+                )
+            } else {
+                return({
+                        value: token.value,
+                        meta_tags: {"hello": false},
+                        // Replacement is pre-filled if only replacement is found in map (user can remove in UI if necessary)
+                        replacement: null,
+                        suggested_replacement: null
+                        })
+            }
+
+            })
+        
+        console.log('token list -> ', tokenList);
+
+        const tokenListResponse = await Token.insertMany(tokenList);
+        console.log('tokenListResponse -> ', tokenListResponse);
+
+        
+        console.log('Updating text');
+        // // NOTE: (TODO)  - weights do not get updated when tokenization is performed. This is because tokens may be OOV for tf-id.       
+        
+        const textUpdatePayload = {'tokens': tokenListResponse.map((token, index) => ({'index': index, 'token': token._id}))}
+        console.log('textUpdatePayload ->', textUpdatePayload)
+
+        // Update by writing over tokens
+        const textResponseAfterAddition = await Text.findByIdAndUpdate({ _id: req.params.textId}, textUpdatePayload);
+        console.log(textResponseAfterAddition)
+
+        res.json(textResponseAfterAddition)
+
+        // Still need to capture the changes in the token_tokenized field...
+
+
 
     }catch(err){
         res.json({ message: err })
