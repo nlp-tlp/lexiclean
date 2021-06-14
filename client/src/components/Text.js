@@ -10,11 +10,13 @@ const useStyles = createUseStyles({
     container: {
         display: 'flex',
         flexDirection:'row',
-        flexWrap: 'wrap'
+        flexWrap: 'wrap',
+        maxHeight: '1em'
     },
     text: {
-        padding: '0.5em',
+        padding: '0.5em 0em 0.5em 1em',
         marginRight: '0.5em',
+        marginBottom: '0.5em',
         border: 'none',
         verticalAlign: 'center',
         textAlign: 'left',
@@ -23,13 +25,28 @@ const useStyles = createUseStyles({
             opacity: '0.8'
         },
         wordSpacing: '1em',
-        backgroundColor: 'rgba(0,0,0,0.1)',
-        minWidth: '50vw'
+        backgroundColor: '#ffffbf',
+        // minWidth: '50vw'
     },
 })
 
+const MIN_WIDTH = 60;   // px
 
-export default function Text({text, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap, updateSingleToken, setUpdateSingleToken, selectedTokens, setSelectedTokens, bgColourMap, tokenizeMode}) {
+
+export default function Text({text,
+                                textIndex,
+                                replacementDict,
+                                setReplacementDict,
+                                metaTagSuggestionMap,
+                                setMetaTagSuggestionMap,
+                                updateSingleToken,
+                                setUpdateSingleToken,
+                                selectedTokens,
+                                setSelectedTokens,
+                                bgColourMap,
+                                tokenizeMode,
+                                tokenize
+                            }) {
     const classes = useStyles();
     const MENU_ID = `menu-${text._id}`;
     const { show: showContextMenu } = useContextMenu({ id: MENU_ID });
@@ -37,21 +54,24 @@ export default function Text({text, textIndex, replacementDict, setReplacementDi
     // console.log('text ', text._id,  'content', text, ' weight ', text.weight);
 
     // If tokenize mode then show full string WITH replacements
+    const [originalText, setOriginalText] = useState(text.tokens.map(tokenInfo => tokenInfo.replacement ? tokenInfo.replacement : tokenInfo.value).join(' '))
     const [textString, setTextString] = useState(text.tokens.map(tokenInfo => tokenInfo.replacement ? tokenInfo.replacement : tokenInfo.value).join(' '))
+    const [inputWidth, setInputWidth] = useState(`${(originalText.length + 2) * 10 > MIN_WIDTH ? (originalText.length + 2) * 10 : MIN_WIDTH }px`)
 
     const handleTextChange = (e) => {
         // Modifies white space in textstring and ignores any other character modification
         // TODO: figure out how to do this.
-        setTextString(e.target.value);
+        const originalBoC = originalText.split(' ').join('');
+        const currentBoC = e.target.value.split(' ').join('');
+        if (originalBoC === currentBoC){
+            setTextString(e.target.value);
+        }
     }
 
     const updateText = async (textString, isSingle) => {
-        console.log(textString, isSingle)
-
+        // console.log(textString, isSingle)
         if (isSingle){
-
             const response = await axios.patch(`/api/text/tokenize/${text._id}`, { 'new_string': textString});
-
             if (response.status === 200){
                 console.log(' text update response ', response.data);
             }
@@ -60,9 +80,13 @@ export default function Text({text, textIndex, replacementDict, setReplacementDi
     
 
     return (
-        <div id="text-container" className={classes.container} key={textIndex}>
+        <div
+            id="text-container"
+            className={classes.container}
+            key={textIndex}
+        >
             {
-                tokenizeMode ?
+                tokenize === textIndex ? //tokenizeMode ?
                 <div>
                     <input
                         type="text"
@@ -71,6 +95,7 @@ export default function Text({text, textIndex, replacementDict, setReplacementDi
                         autoComplete="off"
                         className={classes.text}
                         onContextMenu={(e) => showContextMenu(e)}
+                        style={{ width: inputWidth }}
                     />
                     <TextContextMenu
                         menu_id={MENU_ID}
@@ -94,6 +119,7 @@ export default function Text({text, textIndex, replacementDict, setReplacementDi
                                 selectedTokens={selectedTokens}
                                 setSelectedTokens={setSelectedTokens}
                                 bgColourMap={bgColourMap}
+                                tokenizeMode={tokenizeMode}
                             />
                             )})
                 : <p>Loading...</p>

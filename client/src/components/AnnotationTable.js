@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createUseStyles } from 'react-jss';
 import { Spinner } from 'react-bootstrap';
 import axios from 'axios';
+import { CgMergeVertical, CgMoreVertical } from 'react-icons/cg';
 
 import Text from './Text';
 import Paginator from './utils/Paginator';
@@ -18,6 +19,7 @@ const useStyles = createUseStyles({
   },
   row: {
     display: 'flex',
+    justifyContent: 'space-between',
     padding: '1em',
     backgroundColor: '#F2F2F2',
     marginTop: '1em'
@@ -31,9 +33,6 @@ const useStyles = createUseStyles({
     justifyContent: 'center',
     textAlign: 'center',
     verticalAlign: 'middle'
-    // marginLeft: '2em',
-    // paddingRight: '2em',
-    // marginRight: '1em',
   },
   indexIcon: {
     fontSize: '22px',
@@ -55,7 +54,15 @@ const META_TAG_MAP_INIT = {
   "sensitive": {}
 };
 
-export default function AnnotationTable({project, replacementDict, setReplacementDict, pageLimit, saved, setSaved, setPageChanged, tokenizeMode}) {
+export default function AnnotationTable({project,
+                                          replacementDict,
+                                          setReplacementDict,
+                                          pageLimit,
+                                          saved,
+                                          setSaved,
+                                          setPageChanged,
+                                          tokenizeMode
+                                        }) {
   const classes = useStyles();
 
   const [texts, setTexts] = useState();
@@ -67,13 +74,14 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
 
   const [bgColourMap, setBgColourMap] = useState();
 
-
   const [paginatorLoaded, setPaginatorLoaded] = useState();
   const [totalPages, setTotalPages] = useState();
   const [page, setPage] = useState(1);
 
   // TOKEN SELECT HANDLER
   const [selectedTokens, setSelectedTokens] = useState();
+
+  const [tokenize, setTokenize] = useState();
 
 
   useEffect(() => {
@@ -131,7 +139,7 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
       }
 
     fetchData();
-  }, [page, pageLimit])
+  }, [page, pageLimit, tokenizeMode])
 
 
   useEffect(() => {
@@ -162,7 +170,7 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
           if (response.status === 200){
             // console.log('updated meta tag response', response)
             // console.log('Updated token meta-tags')
-            setMetaTagSuggestionMap(META_TAG_MAP_INIT);
+            setMetaTagSuggestionMap(META_TAG_MAP_INIT); // TODO: FIX THIS - IT IS LOADING THE WRONG INIT STRUCTURE
           }
         }
       }
@@ -207,38 +215,18 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
   }, [page])
 
 
-  // SEGMENTATION HANDLERS
-  // useEffect(() => {
-  //   console.log(selectedTokens)
 
-  //   if(selectedTokens && Object.keys(selectedTokens).length > 1){ // has to have at least two tokens
-  //     console.log('do you want to segment?')
-  //   }
-
-  // }, [selectedTokens])
-
-
-  // const toggleAction = event => {
-  //   console.log(event);
-  //   if (event.ctrlKey){
-  //     // In select mode - user can click on tokens to concatenate them.
-  //     console.log('control down?', event.ctrlKey)
-  //     setSelectMode(true);
-
-  //   } else {
-  //     // When select mode is off - popover will confirm selected tokens are correct before concatenation. 
-  //     console.log('control down?', event.ctrlKey)
-  //     setSelectMode(false)
-  //   }
-  // }
-
-
+  const handleTokenize = (textId) => {
+    if (tokenize){
+      setTokenize();
+    } else {
+      setTokenize(textId);
+    }
+  }
 
   return (
     <>
       {/* // Need to add icon to indicate that the document has no detected non-canonical tokens */}
-      {/* onClick={toggleFunction} onKeyPress={toggleFunction}> */}
-        {/* </div>onMouseDown={(e) => toggleAction(e)}> */}
       <div
         className={classes.container}
         >
@@ -254,32 +242,48 @@ export default function AnnotationTable({project, replacementDict, setReplacemen
                 className={classes.row}
                 key={textIndex}
                 style={{background: text.annotated ? 'rgba(153,191,156,0.2)': null}}
-
               >
                 <div
-                  className={classes.indexColumn}
+                  style={{display: 'flex'}}
                 >
-                  <p className={classes.indexIcon}>
-                    {textIndex+1 + ((page-1)*pageLimit)}
-                  </p>
+                  <div
+                    className={classes.indexColumn}
+                  >
+                    <p className={classes.indexIcon}>
+                      {textIndex+1 + ((page-1)*pageLimit)}
+
+                    </p>
+                  </div>
+                  
+                  <div className={classes.textColumn}>
+                    <Text
+                      text={text}
+                      textIndex={text._id}
+                      replacementDict={replacementDict}
+                      setReplacementDict={setReplacementDict}
+                      page={page}
+                      metaTagSuggestionMap={metaTagSuggestionMap}
+                      setMetaTagSuggestionMap={setMetaTagSuggestionMap}
+                      updateSingleToken={updateSingleToken}
+                      setUpdateSingleToken={setUpdateSingleToken}
+                      selectedTokens={selectedTokens}
+                      setSelectedTokens={setSelectedTokens}
+                      bgColourMap={bgColourMap}
+                      tokenizeMode={tokenizeMode}
+                      tokenize={tokenize}
+                      />
+                  </div>
                 </div>
-                
-                <div className={classes.textColumn}>
-                  <Text
-                    text={text}
-                    textIndex={text._id}
-                    replacementDict={replacementDict}
-                    setReplacementDict={setReplacementDict}
-                    page={page}
-                    metaTagSuggestionMap={metaTagSuggestionMap}
-                    setMetaTagSuggestionMap={setMetaTagSuggestionMap}
-                    updateSingleToken={updateSingleToken}
-                    setUpdateSingleToken={setUpdateSingleToken}
-                    selectedTokens={selectedTokens}
-                    setSelectedTokens={setSelectedTokens}
-                    bgColourMap={bgColourMap}
-                    tokenizeMode={tokenizeMode}
-                    />
+                <div
+                  style={{fontSize: '26px', fontWeight: 'bold', color: 'grey'}}
+                  onClick={() => handleTokenize(text._id)}
+                >
+                  { 
+                    tokenize !== text._id ?
+                      <CgMergeVertical/>
+                      :
+                      <CgMoreVertical/>
+                  }
                 </div>
               </div>
             )
