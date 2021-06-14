@@ -159,7 +159,7 @@ router.post('/create', async (req, res) => {
         const textObjectIds = textResponse.map(text => text._id);
         const mapObjectIds = mapResponse.map(map => map._id);
         const tokenCount = new Set(tokenizedTexts.flat().map(token => token))
-        const candidateTokens = tokenListResponse.filter(token => (!token.domain_specific && !token.abbreviation && !token.english_word && !token.replacement)).map(token => token.value)
+        const candidateTokens = tokenListResponse.filter(token => (Object.values(token.meta_tags).filter(tagBool => tagBool).length === 0 && !token.replacement)).map(token => token.value)
 
         const projectResponse = await Project.create({
             name: req.body.name,
@@ -281,11 +281,16 @@ router.get('/token-count/:projectId', async (req, res) => {
     try{
         const textRes = await Text.find({ project_id: req.params.projectId })
                                         .populate('tokens.token')
-                                        .lean()
+                                        .lean();
+        
+        
+
 
         const uniqueTokens = new Set(textRes.map(text => text.tokens.map(token => token.token.replacement ? token.token.replacement : token.token.value )).flat());
+
         // Unlike on project creation, the other meta-tags need to be checked such as removed, noise, etc.
-        const candidateTokens = textRes.map(text => text.tokens.filter(token => (!token.token.domain_specific && !token.token.abbreviation && !token.token.english_word && !token.token.noise && !token.token.sensitive && !token.token.unsure && !token.token.removed && !token.token.replacement)).map(token => token.token.value)).flat();
+        const allTokens = textRes.map(text => text.tokens.map(token => token.token)).flat();
+        const candidateTokens = allTokens.filter(token => (Object.values(token.meta_tags).filter(tagBool => tagBool).length === 0 && !token.replacement)).map(token => token.value)
 
         res.json({'vocab_size': uniqueTokens.size, 'oov_tokens': candidateTokens.length});
 

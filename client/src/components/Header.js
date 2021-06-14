@@ -47,7 +47,7 @@ const useStyles = createUseStyles({
     },
 })
 
-export default function Header({project, replacementDict, setShowDownload, setShowProgress, setShowSettings, setShowOverview, setShowLegend, setSaved, pageChanged}) {
+export default function Header({project, replacementDict, setShowDownload, setShowProgress, setShowSettings, setShowOverview, setShowLegend, setShowModifySchema, setSaved, pageChanged}) {
     const history = useHistory();
     const classes = useStyles();
 
@@ -124,6 +124,7 @@ export default function Header({project, replacementDict, setShowDownload, setSh
                             <Dropdown.Item onClick={() => setShowDownload(true)}>Download Results</Dropdown.Item>
                             <Dropdown.Item onClick={() => setShowProgress(true)}>Review Progress</Dropdown.Item>
                             <Dropdown.Item onClick={() => setShowSettings(true)}>Settings</Dropdown.Item>
+                            <Dropdown.Item onClick={() => setShowModifySchema(true)}>Modify Schema</Dropdown.Item>
                             <Dropdown.Item onClick={() => history.push('/')}>Home</Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
