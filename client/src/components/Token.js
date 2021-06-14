@@ -23,7 +23,7 @@ const useStyles = createUseStyles({
     }
 })
 
-const bgColorMap = {
+const bgColourMap = {
     'ds': 'red',
     'ab': 'purple',
     'ew': '#D9D9D9',
@@ -36,7 +36,7 @@ const bgColorMap = {
     'ua': '#F2A477',
 }
 
-export default function Token({tokenInfo, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap, updateSingleToken, setUpdateSingleToken, selectedTokens, setSelectedTokens, bgColourMap}) {
+export default function Token({tokenInfo, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap, updateSingleToken, setUpdateSingleToken, selectedTokens, setSelectedTokens, bgColourMap, tokenizeMode}) {
     const classes = useStyles();
 
     const { projectId } = useParams();
@@ -54,7 +54,7 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     
     // Token classification and colouring
     const [tokenClf, setTokenClf] = useState();
-    const [bgColor, setBgColor] = useState()
+    const [bgColour, setBgColour] = useState()
     
     // Meta Tag
     const [metaTagUpdated, setMetaTagUpdated] = useState(false);    // Used for bg color sideeffect when removing/adding meta-tags
@@ -73,57 +73,20 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     const [showRemovePopover, setShowRemovePopover] = useState(false);
     const [showAddSuggestionPopover, setShowAddSuggestionPopover] = useState(false);
 
-
-    // Segmentation handler - used to join ill-formed ngrams
-    const [selectTokenMode, setSelectTokenMode] = useState(false);
-
-    const toggleAction = (event) => {
-        // actions for tokenization and concatenation of texts
-
-
-
-        if (event.shiftKey){
-            // User wants to tokenize token on white space
-            console.log('shift click - Tokenization action');
-
-        } else if (event.ctrlKey){
-          // In select mode - user can click on tokens to concatenate them.
-          console.log('control click - segmentation handler')
-          setSelectTokenMode(true);
-          setSelectedTokens(prevState => ({...prevState, [tokenIndex]: tokenId}))
-        }
-        else {
-          // When select mode is off - popover will confirm selected tokens are correct before concatenation. 
-          console.log('click without key down - clean up')
-          if(selectedTokens && Object.keys(selectedTokens).length > 1){
-              console.log('Do you want to segment these tokens?')
-          }
-          setSelectTokenMode(false)
-          setSelectedTokens({})
-        }
-      }
-
-
-
-
-
-
-      useEffect(() => {
-        // console.log('current rd', replacementDict);
-      }, [replacementDict])
-
-
     useEffect(() => {
         // Updates token colour based on state of token information and subsequent classification
-        console.log('tokeninfo1', tokenInfo1)
-        const bgColour = Object.keys(tokenInfo1.meta_tags).filter(tag => tokenInfo1.meta_tags[tag])
-        if (bgColour.length > 0){
+        // console.log('tokeninfo1', tokenInfo1)
+        // console.log('updating colour!')
+        const bgColourKey = Object.keys(tokenInfo1.meta_tags).filter(tag => tokenInfo1.meta_tags[tag])
+        // console.log(tokenInfo1.value, bgColourKey)
+        if (bgColourKey.length > 0){
             // Has at least one meta tag (first tag currently dictates colour - TODO: fix with preferential treatment)
-            setTokenClf(bgColour[0])
-            setBgColor(bgColourMap[bgColour[0]])
+            // console.log(tokenInfo1)
+            setTokenClf(bgColourKey[0])
+            setBgColour(bgColourMap[bgColourKey[0]])
         } else {
             setTokenClf('ua');
-            setBgColor(bgColourMap['ua'])
+            setBgColour(bgColourMap['ua'])
         }
     }, [tokenClf, metaTagUpdated, replacedToken, suggestedToken, tokenInfo1, metaTagSuggestionMap])
     
@@ -275,13 +238,22 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     // --- Meta Tag Logic ---
     useEffect(() => {
         // Updates token meta-tags when suggestion map changes
-        console.log('side effect for metatag suggestion map')
-        console.log(metaTagSuggestionMap)
+        // console.log('side effect for metatag suggestion map')
+        // console.log(metaTagSuggestionMap)
 
         // Run tokens over meta tag suggestion map
-        Object.keys(metaTagSuggestionMap)
-                .filter(metaTag => Object.keys(metaTagSuggestionMap[metaTag]).length > 0)
-                .map(metaTag => Object.keys(metaTagSuggestionMap[metaTag]).includes(currentToken) ? setTokenInfo1(prevState => ({...prevState, [metaTag]: metaTagSuggestionMap[metaTag]})) : null)
+        Object.keys(metaTagSuggestionMap)   // access meta tag keys (en, rp, etc.)
+                .filter(metaTag => Object.keys(metaTagSuggestionMap[metaTag]).length > 0) // Check whether key has any values e.g. 'ds': {rods: true, steels: true} etc.
+                .map(metaTag => {
+                    // Check whether current token is in suggestions
+                    if (Object.keys(metaTagSuggestionMap[metaTag]).includes(currentToken)){
+                        console.log('token', currentToken,'matched to', metaTag)
+
+                        // Update metatag for matched token (need to access the objects value)
+                        const metaTagUpdate = {...tokenInfo1.meta_tags, [metaTag]: Object.values(metaTagSuggestionMap[metaTag])[0]}
+                        setTokenInfo1(prevState => ({...prevState, meta_tags: metaTagUpdate}))
+                    }
+                });
 
     }, [metaTagSuggestionMap])
 
@@ -292,8 +264,8 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
             // meta-tag only applied to single token
             const response = await axios.patch(`/api/token/add-one-meta-tag/${tokenId}`, {field: field, value: value});
             if (response.status === 200){
-                console.log('response for single token meta tag update')
-                const metaTagUpdate = {...tokenInfo1.meta_tag, [field]: value}
+                // console.log('response for single token meta tag update')
+                const metaTagUpdate = {...tokenInfo1.meta_tags, [field]: value}
                 setTokenInfo1(prevState => ({...prevState, meta_tags: metaTagUpdate}))
             }
             setMetaTagUpdated(true)
@@ -304,14 +276,14 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
 
             const response = await axios.patch(`/api/token/add-many-meta-tag/${projectId}`, { "token": currentToken, "field": field, "value": value });
             if (response.status === 200){
-                console.log('response for multiple token meta tag update')
-                const metaTagUpdate = {...tokenInfo1.meta_tag, [field]: value}
+                // console.log('response for multiple token meta tag update')
+                const metaTagUpdate = {...tokenInfo1.meta_tags, [field]: value}
                 setTokenInfo1(prevState => ({...prevState, meta_tags: metaTagUpdate}))
             }
 
             // Add meta tag to suggestion map
             const subMetaTagMapUpdated = {...metaTagSuggestionMap[field], [currentToken]: value}
-            console.log('sub meta map updated', subMetaTagMapUpdated)
+            // console.log('sub meta map updated', subMetaTagMapUpdated)
             setMetaTagSuggestionMap(prevState => ({...prevState, [field]: subMetaTagMapUpdated}))
             setMetaTagUpdated(true)
         }
@@ -320,11 +292,11 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     const removeMetaTag = async (field) => {
         // Removes meta-tag from token (set to false)
         setMetaTagUpdated(false);
-        const response = await axios.patch(`/api/token/remove-one-meta-tag/${tokenId}`, { field: field });
+        const response = await axios.patch(`/api/token/remove-one-meta-tag/${tokenId}`, { "field": field });
         if (response.status === 200){
-            console.log('succesfully removed meta-tag from token', response.data);
-            setTokenInfo1(prevState => ({...prevState, [field]: false}))
-            // setMetaTagSuggestionMap(Object.keys(metaTagSuggestionMap).filter())
+            // console.log('succesfully removed meta-tag from token', response.data);
+            const metaTagUpdate = {...tokenInfo1.meta_tag, [field]: false}
+            setTokenInfo1(prevState => ({...prevState, meta_tags: metaTagUpdate}))
             setMetaTagUpdated(true);
         }
     }
@@ -335,7 +307,6 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
             style={{ display: 'flex', flexDirection: 'column', marginBottom: '0.5em'}}
             key={tokenIndex}
             id={`token-${tokenClf}`}
-            // onMouseDown={toggleAction}
         >
             {
                 tokenClf ?
@@ -346,17 +317,19 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
                     tokenIndex={tokenIndex}
                     modifyToken={modifyToken}
                     edited={edited}
-                    bgColor={bgColor}
+                    bgColour={bgColour}
                     inputWidth={inputWidth}
                     addReplacement={addReplacement}
                     cancelChange={cancelChange}
                     originalToken={originalToken}
                     currentToken={currentToken}
-                    bgColorMap={bgColorMap}
+                    bgColourMap={bgColourMap}
                     tokenClf={tokenClf}
                     replacedToken={replacedToken}
                 />
-                <div style={{display: 'flex', flexDirection: 'row', justifyContent: (!suggestedToken) ? 'space-between' : null, width: inputWidth}}>
+                <div
+                    style={{display: 'flex', flexDirection: 'row', justifyContent: (!suggestedToken) ? 'space-between' : null, width: inputWidth}}
+                >
                     <TokenUnderline
                         savedChange={savedChange}
                         originalToken={originalToken}
@@ -367,7 +340,7 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
                         showRemovePopover={showRemovePopover}
                         setShowRemovePopover={setShowRemovePopover}
                         inputWidth={inputWidth}   // Note: 1em = 16px
-                        bgColorMap={bgColorMap}
+                        bgColourMap={bgColourMap}
                         suggestedToken={suggestedToken}
                         showAddSuggestionPopover={showAddSuggestionPopover}
                         setShowAddSuggestionPopover={setShowAddSuggestionPopover}

@@ -61,7 +61,21 @@ const useStyles = createUseStyles({
     }
 })
 
-export default function TokenInput({showContextMenu, showPopover, tokenIndex, modifyToken, edited, bgColor, inputWidth, addReplacement, cancelChange, originalToken, currentToken, bgColorMap, tokenClf, replacedToken}) {
+export default function TokenInput({showContextMenu,
+                                    showPopover,
+                                    tokenIndex,
+                                    modifyToken,
+                                    edited,
+                                    bgColour,
+                                    inputWidth,
+                                    addReplacement,
+                                    cancelChange,
+                                    originalToken,
+                                    currentToken,
+                                    bgColourMap,
+                                    tokenClf,
+                                    replacedToken
+                                }) {
     const classes = useStyles();
 
     const addOne = () => {
@@ -111,7 +125,7 @@ export default function TokenInput({showContextMenu, showPopover, tokenIndex, mo
             // Style - if token is edited (user modified token in place so show as green), if original token and current token are different 
             //         then the token has been modified due to a suggestion so colour accordingly.
             // TODO: make meta-tag override input colour (replace/suggest will be indicated by underline colour)
-            style={{ backgroundColor: (edited || replacedToken) ? bgColorMap['rt']: ( originalToken !== currentToken ) ? bgColorMap['st'] : bgColor, width: inputWidth}}
+            style={{ backgroundColor: (edited || replacedToken) ? bgColourMap['rp']: ( originalToken !== currentToken ) ? bgColourMap['st'] : bgColour, width: inputWidth}}
             className={classes.token}
             autoComplete="off"
             title={`original: ${originalToken}\nClass: ${tokenClf}`}

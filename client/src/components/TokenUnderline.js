@@ -73,12 +73,13 @@ export default function TokenUnderline({ savedChange,
                                          showRemovePopover,
                                          setShowRemovePopover,
                                          inputWidth,
-                                         bgColorMap,
+                                         bgColourMap,
                                          suggestedToken,
                                          showAddSuggestionPopover,
                                          setShowAddSuggestionPopover,
                                          addSuggestedReplacement,
-                                         removeSuggestedReplacement}) {
+                                         removeSuggestedReplacement
+                                        }) {
 
     const classes = useStyles();
 
@@ -158,17 +159,27 @@ export default function TokenUnderline({ savedChange,
         <div>
             {
                 (( savedChange && originalToken !== currentToken && edited ) || replacedToken ) ?
-                <OverlayTrigger trigger="focus" placement="bottom" overlay={removeReplacementPopover} show={showRemovePopover}>
+                <OverlayTrigger
+                    trigger="focus"
+                    placement="bottom"
+                    overlay={removeReplacementPopover}
+                    show={showRemovePopover}
+                >
                     <div
-                        style={{cursor: 'pointer', width: inputWidth, backgroundColor: bgColorMap['rt'], height: '6px', borderRadius: '2px', marginTop: '2px', marginBottom: '0.5em'}}
+                        style={{cursor: 'pointer', width: inputWidth, backgroundColor: bgColourMap['rt'], height: '6px', borderRadius: '2px', marginTop: '2px', marginBottom: '0.5em'}}
                         onClick={() => setShowRemovePopover(!showRemovePopover)}
                     />
                 </OverlayTrigger>
                 : (suggestedToken)
                 ?
-                <OverlayTrigger trigger="focus" placement="bottom" overlay={addSuggestionPopover} show={showAddSuggestionPopover}>
+                <OverlayTrigger
+                    trigger="focus"
+                    placement="bottom"
+                    overlay={addSuggestionPopover}
+                    show={showAddSuggestionPopover}
+                >
                     <div
-                        style={{cursor: 'pointer', width: inputWidth, backgroundColor: bgColorMap['st'], height: '6px', borderRadius: '2px', marginTop: '2px', marginBottom: '0.5em'}}
+                        style={{cursor: 'pointer', width: inputWidth, backgroundColor: bgColourMap['st'], height: '6px', borderRadius: '2px', marginTop: '2px', marginBottom: '0.5em'}}
                         onClick={() => setShowAddSuggestionPopover(!showAddSuggestionPopover)}
                     />
                 </OverlayTrigger>
