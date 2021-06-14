@@ -56,17 +56,23 @@ export default function LegendModal({showLegend, setShowLegend, project}) {
             </Modal.Header>
 
             <Modal.Body>
-            <div style={{display: 'flex', flexDirection: 'column', textAlign: 'center', backgroundColor: 'white'}}>
-                            <div className={classes.legend}>
-                                {
-                                    Object.keys(bgColourMap).map(key => (
-                                        <div className={classes.legendItem} style={{backgroundColor: bgColourMap[key]}}>
-                                            {key}
+                {
+                    coloursLoaded ?
+                        <div style={{display: 'flex', flexDirection: 'column', textAlign: 'center', backgroundColor: 'white'}}>
+                                        <div className={classes.legend}>
+                                            {
+                                                Object.keys(bgColourMap).map(key => (
+                                                    <div className={classes.legendItem} style={{backgroundColor: bgColourMap[key]}}>
+                                                        {key}
+                                                    </div>
+                                                    ))
+                                            }
                                         </div>
-                                        ))
-                                }
-                            </div>
-                        </div>
+                                    </div>
+                    :
+                    <h2>Loading...</h2>
+
+                }
             </Modal.Body>
 
             <Modal.Footer>
