@@ -131,16 +131,14 @@ export default function Token({tokenInfo,
     }, [changeTrigger])
 
     const addReplacement = async (isSingle) => {
-        const response = await axios.patch(`/api/token/replace/${tokenId}`, { replacement: currentToken });
-        // console.log('Succesfully updated single token with replacement');
+        const response = await axios.patch(`/api/token/replace/add/single/${tokenId}`, { replacement: currentToken });
         if (isSingle && response.status === 200){
             setChangeTrigger(!changeTrigger);
             setShowPopover(false);
         } else if(!isSingle && response.status === 200) {
-            const response = await axios.patch(`/api/token/suggest-many/${projectId}`, { replacement_dict: {[originalToken]: currentToken} });
+            const response = await axios.patch(`/api/token/suggest/add/many/${projectId}`, { original_token: originalToken, replacement: currentToken });
             if (response.status === 200){
                 if (tokenId === localStorage.getItem('id')){
-                    // console.log('adding term to replacements');
                     setReplacementDict(prevState => ({...prevState, [originalToken]: currentToken}))
                 }
                 setChangeTrigger(!changeTrigger);
@@ -150,22 +148,13 @@ export default function Token({tokenInfo,
     }
 
     const removeReplacement = async () => {
-        const response = await axios.delete(`/api/token/replace-remove/${tokenId}`)
+        const response = await axios.delete(`/api/token/replace/remove/single/${tokenId}`)
         if (response.status === 200){
-            // Remove replacement from dictionary (used to update other tokens)
-            if (replacementDict[originalToken]){
-                // If page is refreshed - replacements will be lost so removing will error out. 
-                // TODO: add replacement dictionary artifact into local storage
-                console.log('remove rd', replacementDict);
-                console.log('updated', Object.keys(replacementDict).filter(key => key !== originalToken).reduce((obj, key) => {obj[key] = replacementDict[key]; return obj;}, {}))
-                setReplacementDict(Object.keys(replacementDict).filter(key => key !== originalToken).reduce((obj, key) => {obj[key] = replacementDict[key]; return obj;}, {}));
-            }
             setCurrentToken(originalToken);
-            setShowRemovePopover(false);
-            setChangeTrigger(!changeTrigger);
             setReplacedToken(null);
             setEdited(false);
-            console.log('Replacement was successfully removed.')
+            setShowRemovePopover(false);
+            setChangeTrigger(!changeTrigger);
         }
     }
 
@@ -180,9 +169,7 @@ export default function Token({tokenInfo,
     }
 
     const addSuggestedReplacement = async () => {
-        // Converts a suggested token into an actual replacement
-
-        const response = await axios.patch(`/api/token/suggestion-add/${tokenId}`, {suggested_replacement: currentToken});
+        const response = await axios.patch(`/api/token/suggest/add/single/${tokenId}`, { suggested_replacement: currentToken });
         if (response.status === 200){
             console.log('succesfully added suggested replacement.');
             setSuggestedToken(null);
@@ -193,7 +180,7 @@ export default function Token({tokenInfo,
     }
 
     const removeSuggestedReplacement = async () => {
-        const response = await axios.delete(`/api/token/suggestion-remove/${tokenId}`);
+        const response = await axios.delete(`/api/token/suggest/remove/single/${tokenId}`);
         if (response.status === 200){
             console.log('succesfully removed suggested replacement.');
             setShowAddSuggestionPopover(false)

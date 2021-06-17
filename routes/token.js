@@ -21,8 +21,10 @@ router.post('/upload', async (req, res) => {
     }
 })
 
+
+
 // [x] Add Replacement on single token
-router.patch('/replace/single/:tokenId', async (req, res) => {
+router.patch('/replace/add/single/:tokenId', async (req, res) => {
     console.log('Adding replacement to a single token')
     try{
         const updatedReponse = await Token.updateOne(
@@ -39,8 +41,38 @@ router.patch('/replace/single/:tokenId', async (req, res) => {
     }
 })
 
+// [x] Remove replacement on one token
+router.delete('/replace/remove/single/:tokenId', async (req, res) => {
+    console.log('removing replacement on token');
+    try {
+        const response = await Token.updateOne({ _id: req.params.tokenId}, {replacement: null})
+        res.json(response);
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+// [x] Convert suggested replacement to replacement on one token
+router.patch('/suggest/add/single/:tokenId', async (req, res) => {
+    console.log('Converting suggested token into replacement');
+    try{
+        const updatedReponse = await Token.updateOne(
+                                                        { _id: req.params.tokenId },
+                                                        {
+                                                            replacement: req.body.suggested_replacement,
+                                                            suggested_replacement: null,
+                                                            last_modified: Date.now()},
+                                                        { upsert: true }
+                                                    )
+        res.json(updatedReponse);
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+
 // [x] Add suggested replacement for all tokens of same value (single OOV->IV map) 
-router.patch('/suggest/many/:projectId', async (req, res) => {
+router.patch('/suggest/add/many/:projectId', async (req, res) => {
     try{
         const originalToken = req.body.original_token;
         const replacement = req.body.replacement;
@@ -64,44 +96,9 @@ router.patch('/suggest/many/:projectId', async (req, res) => {
 })
 
 
-
-// Convert suggested replacement to replacement on one token
-router.patch('/suggestion-add/:tokenId', async (req, res) => {
-    console.log('Converting suggested token into replacement and removing suggestions associated with token')
-    try{
-        const updatedReponse = await Token.updateOne(
-                                                {
-                                                    _id: req.params.tokenId
-                                                },
-                                                {
-                                                    replacement: req.body.suggested_replacement,
-                                                    suggested_replacement: null,
-                                                    last_modified: Date.now()},
-                                                {
-                                                    upsert: true
-                                                }
-                                                )
-        res.json(updatedReponse);
-    }catch(err){
-        res.json({ message: err })
-    }
-})
-
-// Remove replacement on one token
-router.delete('/replace-remove/:tokenId', async (req, res) => {
-    console.log('removing replacement on token');
-    try {
-        const response = await Token.updateOne({ _id: req.params.tokenId}, {replacement: null})
-        res.json(response);
-
-    }catch(err){
-        res.json({ message: err })
-    }
-})
-
-// Remove suggested replacement on one token
-router.delete('/suggestion-remove/:tokenId', async (req, res) => {
-    console.log('removing suggested replacement on token');
+// [x] Remove suggested replacement on single token
+router.delete('/suggest/remove/single/:tokenId', async (req, res) => {
+    console.log('Removing suggested replacement on single token');
     try {
         const response = await Token.updateOne({ _id: req.params.tokenId}, {suggested_replacement: null})
         res.json(response);
@@ -109,6 +106,14 @@ router.delete('/suggestion-remove/:tokenId', async (req, res) => {
         res.json({ message: err })
     }
 })
+
+
+
+
+
+
+
+
 
 // Patch meta-tag on one token
 router.patch('/add-one-meta-tag/:tokenId', async (req, res) => {
