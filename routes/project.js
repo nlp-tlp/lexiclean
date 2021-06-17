@@ -171,10 +171,12 @@ router.post('/create', async (req, res) => {
                 starting_oov_token_count: candidateTokens.length
             }
         })
+        const projectId = projectResponse._id;
 
+        // Update tokens with project_id fields
+        const tokensUpdated = await Token.updateMany({ _id: { $in: tokenListResponse.map(token => token._id)}}, { project_id: projectId }, { upsert: true });
 
         // Update texts in texts collection with project_id field
-        const projectId = projectResponse._id;
         const textsUpdateResponse = await Text.updateMany({ _id: { $in: textObjectIds }}, {project_id: projectId}, {upsert: true});
 
 
@@ -234,6 +236,7 @@ router.post('/create', async (req, res) => {
         // - create update objects
         console.log('Updating texts with TF-IDF scores')
         const bwTextWeightObjs = textWeights.map(text => ({updateOne: { filter: { _id: text._id}, update: {weight: text.weight}, options: {upsert: true}}}));
+        console.log('bulk write text objects created - writing to database')
         const bwTextResponse = await Text.bulkWrite(bwTextWeightObjs);
 
         // Return

@@ -24,6 +24,11 @@ const TokenSchema = mongoose.Schema({
         name: { type: String, required: false },
         value: { type: String, required: false }
     }],
+    project_id: {
+        type: Schema.Types.ObjectId,
+        ref: 'Project',
+        required: false 
+    },
     last_modified: {
         type: Date,
         required: true,
