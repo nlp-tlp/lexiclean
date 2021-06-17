@@ -14,7 +14,7 @@ const useStyles = createUseStyles({
         maxHeight: '1em'
     },
     text: {
-        padding: '0.5em 0em 0.5em 1em',
+        padding: '0.5em 0em 0.5em 1.1em',
         marginRight: '0.5em',
         marginBottom: '0.5em',
         border: 'none',
@@ -26,12 +26,10 @@ const useStyles = createUseStyles({
         },
         wordSpacing: '1em',
         backgroundColor: '#ffffbf',
-        // minWidth: '50vw'
     },
 })
 
 const MIN_WIDTH = 60;   // px
-
 
 export default function Text({text,
                                 textIndex,
@@ -44,19 +42,23 @@ export default function Text({text,
                                 selectedTokens,
                                 setSelectedTokens,
                                 bgColourMap,
-                                tokenizeMode,
-                                tokenize
+                                tokenize,
+                                changeTrigger,
+                                setChangeTrigger
                             }) {
+
     const classes = useStyles();
     const MENU_ID = `menu-${text._id}`;
     const { show: showContextMenu } = useContextMenu({ id: MENU_ID });
+
+    const [textTemp, setTextTemp] = useState(text);
 
     // console.log('text ', text._id,  'content', text, ' weight ', text.weight);
 
     // If tokenize mode then show full string WITH replacements
     const [originalText, setOriginalText] = useState(text.tokens.map(tokenInfo => tokenInfo.replacement ? tokenInfo.replacement : tokenInfo.value).join(' '))
     const [textString, setTextString] = useState(text.tokens.map(tokenInfo => tokenInfo.replacement ? tokenInfo.replacement : tokenInfo.value).join(' '))
-    const [inputWidth, setInputWidth] = useState(`${(originalText.length + 2) * 10 > MIN_WIDTH ? (originalText.length + 2) * 10 : MIN_WIDTH }px`)
+    const [inputWidth, setInputWidth] = useState(`${(originalText.length + 2) * 10 > MIN_WIDTH ? (originalText.length + 2) * 12 : MIN_WIDTH }px`)
 
     const handleTextChange = (e) => {
         // Modifies white space in textstring and ignores any other character modification
@@ -74,6 +76,7 @@ export default function Text({text,
             const response = await axios.patch(`/api/text/tokenize/${text._id}`, { 'new_string': textString});
             if (response.status === 200){
                 console.log(' text update response ', response.data);
+                setTextTemp(response.data);
             }
         }   
     }
@@ -86,7 +89,7 @@ export default function Text({text,
             key={textIndex}
         >
             {
-                tokenize === textIndex ? //tokenizeMode ?
+                tokenize === textIndex ?
                 <div>
                     <input
                         type="text"
@@ -104,8 +107,8 @@ export default function Text({text,
                     />
                 </div>
                 :
-                text ?
-                    text.tokens.map((tokenInfo) => {
+                textTemp ?
+                    textTemp.tokens.map((tokenInfo) => {
                     return(
                             <Token
                                 tokenInfo={tokenInfo}
@@ -119,7 +122,9 @@ export default function Text({text,
                                 selectedTokens={selectedTokens}
                                 setSelectedTokens={setSelectedTokens}
                                 bgColourMap={bgColourMap}
-                                tokenizeMode={tokenizeMode}
+                                tokenize={tokenize}
+                                changeTrigger={changeTrigger}
+                                setChangeTrigger={setChangeTrigger}
                             />
                             )})
                 : <p>Loading...</p>

@@ -60,8 +60,7 @@ export default function AnnotationTable({project,
                                           pageLimit,
                                           saved,
                                           setSaved,
-                                          setPageChanged,
-                                          tokenizeMode
+                                          setPageChanged
                                         }) {
   const classes = useStyles();
 
@@ -82,6 +81,10 @@ export default function AnnotationTable({project,
   const [selectedTokens, setSelectedTokens] = useState();
 
   const [tokenize, setTokenize] = useState();
+
+
+  // User interaction
+  const [changeTrigger, setChangeTrigger] = useState(false); 
 
 
   useEffect(() => {
@@ -139,7 +142,7 @@ export default function AnnotationTable({project,
       }
 
     fetchData();
-  }, [page, pageLimit, tokenizeMode])
+  }, [page, pageLimit]) // , tokenize// TODO review when implemented correctly.
 
 
   useEffect(() => {
@@ -269,8 +272,9 @@ export default function AnnotationTable({project,
                       selectedTokens={selectedTokens}
                       setSelectedTokens={setSelectedTokens}
                       bgColourMap={bgColourMap}
-                      tokenizeMode={tokenizeMode}
                       tokenize={tokenize}
+                      changeTrigger={changeTrigger}
+                      setChangeTrigger={setChangeTrigger}
                       />
                   </div>
                 </div>

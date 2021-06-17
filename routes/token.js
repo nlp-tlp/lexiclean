@@ -223,6 +223,41 @@ router.patch('/remove-one-meta-tag/:tokenId', async (req, res) => {
 
 
 
+// Add suggested replacements for single OOV->IV map 
+router.patch('/suggest-many-v2/:projectId', async (req, res) => {
+    try{
+       
+        const originalToken = req.body.original_token;
+        const replacement = req.body.replacement;
+
+        const textResponse = await Text.find({ project_id: req.params.projectId })
+                                       .populate('tokens.token');
+        
+
+        // Do not override existing replacements so these are filter out
+        const candidateTokens = textResponse.map(text => text.tokens.filter(tokenInfo => tokenInfo.token.replacement == null && tokenInfo.token.value === originalToken).map(tokenInfo => tokenInfo)).flat();
+        console.log('number of candidate tokens (those without replacements) ->', candidateTokens.length)
+
+        const suggestReplaceTokens = candidateTokens.map(tokenInfo => ({"_id": tokenInfo.token._id, "value": tokenInfo.token.value}));
+        // // console.log('number of matched candidates ->', suggestReplaceTokens)
+
+        // Patch suggested_replacement field with replacement
+        const suggestedReplaceResponse = await Token.bulkWrite(suggestReplaceTokens.map(token => ({
+            updateOne: {
+                filter: {_id: token._id},
+                update: {"suggested_replacement": replacement},
+                upsert: true
+            }
+        })))
+
+        res.json(suggestedReplaceResponse);
+
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+
 
 
 // Patch suggested_replacements over all tokens in a project

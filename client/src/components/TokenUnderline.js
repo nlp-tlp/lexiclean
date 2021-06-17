@@ -64,7 +64,7 @@ const useStyles = createUseStyles({
     }
 })
 
-export default function TokenUnderline({ savedChange,
+export default function TokenUnderline({ changeTrigger,
                                          originalToken,
                                          currentToken,
                                          edited,
@@ -158,7 +158,7 @@ export default function TokenUnderline({ savedChange,
     return (
         <div>
             {
-                (( savedChange && originalToken !== currentToken && edited ) || replacedToken ) ?
+                (( originalToken !== currentToken && edited ) || replacedToken ) ?  // Note: earlier this had savedChange (changed to changeTrigger) boolean on true, this doesnt work anymore...
                 <OverlayTrigger
                     trigger="focus"
                     placement="bottom"
@@ -166,7 +166,7 @@ export default function TokenUnderline({ savedChange,
                     show={showRemovePopover}
                 >
                     <div
-                        style={{cursor: 'pointer', width: inputWidth, backgroundColor: bgColourMap['rt'], height: '6px', borderRadius: '2px', marginTop: '2px', marginBottom: '0.5em'}}
+                        style={{cursor: 'pointer', width: inputWidth, backgroundColor: bgColourMap['rp'], height: '6px', borderRadius: '2px', marginTop: '2px', marginBottom: '0.5em'}}
                         onClick={() => setShowRemovePopover(!showRemovePopover)}
                     />
                 </OverlayTrigger>

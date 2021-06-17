@@ -23,21 +23,24 @@ const useStyles = createUseStyles({
     }
 })
 
-const bgColourMap = {
-    'ds': 'red',
-    'ab': 'purple',
-    'ew': '#D9D9D9',
-    'no': 'blue',
-    'un': 'brown', 
-    'rm': 'yellow',
-    'rt': '#99BF9C',
-    'st': '#6BB0BF',
-    'sn': 'pink',
-    'ua': '#F2A477',
-}
-
-export default function Token({tokenInfo, textIndex, replacementDict, setReplacementDict, metaTagSuggestionMap, setMetaTagSuggestionMap, updateSingleToken, setUpdateSingleToken, selectedTokens, setSelectedTokens, bgColourMap, tokenizeMode}) {
+export default function Token({tokenInfo,
+                                textIndex,
+                                replacementDict,
+                                setReplacementDict,
+                                metaTagSuggestionMap,
+                                setMetaTagSuggestionMap,
+                                updateSingleToken,
+                                setUpdateSingleToken,
+                                selectedTokens,
+                                setSelectedTokens,
+                                bgColourMap,
+                                tokenize,
+                                changeTrigger,
+                                setChangeTrigger
+                            }) {
     const classes = useStyles();
+
+    // console.log(tokenInfo);
 
     const { projectId } = useParams();
     
@@ -65,7 +68,6 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
     
     // User interaction
     const [edited, setEdited] = useState(false);
-    const [savedChange, setSavedChange] = useState(false);
     const [inputWidth, setInputWidth] = useState(`${(currentToken.length + 2) * 8}px`)  // dynamically changes input width based on text value
     
     // Popover Controllers
@@ -120,63 +122,29 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
         localStorage.setItem('id', tokenId) // this is used to help keep track of the current token being interacted with
     }
 
-    const modifyReplacmentDict = () => {
-        // Check if replacement exists for originalToken
-        const replacementKeyExists = Object.keys(replacementDict).includes(originalToken);
-        if (tokenId === localStorage.getItem('id')){
-
-            if (updateSingleToken){
-                console.log('do something with single token - these are valuable')
-            } else if (!replacementKeyExists){
-                console.log('Updating replacement dictionary!!')
-                // Update replacement dictionary
-                setReplacementDict(prevState => ({...prevState, [originalToken]: currentToken}));
-            } 
-            setUpdateSingleToken(null);
-        }
-    }
-
-
     useEffect(() => {
-        if (!edited && !updateSingleToken && updateSingleToken !== null){    // !u... is true whther false or null...
-            // Making suggested replacements on tokens
-            
-            if (Object.keys(replacementDict).includes(currentToken)){
-                // If replacement map is one-one then update the current token, else don't update (user has to drill down to determine best choice)
-                // console.log('in replace dict side effect -', currentToken, replacementDict[currentToken])
-                // Only one replacement
-                // For single replacements, no array is passed to children.
-                // console.log('only have one suggested replacement:', currentToken, ' to ', replacementDict[currentToken]);
-                setSuggestedToken(replacementDict[currentToken])
-                setCurrentToken(replacementDict[currentToken])
-            }
+        if (!edited && !replacedToken && !suggestedToken && Object.keys(replacementDict).includes(currentToken)){
+            console.log('Change occured - Updating tokens to reflect changes')
+            setSuggestedToken(replacementDict[currentToken]);
+            setCurrentToken(replacementDict[currentToken]);
         }
-
-    }, [updateSingleToken, replacementDict])
-
+    }, [changeTrigger])
 
     const addReplacement = async (isSingle) => {
-        // Adds a replacement based on user input into token input field
         const response = await axios.patch(`/api/token/replace/${tokenId}`, { replacement: currentToken });
-        if (response.status === 200){
-            console.log('replacement response', response);
-            setSavedChange(true);
+        // console.log('Succesfully updated single token with replacement');
+        if (isSingle && response.status === 200){
+            setChangeTrigger(!changeTrigger);
             setShowPopover(false);
-            if (isSingle){
-                // Do not update the replacement dictionary if user only wants to replace single token
-                // TODO: review - currently just storing in LS for fun
-                // WIll get post processed to join similar original tokens that have multiple mappings
-                // NOTE: cannot get the array to push correctly - keeps turning into a mysterious int
-                // if (localStorage.getItem('singularReplacements')){
-                //     const singularReplacements = JSON.parse(localStorage.getItem('singularReplacements'))
-                //     console.log('singular replacements ls array - ', singularReplacements)
-                //     localStorage.setItem('singularReplacements', JSON.stringify(singularReplacements.push({[originalToken]: currentToken})));
-                // } else {
-                //     localStorage.setItem('singularReplacements', JSON.stringify([{[originalToken]: currentToken}]))
-                // }
-            } else {
-                setUpdateSingleToken(isSingle);
-                modifyReplacmentDict();
+        } else if(!isSingle && response.status === 200) {
+            const response = await axios.patch(`/api/token/suggest-many/${projectId}`, { replacement_dict: {[originalToken]: currentToken} });
+            if (response.status === 200){
+                if (tokenId === localStorage.getItem('id')){
+                    // console.log('adding term to replacements');
+                    setReplacementDict(prevState => ({...prevState, [originalToken]: currentToken}))
+                }
+                setChangeTrigger(!changeTrigger);
+                setShowPopover(false);
             }
         }
     }
@@ -194,7 +162,7 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
             }
             setCurrentToken(originalToken);
             setShowRemovePopover(false);
-            setSavedChange(false);
+            setChangeTrigger(!changeTrigger);
             setReplacedToken(null);
             setEdited(false);
             console.log('Replacement was successfully removed.')
@@ -208,7 +176,7 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
         } else {
             setCurrentToken(originalToken);
         }
-        setSavedChange(false);
+        setChangeTrigger(!changeTrigger);
     }
 
     const addSuggestedReplacement = async () => {
@@ -247,7 +215,8 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
                 .map(metaTag => {
                     // Check whether current token is in suggestions
                     if (Object.keys(metaTagSuggestionMap[metaTag]).includes(currentToken)){
-                        console.log('token', currentToken,'matched to', metaTag)
+                        // console.log('token', currentToken,'matched to', metaTag)
+                        console.log('checking metatags')
 
                         // Update metatag for matched token (need to access the objects value)
                         const metaTagUpdate = {...tokenInfo1.meta_tags, [metaTag]: Object.values(metaTagSuggestionMap[metaTag])[0]}
@@ -331,7 +300,7 @@ export default function Token({tokenInfo, textIndex, replacementDict, setReplace
                     style={{display: 'flex', flexDirection: 'row', justifyContent: (!suggestedToken) ? 'space-between' : null, width: inputWidth}}
                 >
                     <TokenUnderline
-                        savedChange={savedChange}
+                        changeTrigger={changeTrigger}
                         originalToken={originalToken}
                         currentToken={currentToken}
                         edited={edited}
