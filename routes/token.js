@@ -21,20 +21,49 @@ router.post('/upload', async (req, res) => {
     }
 })
 
-// Patch replacement on one token
-router.patch('/replace/:tokenId', async (req, res) => {
-    console.log('Patching replacement on token')
+// [x] Add Replacement on single token
+router.patch('/replace/single/:tokenId', async (req, res) => {
+    console.log('Adding replacement to a single token')
     try{
-        console.log('req body', req.body);
-        const updatedReponse = await Token.updateOne({ _id: req.params.tokenId},
-                                                        { replacement: req.body.replacement, last_modified: Date.now()},
-                                                        { upsert: true })
-        
+        const updatedReponse = await Token.updateOne(
+                                                    { _id: req.params.tokenId },
+                                                    {
+                                                        replacement: req.body.replacement,
+                                                        last_modified: Date.now()
+                                                    },
+                                                    { upsert: true }
+                                                    )
         res.json(updatedReponse);
     }catch(err){
         res.json({ message: err })
     }
 })
+
+// [x] Add suggested replacement for all tokens of same value (single OOV->IV map) 
+router.patch('/suggest/many/:projectId', async (req, res) => {
+    try{
+        const originalToken = req.body.original_token;
+        const replacement = req.body.replacement;
+        const textResponse = await Text.find({ project_id: req.params.projectId })
+                                       .populate('tokens.token');
+        // Do not override existing replacements so these are filter out
+        const candidateTokens = textResponse.map(text => text.tokens.filter(tokenInfo => tokenInfo.token.replacement == null && tokenInfo.token.value === originalToken).map(tokenInfo => tokenInfo)).flat();
+        const suggestReplaceTokens = candidateTokens.map(tokenInfo => ({"_id": tokenInfo.token._id, "value": tokenInfo.token.value}));
+        // Patch suggested_replacement field with replacement
+        const suggestedReplaceResponse = await Token.bulkWrite(suggestReplaceTokens.map(token => ({
+            updateOne: {
+                filter: {_id: token._id},
+                update: {"suggested_replacement": replacement},
+                upsert: true
+            }
+        })))
+        res.json(suggestedReplaceResponse);
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+
 
 // Convert suggested replacement to replacement on one token
 router.patch('/suggestion-add/:tokenId', async (req, res) => {
@@ -223,39 +252,7 @@ router.patch('/remove-one-meta-tag/:tokenId', async (req, res) => {
 
 
 
-// Add suggested replacements for single OOV->IV map 
-router.patch('/suggest-many-v2/:projectId', async (req, res) => {
-    try{
-       
-        const originalToken = req.body.original_token;
-        const replacement = req.body.replacement;
 
-        const textResponse = await Text.find({ project_id: req.params.projectId })
-                                       .populate('tokens.token');
-        
-
-        // Do not override existing replacements so these are filter out
-        const candidateTokens = textResponse.map(text => text.tokens.filter(tokenInfo => tokenInfo.token.replacement == null && tokenInfo.token.value === originalToken).map(tokenInfo => tokenInfo)).flat();
-        console.log('number of candidate tokens (those without replacements) ->', candidateTokens.length)
-
-        const suggestReplaceTokens = candidateTokens.map(tokenInfo => ({"_id": tokenInfo.token._id, "value": tokenInfo.token.value}));
-        // // console.log('number of matched candidates ->', suggestReplaceTokens)
-
-        // Patch suggested_replacement field with replacement
-        const suggestedReplaceResponse = await Token.bulkWrite(suggestReplaceTokens.map(token => ({
-            updateOne: {
-                filter: {_id: token._id},
-                update: {"suggested_replacement": replacement},
-                upsert: true
-            }
-        })))
-
-        res.json(suggestedReplaceResponse);
-
-    }catch(err){
-        res.json({ message: err })
-    }
-})
 
 
 
