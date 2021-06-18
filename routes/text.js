@@ -1,27 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Text = require('../models/Text');
 const Token = require('../models/Token');
 
-const mongoose = require('mongoose');
-
-// NEED INSERT MANY SO WE CAN SLAP X DOCS INTO DATA COLLECTION
-router.post('/upload', async (req, res) => {
-    console.log('Uploading texts')
-    
-    // tokens is an array of objects
-    const texts = req.body.texts;
-    console.log(texts);
-
-    // Will need to load the map and use it to markup fields on the tokens (this will be done in another route)
-
-    try{
-        const response = await Text.insertMany(texts)
-        res.json(response);
-    }catch(err){
-        res.json({ message: err })
-    }
-})
 
 // get single text
 router.get('/:textId', async (req, res) => {
@@ -61,6 +43,8 @@ router.get('/progress/:projectId', async (req, res) => {
         res.json({ message: err })
     }
 })
+
+
 
 // Get number of total pages for paginator
 router.get('/filter/pages/:projectId', async (req, res) => {
@@ -360,12 +344,6 @@ router.patch('/tokenize/:textId', async (req, res) => {
         console.log('tokensToAdd -> ', tokensToAdd)
         
         
-        // remove old tokens from tokens array
-        // const tokensIdsToRemove = diffsFormatted.filter(diff => diff.originalIndex === null).map(diff => diff.oldToken.map(token => textResponse.tokens[token.index]._id)).flat()
-        // console.log('tokenIdsToRemove -> ', tokensIdsToRemove)
-        // const textResponseAfterRemove = await Text.findByIdAndUpdate({ _id: req.params.textId }, { $pull: { 'tokens' : { "_id": { $in : tokensIdsToRemove}}}}, {"multi": true})
-        // console.log('textResponseAfterRemove -> ', textResponseAfterRemove)
-
         // add new tokens to tokens array
         // first need to create new tokens in Token collection (this includes loading maps - TODO! etc.)
         const tokenList = tokensToAdd.map(token => {
@@ -373,7 +351,7 @@ router.patch('/tokenize/:textId', async (req, res) => {
             // const hasReplacement = mapSets.rp.has(token);
 
             if (token.originalIndex){
-                // Tokens that are not modified as simply copied 
+                // Tokens that are not modified are simply copied 
                 const origTokenResponse = textResponse.tokens.filter(tokenOrig => tokenOrig.index === token.originalIndex)[0].token;
                 return({
                     value: origTokenResponse.value,
@@ -385,7 +363,7 @@ router.patch('/tokenize/:textId', async (req, res) => {
             } else {
                 return({
                         value: token.value,
-                        meta_tags: {"hello": false},
+                        meta_tags: {en: false},      // TODO: figure out how to capture the correct meta-tags for this. (DEFAULTING TO UA - user can reassign)
                         // Replacement is pre-filled if only replacement is found in map (user can remove in UI if necessary)
                         replacement: null,
                         suggested_replacement: null
@@ -407,12 +385,12 @@ router.patch('/tokenize/:textId', async (req, res) => {
         console.log('textUpdatePayload ->', textUpdatePayload)
 
         // Update by writing over tokens
-        const textResponseAfterAddition = await Text.findByIdAndUpdate({ _id: req.params.textId}, textUpdatePayload);
-        console.log(textResponseAfterAddition)
+        const textResponseAfterAddition = await Text.findByIdAndUpdate({ _id: req.params.textId}, textUpdatePayload, {new: true}).populate('tokens.token').lean();
+        console.log('textResponseAfterAddition -> ', textResponseAfterAddition)
 
         res.json(textResponseAfterAddition)
 
-        // Still need to capture the changes in the token_tokenized field...
+        // TODO: Still need to capture the changes in the token_tokenized field...
 
 
 

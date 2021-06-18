@@ -60,7 +60,7 @@ router.patch('/suggest/add/many/:projectId', async (req, res) => {
         const tokenResponse = await Token.find({ project_id: req.params.projectId, value: originalToken}).lean();
         // Filter out existing replacements
         const candidateTokens = tokenResponse.filter(token => token.replacement === null).map(token => token);
-        // console.log('number candidates', candidateTokens.length);
+        console.log('number of matches', candidateTokens.length);
 
         const updateTokens = candidateTokens.map(token => ({
             updateOne: {
@@ -83,7 +83,7 @@ router.patch('/suggest/add/many/:projectId', async (req, res) => {
 router.delete('/suggest/remove/single/:tokenId', async (req, res) => {
     console.log('Removing suggested replacement on single token');
     try {
-        const response = await Token.updateOne({ _id: req.params.tokenId}, {suggested_replacement: null})
+        const response = await Token.updateOne({ _id: req.params.tokenId}, { suggested_replacement: null })
         res.json(response);
     }catch(err){
         res.json({ message: err })
@@ -180,7 +180,6 @@ router.patch('/suggest-confirm/', async (req, res) => {
 
 // --- Meta Tags ---
 
-
 // Patch meta-tag on one token
 router.patch('/meta/add/single/:tokenId', async (req, res) => {
     // Takes in field, value pair where the field is the axuiliary information key
@@ -208,20 +207,15 @@ router.patch('/meta/add/single/:tokenId', async (req, res) => {
 router.patch('/meta/add/many/:projectId', async (req, res) => {
     // Takes in field, value pair where the field is the meta-tag information key
     // Updates all values in data set that match with meta-tag boolean
-
-    // To do this, each type of meta-tag needs to be searched and mapped to tokens...
-    // we first filter the entire data set of potential tokens and then 
-    // figure out which is correct
-
     console.log('Patching meta-tags on all tokens')
     try{
-        const token = req.body.token;
+        const originalTokenValue = req.body.originalToken;
         const metaTag = req.body.field;
         const metaTagValue = req.body.value;
-        
+
         // Get all tokens that match body token 
-        const tokenResponse = await Token.find({ value: token })
-        console.log('tokens patched', tokenResponse.length);
+        const tokenResponse = await Token.find({ project_id: req.params.projectId, value: originalTokenValue }).lean();
+        // console.log('number of tokens patched', tokenResponse.length);
 
         const updateTokens = tokenResponse.map(token => ({
             updateOne: {
@@ -235,51 +229,6 @@ router.patch('/meta/add/many/:projectId', async (req, res) => {
         
         const updateResponse = await Token.bulkWrite(updateTokens);
         res.json(updateResponse)
-
-
-
-
-
-        // OLD CODE \/ \/
-        // const metaTagDict = req.body.meta_tag_dict
-
-        // const metaTagDictActive = Object.keys(metaTagDict)
-        //                                 .filter(metaTag => Object.keys(metaTagDict[metaTag]).length > 0)
-
-        // These tokens are used to filter the tokens in the entire dataset
-        // const originalTokens = metaTagDictActive.map(metaTag => Object.keys(metaTagDict[metaTag])).flat();
-
-        // Get all tokens
-        // TODO: review below statement...
-        // Note looking just 'value' might make future replacements not aligned with DS terms
-        // const tokenResponse = await Token.find({ value: { $in : originalTokens}})
-
-        // console.log(tokenResponse);
-
-        // Now we need to construct update objects from tokens
-        // TODO: review if any of the meta-tags change - this will need to be updated.
-        // const updateTokens = tokenResponse.map(token => ({
-
-        //     updateOne: {
-        //         filter: { _id: token._id },
-        //         update: {
-        //             "domain_specific": Object.keys(metaTagDict["domain_specific"]).includes(token.value) ? metaTagDict["domain_specific"][token.value] : token.domain_specific,
-        //             "abbreviation": Object.keys(metaTagDict["abbreviation"]).includes(token.value) ? metaTagDict["abbreviation"][token.value] : token.abbreviation,
-        //             "english_word": Object.keys(metaTagDict["english_word"]).includes(token.value) ? metaTagDict["english_word"][token.value] : token.english_word,
-        //             "noise": Object.keys(metaTagDict["noise"]).includes(token.value) ? metaTagDict["noise"][token.value] : token.noise,
-        //             "sensitive": Object.keys(metaTagDict["sensitive"]).includes(token.value) ? metaTagDict["sensitive"][token.value] : token.sensitive,
-        //             "unsure": Object.keys(metaTagDict["unsure"]).includes(token.value) ? metaTagDict["unsure"][token.value] : token.unsure,
-        //             "removed": Object.keys(metaTagDict["removed"]).includes(token.value) ? metaTagDict["removed"][token.value] : token.removed
-        //         },
-        //         upsert: true
-        //     }
-
-        // }))
-        
-        // const updateResponse = await Token.bulkWrite(updateTokens);
-
-        // res.json(updateResponse)
-
     }catch(err){
         res.json({ message: err })
     }

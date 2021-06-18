@@ -36,7 +36,8 @@ export default function Token({tokenInfo,
                                 bgColourMap,
                                 tokenize,
                                 changeTrigger,
-                                setChangeTrigger
+                                setChangeTrigger,
+                                setToastInfo
                             }) {
     const classes = useStyles();
 
@@ -123,10 +124,11 @@ export default function Token({tokenInfo,
     }
 
     useEffect(() => {
-        if (!edited && !replacedToken && !suggestedToken && Object.keys(replacementDict).includes(currentToken)){
+        // was currentToken
+        if (!edited && !replacedToken && Object.keys(replacementDict).includes(originalToken)){ //  && !suggestedToken &&
             console.log('Change occured - Updating tokens to reflect changes')
-            setSuggestedToken(replacementDict[currentToken]);
-            setCurrentToken(replacementDict[currentToken]);
+            setSuggestedToken(replacementDict[originalToken]);
+            setCurrentToken(replacementDict[originalToken]);
         }
     }, [changeTrigger])
 
@@ -138,9 +140,13 @@ export default function Token({tokenInfo,
         } else if(!isSingle && response.status === 200) {
             const response = await axios.patch(`/api/token/suggest/add/many/${projectId}`, { original_token: originalToken, replacement: currentToken });
             if (response.status === 200){
+                // console.log(response.data);
                 if (tokenId === localStorage.getItem('id')){
                     setReplacementDict(prevState => ({...prevState, [originalToken]: currentToken}))
                 }
+
+                setToastInfo({type: "replacement", content: {original: originalToken, replacement: currentToken, count: response.data.nModified + 1}});
+
                 setChangeTrigger(!changeTrigger);
                 setShowPopover(false);
             }
@@ -190,7 +196,7 @@ export default function Token({tokenInfo,
     }
 
 
-    // --- Meta Tag Logic ---
+    // --- Meta Tag ---
     useEffect(() => {
         // Updates token meta-tags when suggestion map changes
         // console.log('side effect for metatag suggestion map')
@@ -213,28 +219,27 @@ export default function Token({tokenInfo,
 
     }, [metaTagSuggestionMap])
 
+
     const addMetaTag = async (field, value, isSingle) => {
         setMetaTagUpdated(false);
         
         if (isSingle){
-            // meta-tag only applied to single token
-            const response = await axios.patch(`/api/token/add-one-meta-tag/${tokenId}`, {field: field, value: value});
+            const response = await axios.patch(`/api/token/meta/add/single/${tokenId}`, {field: field, value: value});
             if (response.status === 200){
-                // console.log('response for single token meta tag update')
                 const metaTagUpdate = {...tokenInfo1.meta_tags, [field]: value}
                 setTokenInfo1(prevState => ({...prevState, meta_tags: metaTagUpdate}))
+                setMetaTagUpdated(true)
             }
-            setMetaTagUpdated(true)
-            
         } else {
             // meta-tag to cascaded across all tokens that have the same value
             // TODO: cascade meta-tags across data set when pagianting
 
-            const response = await axios.patch(`/api/token/add-many-meta-tag/${projectId}`, { "token": currentToken, "field": field, "value": value });
+            const response = await axios.patch(`/api/token/meta/add/many/${projectId}`, { "originalToken": originalToken, "field": field, "value": value });
             if (response.status === 200){
                 // console.log('response for multiple token meta tag update')
                 const metaTagUpdate = {...tokenInfo1.meta_tags, [field]: value}
                 setTokenInfo1(prevState => ({...prevState, meta_tags: metaTagUpdate}))
+                setToastInfo({type: "meta", content: {original: originalToken, metaTag: field, metaTagValue: value, count: response.data.nModified + 1}});
             }
 
             // Add meta tag to suggestion map
@@ -248,7 +253,7 @@ export default function Token({tokenInfo,
     const removeMetaTag = async (field) => {
         // Removes meta-tag from token (set to false)
         setMetaTagUpdated(false);
-        const response = await axios.patch(`/api/token/remove-one-meta-tag/${tokenId}`, { "field": field });
+        const response = await axios.patch(`/api/token/meta/remove/one/${tokenId}`, { "field": field });
         if (response.status === 200){
             // console.log('succesfully removed meta-tag from token', response.data);
             const metaTagUpdate = {...tokenInfo1.meta_tag, [field]: false}
@@ -257,6 +262,42 @@ export default function Token({tokenInfo,
         }
     }
 
+
+    const tokenInputProps = {
+        showContextMenu,
+        showPopover,
+        tokenIndex,
+        modifyToken,
+        edited,
+        bgColour,
+        inputWidth,
+        addReplacement,
+        cancelChange,
+        originalToken,
+        currentToken,
+        bgColourMap,
+        tokenClf,
+        replacedToken
+    }
+
+    const TokenUnderlineProps = {
+        changeTrigger,
+        originalToken,
+        currentToken,
+        edited,
+        replacedToken,
+        removeReplacement,
+        showRemovePopover,
+        setShowRemovePopover,
+        inputWidth,
+        bgColourMap,
+        suggestedToken,
+        showAddSuggestionPopover,
+        setShowAddSuggestionPopover,
+        addSuggestedReplacement,
+        removeSuggestedReplacement,
+        setSuggestedToken
+    }
 
     return (
         <div
@@ -268,41 +309,13 @@ export default function Token({tokenInfo,
                 tokenClf ?
                 <>
                 <TokenInput
-                    showContextMenu={showContextMenu}
-                    showPopover={showPopover}
-                    tokenIndex={tokenIndex}
-                    modifyToken={modifyToken}
-                    edited={edited}
-                    bgColour={bgColour}
-                    inputWidth={inputWidth}
-                    addReplacement={addReplacement}
-                    cancelChange={cancelChange}
-                    originalToken={originalToken}
-                    currentToken={currentToken}
-                    bgColourMap={bgColourMap}
-                    tokenClf={tokenClf}
-                    replacedToken={replacedToken}
+                    {...tokenInputProps}
                 />
                 <div
-                    style={{display: 'flex', flexDirection: 'row', justifyContent: (!suggestedToken) ? 'space-between' : null, width: inputWidth}}
+                    style={{display: 'flex', flexDirection: 'row', justifyContent: !suggestedToken ? 'space-between' : null, width: inputWidth}}
                 >
                     <TokenUnderline
-                        changeTrigger={changeTrigger}
-                        originalToken={originalToken}
-                        currentToken={currentToken}
-                        edited={edited}
-                        replacedToken={replacedToken}
-                        removeReplacement={removeReplacement}
-                        showRemovePopover={showRemovePopover}
-                        setShowRemovePopover={setShowRemovePopover}
-                        inputWidth={inputWidth}   // Note: 1em = 16px
-                        bgColourMap={bgColourMap}
-                        suggestedToken={suggestedToken}
-                        showAddSuggestionPopover={showAddSuggestionPopover}
-                        setShowAddSuggestionPopover={setShowAddSuggestionPopover}
-                        addSuggestedReplacement={addSuggestedReplacement}
-                        removeSuggestedReplacement={removeSuggestedReplacement}
-                        setSuggestedToken={setSuggestedToken}
+                        {...TokenUnderlineProps}
                     />
                 </div>
     

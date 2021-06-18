@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useHistory } from 'react-router-dom'
 import { createUseStyles } from 'react-jss';
 import { Dropdown } from 'react-bootstrap';
-// import { MdPlaylistAddCheck } from 'react-icons/md'
+import { MdSave } from 'react-icons/md'
 
 const useStyles = createUseStyles({
     header: {
@@ -47,7 +47,18 @@ const useStyles = createUseStyles({
     },
 })
 
-export default function Header({project, replacementDict, setShowDownload, setShowProgress, setShowSettings, setShowOverview, setShowLegend, setShowModifySchema, setSaved, pageChanged}) {
+export default function Header({project,
+                                replacementDict,
+                                setShowDownload,
+                                setShowProgress,
+                                setShowSettings,
+                                setShowOverview,
+                                setShowLegend,
+                                setShowModifySchema,
+                                setSaved,
+                                pageChanged
+                            }) {
+                                
     const history = useHistory();
     const classes = useStyles();
 
@@ -55,14 +66,13 @@ export default function Header({project, replacementDict, setShowDownload, setSh
     const [currentVocabSize, setCurrentVocabSize] = useState();
     const [currentOOVTokenCount, setCurrentOOVTokenCount] = useState();
 
-
-    // const changeCount = Object.keys(replacementDict).map(textIndex => Object.keys(replacementDict[textIndex]).length).reduce((a, b) => a + b, 0);
-    // const showSaveBtn = Object.keys(replacementDict).length > 0;
+    const changeCount = Object.keys(replacementDict).map(textIndex => Object.keys(replacementDict[textIndex]).length).reduce((a, b) => a + b, 0);
+    const showSaveBtn = Object.keys(replacementDict).length > 0;
 
     useEffect(() => {
         const fetchProgressInfo = async () => {
             console.log('fetching progress data')
-            if (project) {
+            if (project._id) {
                 const response = await axios.get(`/api/text/progress/${project._id}`)
                 if (response.status === 200){
                     setProgress(response.data);
@@ -80,25 +90,42 @@ export default function Header({project, replacementDict, setShowDownload, setSh
         fetchProgressInfo();
     }, [project, pageChanged])
 
+
+
+
+
+
+
+
+
+
     return (
         <div className={classes.header}>
                 <div className={classes.title}>
                     Lexiclean
                 </div>
-                <div style={{display: 'flex', flexDirection: 'column'}}>
-                    <div style={{fontSize: '2em', color: '#F8F9FA', fontWeight: 'bolder', display: 'flex', justifyContent: 'center'}}>
-                        <p>{ project.name }</p>
-                        {/* {
-                            showSaveBtn ?
-                            <p className={classes.save} onClick={() => setSaved(true)} title={`${changeCount} changes waiting`}>
-                                <MdPlaylistAddCheck/>
-                            </p>
-                            : null
-                        } */}
+                <div
+                    style={{display: 'flex', flexDirection: 'column'}}
+                >
+                    <div
+                        style={{fontSize: '2em', color: '#F8F9FA', fontWeight: 'bolder', display: 'flex', justifyContent: 'center'}}
+                    >
+                        <p>
+                            { project.name }
+                        </p>
+                        <p
+                            className={classes.save}
+                            onClick={() => setSaved(true)}
+                            title={`${changeCount} changes waiting`}
+                        >
+                            <MdSave/>
+                        </p>
                     </div>
                     {
                         project.metrics && progress ?
-                        <div style={{fontSize: '1em', color: '#F8F9FA', textAlign: 'center'}}>
+                        <div
+                            style={{fontSize: '1em', color: '#F8F9FA', textAlign: 'center'}}
+                        >
                             <div>
                                 <strong>Documents Annotated:</strong> {' '}
                                 {progress.annotated} / {progress.total}
@@ -119,7 +146,7 @@ export default function Header({project, replacementDict, setShowDownload, setSh
                             Menu
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
-                            <Dropdown.Item onClick={() => setShowOverview(true)}>Overview</Dropdown.Item>
+                            {/* <Dropdown.Item onClick={() => setShowOverview(true)}>Overview</Dropdown.Item> */}
                             <Dropdown.Item onClick={() => setShowLegend(true)}>Legend</Dropdown.Item>
                             <Dropdown.Item onClick={() => setShowDownload(true)}>Download Results</Dropdown.Item>
                             <Dropdown.Item onClick={() => setShowProgress(true)}>Review Progress</Dropdown.Item>

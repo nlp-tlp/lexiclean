@@ -1,13 +1,9 @@
-// Need to add 'upload project' button to this page.
-
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import { createUseStyles } from 'react-jss';
 import { Spinner, Button } from 'react-bootstrap';
 
 import ProjectList from './ProjectList'
-import Footer from './Footer'
-
 import UploadModal from './modals/UploadModal'
 import DeleteProjectModal from './modals/DeleteProjectModal'
 import AnnotateBeginModal from './modals/AnnotateBeginModal'
@@ -70,18 +66,9 @@ export default function ProjectFeed() {
 
     return (
         <>
+        { showUpload ? <UploadModal showUpload={showUpload} setShowUpload={setShowUpload} /> : null }
 
-        {
-            showUpload ?
-            <UploadModal
-                showUpload={showUpload}
-                setShowUpload={setShowUpload}
-            />
-            : null
-        }
-
-        {
-            showProjectDelete ?
+        { showProjectDelete ?
             <DeleteProjectModal
                 showProjectDelete={showProjectDelete}
                 setShowProjectDelete={setShowProjectDelete}
@@ -99,8 +86,9 @@ export default function ProjectFeed() {
             : null
         }
 
-        <div style={{display: 'flex', flexDirection: 'column', height: '80vh', minHeight: '100%'}}> 
-
+        <div
+            style={{display: 'flex', flexDirection: 'column', height: '80vh', minHeight: '100%'}}
+        >
             <div className={classes.header}>
                 <div className={classes.title}>
                 Lexiclean
@@ -112,11 +100,17 @@ export default function ProjectFeed() {
 
             {
                 !projectsLoaded ? 
-                <div style={{margin: 'auto', marginTop: '5em'}}>
+                <div
+                    style={{margin: 'auto', marginTop: '5em'}}
+                >
                     <Spinner animation="border" />
                 </div>
                 : projects.length === 0 ?
-                <div style={{margin: 'auto', textAlign: 'center', marginTop: '5em', fontSize: '2em'}}>No projects</div>
+                <div
+                    style={{margin: 'auto', textAlign: 'center', marginTop: '5em', fontSize: '2em'}}
+                >
+                        No projects
+                </div>
                 :
                 <ProjectList 
                     projects={projects}
@@ -125,8 +119,6 @@ export default function ProjectFeed() {
                     setShowProjectDelete={setShowProjectDelete}
                 />
             }
-
-            {/* <Footer /> */}
         </div>
         </>
     )

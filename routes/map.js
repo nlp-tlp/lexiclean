@@ -2,28 +2,17 @@ const express = require('express');
 const router = express.Router();
 const Map = require('../models/Map');
 const Text = require('../models/Text');
+const Token = require('../models/Token');
 const Project = require('../models/Project');
 
 
 // Create map
 router.post('/', async (req, res) => {
     console.log('Creating map');
-    let map;
-    if (req.body.tokens){
-        console.log('Map uses token list')
-        map = new Map({
-            project_id: req.body.project_id,
-            type: req.body.type,
-            tokens: req.body.tokens
-        });
-    } else if (req.body.replacements){
-        console.log('Map uses replacements')
-        map = new Map({
-            project_id: req.body.project_id,
-            type: req.body.type,
-            replacements: req.body.replacements
-        })
-    }
+    map = new Map({
+        project_id: req.body.project_id,
+        type: req.body.type
+    });
 
     try {
         const savedMap = await map.save();
@@ -32,6 +21,7 @@ router.post('/', async (req, res) => {
         res.json({ message: err })
     }
 });
+
 
 // Get Mapping using project id and mapping type
 router.post('/one/:projectId', async(req, res) => {
@@ -69,13 +59,11 @@ router.post('/download/:projectId', async (req, res) => {
         console.log(`Downloading ${req.body.mapName} mapping`)
         
         // Get tokens
-        const textResponse = await Text.find({project_id: req.params.projectId}).populate('tokens.token').lean();
-        // console.log(textResponse)
-        const tokens = textResponse.map(text => text.tokens.map(token => token.token)).flat();
+        const tokens = await Token.find({project_id: req.params.projectId}).lean();
         // console.log(tokens);
         
         // Filter tokens for those annotated with map
-        const tokensMapped = tokens.filter(token => token[req.body.mapName])
+        const tokensMapped = tokens.filter(token => token.meta_tags[req.body.mapName])
         // console.log(tokensMapped);
 
         // Filter for unique values only.

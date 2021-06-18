@@ -122,9 +122,6 @@ export default function TokenInput({showContextMenu,
             value={currentToken}
             onChange={e => modifyToken(e.target.value)}
             key={tokenIndex}
-            // Style - if token is edited (user modified token in place so show as green), if original token and current token are different 
-            //         then the token has been modified due to a suggestion so colour accordingly.
-            // TODO: make meta-tag override input colour (replace/suggest will be indicated by underline colour)
             style={{ backgroundColor: (edited || replacedToken) ? bgColourMap['rp']: ( originalToken !== currentToken ) ? bgColourMap['st'] : bgColour, width: inputWidth}}
             className={classes.token}
             autoComplete="off"

@@ -107,8 +107,16 @@ export default function TokenUnderline({ changeTrigger,
                                                 <p className={classes.suggestedTextSingle}>{currentToken}</p>
                                             </div>
                                             <div className={classes.actionContainer}>
-                                                <div className={classes.actionBtnActive} onClick={() => remove()}><p className={classes.actionText}><MdDelete/>Remove</p></div>
-
+                                                <div
+                                                    className={classes.actionBtnActive}
+                                                    onClick={() => remove()}
+                                                >
+                                                    <p
+                                                        className={classes.actionText}
+                                                    >
+                                                        <MdDelete/>Remove
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                     </Popover>
@@ -121,30 +129,6 @@ export default function TokenUnderline({ changeTrigger,
                                             <p className={classes.originalText}>{originalToken}</p>
                                             <p className={classes.arrow}><BsArrowRightShort/></p>
                                             <p className={classes.suggestedTextSingle}>{currentToken}</p>
-                                            
-                                            {/* {
-                                                (suggestedToken && Array.isArray(suggestedToken) && multipleSuggestions) ?
-                                                <div style={{display: 'flex', flexDirection: 'column'}}>
-                                                    {suggestedToken.map(suggestion => {return(
-                                                        <>
-                                                        <div style={{display: 'flex'}}>
-                                                            <p className={classes.arrow}><BsArrowRightShort/></p>
-                                                            <p 
-                                                                className={classes.suggestedTextMultiple}
-                                                                onClick={() => setSelectedSuggestion(selectedSuggestion === suggestion ? null : suggestion)}
-                                                                style={{backgroundColor: selectedSuggestion === suggestion ? '#99BF9C' : null}}
-                                                            >
-                                                                {suggestion}
-                                                            </p>
-                                                        </div>
-                                                        </>
-                                                    )})
-                                                    }
-                                                </div>
-                                                :
-                                                <> */}
-                                                {/* </> */}
-                                            {/* } */}
                                         </div>
                                         <div className={classes.actionContainer}>
                                             <div className={classes.actionBtnActive} onClick={() => addOne()}><p className={classes.actionText}><MdBookmark/>Accept</p></div>

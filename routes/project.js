@@ -18,6 +18,7 @@ router.get('/', async (req, res) => {
 })
 
 // Fetch projects for project feed
+// Review - this is slow.
 router.get('/feed', async(req, res) => {
     console.log('fetching projects for feed');
     try{
@@ -304,37 +305,22 @@ router.get('/token-count/:projectId', async (req, res) => {
 
 
 // Download results
-router.get('/results-download/:projectId', async (req, res) => {
+router.get('/download/result/:projectId', async (req, res) => {
     console.log('Preparing annotation results')
     try{
         const texts = await Text.find({ project_id : req.params.projectId }).populate('tokens.token').lean();
-        console.log(texts[0])
-
         // Format results similar to WNUT 2015 (see: http://noisy-text.github.io/2015/norm-shared-task.html), with some modifications
         // {"tid": <text_id>, "input": [<token>, <token>, ...], "output": [<token>, <token>, ...], "class": [[<class_1>,<class_n>], [<class_1>,<class_n>], ...]}
-
         const results = texts.map(text => (
             {
                 "tid": text._id,
                 "input": text.tokens.map(token => token.token.value),
                 // Here tokens marked with 'replace' should be converted to an empty string
-                "output": text.tokens.map(token => token.token.removed ? '' : token.token.replacement ? token.token.replacement : token.token.value),
-                "class": text.tokens.map(token => ([
-                    ... token.token.domain_specific ? ["domain_specific"] : [],
-                    ... token.token.abbreviation ? ["abbreviation"] : [],
-                    ... token.token.english_word ? ["english_word"] : [],
-                    ... token.token.noise ? ["noise"] : [],
-                    ... token.token.sensitive ? ["sensitive"] : [],
-                    ... token.token.unsure ? ["unsure"] : [],
-                    ... token.token.removed ? ["removed"] : []
-                ]))
+                "output": text.tokens.map(tokenInfo => tokenInfo.token.removed ? '' : tokenInfo.token.replacement ? tokenInfo.token.replacement : tokenInfo.token.value),
+                "class": text.tokens.map(tokenInfo => tokenInfo.token.meta_tags)
             }
-            
-            ))
-
-
+        ))
         res.json(results)
-
     }catch(err){
         res.json({ message: json })
     } 

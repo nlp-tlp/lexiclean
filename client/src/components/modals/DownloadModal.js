@@ -1,27 +1,34 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Modal, Button, Table } from 'react-bootstrap';
 import { MdFileDownload, MdLibraryBooks } from 'react-icons/md';
-
 import axios from 'axios';
 
-const maps = [
-    {
-        'name': 'domain_specific',
-    },
-    {
-        'name': 'sensitive'
-    },
-    {
-        'name': 'noise'
-    }
-]
+const DEFAULT_MAPS = ['rp', 'ua', 'st', 'en']
 
 export default function DownloadModal({showDownload, setShowDownload, project}) {
+
+    const [maps, setMaps] = useState();
+    const [mapsLoaded, setMapsLoaded] = useState(false);
+
+    useEffect(() => {
+        const fetchProjectMaps = async () => {
+          if (!mapsLoaded){
+            const response = await axios.get(`/api/map/${project._id}`)
+            if (response.status === 200){
+              console.log(response.data);
+              setMaps(response.data.map_keys.filter(key => !DEFAULT_MAPS.includes(key)));
+              setMapsLoaded(true);
+            }
+          }
+        }
+        fetchProjectMaps();
+      }, [mapsLoaded])
+
     
     const downloadResults = async (project) => {
     
         // Fetch results
-        const resultRes = await axios.get(`/api/project/results-download/${project._id}`);
+        const resultRes = await axios.get(`/api/project/download/result/${project._id}`);
 
         if (resultRes.status === 200){
             console.log('Results fetched successfully')
@@ -68,10 +75,10 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
     
     return (
         <Modal
-        show={showDownload}
-        onHide={() => setShowDownload(false)}
-        backdrop="static"
-        keyboard={false}
+            show={showDownload}
+            onHide={() => setShowDownload(false)}
+            backdrop="static"
+            keyboard={false}
         >
             <Modal.Header closeButton>
                 <Modal.Title><MdLibraryBooks style={{marginRight: '0.5em'}}/>Download Results</Modal.Title>
@@ -89,15 +96,17 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
                         </td>
                         </tr>
                         {
-                            maps.map((map, index) => (
-                            <tr key={index}>
-                                <td>{map.name}</td>
-                                <td>Mapping in JSON format</td>
-                                <td>
-                                    <MdFileDownload style={{fontSize: '22px', margin: 'auto', color: 'black'}} onClick={() => downloadMaps(project, map.name)}/> 
-                                </td>
-                            </tr>
-                            ))
+                            maps ?
+                                maps.map((mapName, index) => (
+                                <tr key={index}>
+                                    <td>{mapName}</td>
+                                    <td>Mapping in JSON format</td>
+                                    <td>
+                                        <MdFileDownload style={{fontSize: '22px', margin: 'auto', color: 'black'}} onClick={() => downloadMaps(project, mapName)}/> 
+                                    </td>
+                                </tr>
+                                ))
+                            : null
                         }
                     </tbody>
                 </Table>
