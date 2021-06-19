@@ -37,11 +37,12 @@ export default function Token({tokenInfo,
                                 tokenize,
                                 changeTrigger,
                                 setChangeTrigger,
-                                setToastInfo
+                                setToastInfo,
+                                activeMaps
                             }) {
     const classes = useStyles();
 
-    // console.log(tokenInfo);
+    console.log('token info -> ', tokenInfo); // using for tokenize dev... issues atm with resulting data structures...
 
     const { projectId } = useParams();
     
@@ -93,7 +94,6 @@ export default function Token({tokenInfo,
         }
     }, [tokenClf, metaTagUpdated, replacedToken, suggestedToken, tokenInfo1, metaTagSuggestionMap])
     
-
     useEffect(() => {
         // Set input field width
         const minWidth = 60;
@@ -325,6 +325,7 @@ export default function Token({tokenInfo,
                     tokenInfo={tokenInfo1}
                     addMetaTag={addMetaTag}
                     removeMetaTag={removeMetaTag}
+                    activeMaps={activeMaps}
                 />
                 </>
                 : <p>...</p>

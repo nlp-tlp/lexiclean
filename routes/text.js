@@ -293,6 +293,8 @@ router.patch('/check-annotations/', async (req, res) => {
 router.patch('/tokenize/:textId', async (req, res) => {
     console.log('Updating tokenization of a single text')
     try{
+        const projectId = req.body.project_id;
+
         const newString = req.body.new_string;
         const textResponse = await Text.findOne({ _id: req.params.textId}).populate('tokens.token').lean();
         // TODO: review whether it makes sense to map the replacements (if available)
@@ -357,7 +359,8 @@ router.patch('/tokenize/:textId', async (req, res) => {
                     value: origTokenResponse.value,
                     meta_tags: origTokenResponse.meta_tags,
                     suggested_replacement: origTokenResponse.suggested_replacement,
-                    suggested_meta_tags: origTokenResponse.suggested_meta_tags
+                    suggested_meta_tags: origTokenResponse.suggested_meta_tags,
+                    project_id: origTokenResponse.project_id
                 }
                 )
             } else {
@@ -366,7 +369,8 @@ router.patch('/tokenize/:textId', async (req, res) => {
                         meta_tags: {en: false},      // TODO: figure out how to capture the correct meta-tags for this. (DEFAULTING TO UA - user can reassign)
                         // Replacement is pre-filled if only replacement is found in map (user can remove in UI if necessary)
                         replacement: null,
-                        suggested_replacement: null
+                        suggested_replacement: null,
+                        project_id: projectId
                         })
             }
 
@@ -388,7 +392,12 @@ router.patch('/tokenize/:textId', async (req, res) => {
         const textResponseAfterAddition = await Text.findByIdAndUpdate({ _id: req.params.textId}, textUpdatePayload, {new: true}).populate('tokens.token').lean();
         console.log('textResponseAfterAddition -> ', textResponseAfterAddition)
 
-        res.json(textResponseAfterAddition)
+        // convert text into same format as the paginator (this is expected by front-end components)
+        const outputTokens = textResponseAfterAddition.tokens.map(token => ({...token.token, index: token.index, token: token.token._id}))
+        // console.log('output tokens->', outputTokens);
+        const outputText = {...textResponseAfterAddition, tokens: outputTokens}
+        // console.log(outputText)
+        res.json(outputText)
 
         // TODO: Still need to capture the changes in the token_tokenized field...
 

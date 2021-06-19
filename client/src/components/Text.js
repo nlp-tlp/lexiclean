@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { createUseStyles } from 'react-jss';
 import Token from './Token'
 
@@ -13,7 +13,8 @@ const useStyles = createUseStyles({
     }
 })
 
-export default function Text({text,
+export default function Text({project, 
+                              text,
                               replacementDict,
                               setReplacementDict,
                               metaTagSuggestionMap,
@@ -26,18 +27,30 @@ export default function Text({text,
                               tokenize,
                               changeTrigger,
                               setChangeTrigger,
-                              setToastInfo
+                              setToastInfo,
+                              activeMaps
                             }) {
     const classes = useStyles();
     const textIndex = text._id ? text._id : null;
+
+    const [textIntermediate, setTextIntermediate] = useState(text);
+
+    console.log('text info ->', text);
+
     return (
         <div
             id="text-container"
             className={classes.container}
             key={textIndex}
         >
-            {   tokenize === textIndex ? <Tokenize text={text} /> :
-                text ? text.tokens.map((tokenInfo) => {
+            {   tokenize === textIndex && project ?
+                <Tokenize
+                    project={project}
+                    textIntermediate={textIntermediate}
+                    setTextIntermediate={setTextIntermediate}
+                /> 
+                :
+                textIntermediate ? textIntermediate.tokens.map((tokenInfo) => {
                     const tokenProps = {
                             tokenInfo,
                             textIndex,
@@ -53,7 +66,8 @@ export default function Text({text,
                             tokenize,
                             changeTrigger,
                             setChangeTrigger,
-                            setToastInfo
+                            setToastInfo,
+                            activeMaps
                         }
                     return(<Token {...tokenProps} />)})
                 : <p>Loading...</p>

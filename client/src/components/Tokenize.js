@@ -23,16 +23,15 @@ const useStyles = createUseStyles({
 
 const MIN_WIDTH = 60;   // px
 
-export default function Tokenize({ text }) {
+export default function Tokenize({ project, textIntermediate, setTextIntermediate }) {
 
     const classes = useStyles();
-    const MENU_ID = `menu-${text._id}`;
+    const MENU_ID = `menu-${textIntermediate._id}`;
     const { show: showContextMenu } = useContextMenu({ id: MENU_ID });
-    const [textTemp, setTextTemp] = useState(text);
 
     // If tokenize mode then show full string WITH replacements
-    const [originalText, setOriginalText] = useState(text.tokens.map(tokenInfo => tokenInfo.replacement ? tokenInfo.replacement : tokenInfo.value).join(' '))
-    const [textString, setTextString] = useState(text.tokens.map(tokenInfo => tokenInfo.replacement ? tokenInfo.replacement : tokenInfo.value).join(' '))
+    const [originalText, setOriginalText] = useState(textIntermediate.tokens.map(tokenInfo => tokenInfo.replacement ? tokenInfo.replacement : tokenInfo.value).join(' '))
+    const [textString, setTextString] = useState(textIntermediate.tokens.map(tokenInfo => tokenInfo.replacement ? tokenInfo.replacement : tokenInfo.value).join(' '))
     const [inputWidth, setInputWidth] = useState(`${(originalText.length + 2) * 10 > MIN_WIDTH ? (originalText.length + 2) * 12 : MIN_WIDTH }px`)
 
     const handleTextChange = (e) => {
@@ -43,9 +42,10 @@ export default function Tokenize({ text }) {
 
     const updateText = async (textString, isSingle) => {
         if (isSingle){
-            const response = await axios.patch(`/api/text/tokenize/${text._id}`, { 'new_string': textString});
+            const response = await axios.patch(`/api/text/tokenize/${textIntermediate._id}`, { 'new_string': textString, 'project_id': project._id});
             if (response.status === 200){
-                setTextTemp(response.data);
+                console.log(response.data)
+                setTextIntermediate(response.data);
             }
         }   
     }

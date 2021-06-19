@@ -43,34 +43,25 @@ const useStyles = createUseStyles({
 });
 
 
-const META_TAG_MAP_INIT = {
-  "domain_specific": {},
-  "abbreviation": {},
-  "noise": {},
-  "english_word": {},
-  "unsure": {},
-  "removed": {},
-  "sensitive": {}
-};
-
 export default function AnnotationTable({project,
                                           replacementDict,
                                           setReplacementDict,
                                           pageLimit,
-                                          saved,
-                                          setSaved,
                                           setPageChanged,
-                                          setToastInfo
+                                          setToastInfo,
+                                          currentTexts,
+                                          setCurrentTexts,
+                                          saveTrigger
                                         }) {
   const classes = useStyles();
 
-  const [texts, setTexts] = useState();
   const [loaded, setLoaded] = useState(false);
   const [metaTagSuggestionMap, setMetaTagSuggestionMap] = useState();
   const [mapsLoaded, setMapsLoaded] = useState(false);
   
   const [bgColourMap, setBgColourMap] = useState();
-  
+  const [activeMaps, setActiveMaps] = useState();
+
   const [paginatorLoaded, setPaginatorLoaded] = useState();
   const [totalPages, setTotalPages] = useState();
   const [page, setPage] = useState(1);
@@ -82,7 +73,7 @@ export default function AnnotationTable({project,
   
   // User interaction
   const [updateSingleToken, setUpdateSingleToken] = useState(null);
-  const [changeTrigger, setChangeTrigger] = useState(false); 
+  const [changeTrigger, setChangeTrigger] = useState(false);
 
 
   useEffect(() => {
@@ -108,14 +99,17 @@ export default function AnnotationTable({project,
 
 
   useEffect(() => {
-    // TODO: Update based on context menu having state change e.g. adding to domain specific terms, abbreviations ect.
     const fetchProjectMaps = async () => {
       if (!mapsLoaded && project){
         const response = await axios.get(`/api/map/${project._id}`)
         if (response.status === 200){
+          console.log(response.data);
           setMetaTagSuggestionMap(Object.fromEntries(response.data.map_keys.map(key => ([[key], {}]))))
           setBgColourMap(response.data.colour_map);
+          setActiveMaps(Object.keys(response.data.contents).filter(key => response.data.contents[key].active));
           setMapsLoaded(true);
+          console.log('active maps', Object.keys(response.data.contents).filter(key => response.data.contents[key].active))
+
         }
       }
     }
@@ -128,30 +122,14 @@ export default function AnnotationTable({project,
         setLoaded(false);
         const response = await axios.get(`/api/text/filter/${project._id}`, { params: { page: page, limit: pageLimit }})
         if (response.status === 200){
-          setTexts(response.data);
+          setCurrentTexts(response.data);
           setLoaded(true);
         }
       }
 
     fetchData();
-  }, [page, pageLimit]) // , tokenize// TODO review when implemented correctly.
+  }, [page, pageLimit, saveTrigger]) // , tokenize// TODO review when implemented correctly.
 
-
-  // useEffect(() => {
-  //   // Cascades replacements as suggested replacements across tokens
-  //   const updateTokens = async () => {
-  //     if (Object.keys(replacementDict).length > 0){
-  //       console.log('suggesting replacements with ->', replacementDict);
-  //       const response = await axios.patch(`/api/token/suggest/all/${project._id}`, {replacement_dict: replacementDict});
-  //       if (response.status === 200){
-  //         // console.log('suggested replacement response', response)
-  //         // console.log('Updated tokens with suggested replacements')
-  //         // setReplacementDict({});
-  //       }
-  //     }
-  //   }
-  //   updateTokens();
-  // }, [page]) // saved
 
 
   // useEffect(() => {
@@ -173,34 +151,15 @@ export default function AnnotationTable({project,
   //   updateMetaTags();
   // }, [page]) // saved
 
-  // useEffect(() => {
-  //   // Converts suggested replacements to replacements for results on page 
-  //   //  (users needs to remove them if they don't want they to persist)
-
-  //   const convertSuggestedReplacements = async () => {
-  //     if (texts && page !== 1){ // dont update on first page load...
-  //       // console.log('texts being sent for update on pagination ->', texts)
-  //       const response = await axios.patch(`/api/token/suggest-confirm`, { replacement_dict: replacementDict, textIds: texts.map(text => text._id)});
-  //       if (response.status === 200){
-  //           // console.log('update suggested tokens to replace tokens');
-  //       }
-
-  //     }
-  //   }
-  //   convertSuggestedReplacements();
-  // }, [page])
-
-
   useEffect(() => {
     // Checks if text has been annotated
     const updateTextAnnotationStates = async () => {
-      if (texts){
-        await axios.patch('/api/text/check-annotations/', { textIds: texts.map(text => text._id) });
+      if (currentTexts){
+        await axios.patch('/api/text/check-annotations/', { textIds: currentTexts.map(text => text._id) });
       }
     }
     updateTextAnnotationStates();
   }, [page])
-
 
 
   // Tokenization logic... TODO: fix name.
@@ -212,12 +171,11 @@ export default function AnnotationTable({project,
     }
   }
 
-
   return (
     <>
       <div
         className={classes.container}
-        >
+      >
         {
           (!loaded || !mapsLoaded) ?
             <div
@@ -226,9 +184,10 @@ export default function AnnotationTable({project,
               <Spinner animation="border" />
             </div>
           :
-          texts.map((text, textIndex) => {
+          currentTexts.map((text, textIndex) => {
 
             const textProps = {
+                    project,
                     text,
                     replacementDict,
                     setReplacementDict,
@@ -243,7 +202,9 @@ export default function AnnotationTable({project,
                     tokenize,
                     changeTrigger,
                     setChangeTrigger,
-                    setToastInfo
+                    setToastInfo,
+                    saveTrigger,
+                    activeMaps
                }
     
             return(
@@ -260,7 +221,6 @@ export default function AnnotationTable({project,
                   >
                     <p className={classes.indexIcon}>
                       {textIndex+1 + ((page-1)*pageLimit)}
-
                     </p>
                   </div>
                   
@@ -274,12 +234,7 @@ export default function AnnotationTable({project,
                   style={{fontSize: '26px', fontWeight: 'bold', color: 'grey'}}
                   onClick={() => handleTokenize(text._id)}
                 >
-                  { 
-                    tokenize !== text._id ?
-                      <CgMergeVertical/>
-                      :
-                      <CgMoreVertical/>
-                  }
+                  { tokenize !== text._id ? <CgMergeVertical/> : <CgMoreVertical/> }
                 </div>
               </div>
             )
