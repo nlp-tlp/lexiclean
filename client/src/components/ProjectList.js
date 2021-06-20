@@ -52,16 +52,18 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
                                 <div
                                     onClick={() => confirmationAction(index)}
                                     key={index}
+                                    style={{width: '25vw'}}
                                 >
                                     <h1 style={{fontSize: '32px', fontWeight: 'bold', margin: 'auto'}} >
                                         {project.name}
                                     </h1>
-                                    <p style={{fontSize: '20px', margin: 'auto', verticalAlign: 'middle'}} >
+                                    <p style={{fontSize: '16px', margin: 'auto', verticalAlign: 'middle'}} >
                                         {project.description}
                                     </p>
                                     <br/>
                                     <p style={{fontSize: '12px', margin: 'auto'}}>{project.created_on}</p>
                                 </div>
+
                                 <div style={{display: 'flex', justifyContent: 'space-between'}}>
                                     <div style={{margin: '0em 2em 0em 2em'}}>
                                         <div style={{width: '36px', height: '36px', fontSize: '22px', textAlign: 'center', borderRadius: '50%', margin: 'auto', color: 'white', paddingRight: '0.1em', backgroundColor: 'grey'}}>
