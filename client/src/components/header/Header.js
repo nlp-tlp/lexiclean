@@ -122,7 +122,7 @@ export default function Header({project,
                                 {/* <Dropdown.Item onClick={() => setShowProgress(true)}>Review Progress</Dropdown.Item> */}
                                 <Dropdown.Item onClick={() => setShowModifySchema(true)}>Modify Schema</Dropdown.Item>
                                 <Dropdown.Item onClick={() => setShowSettings(true)}>Settings</Dropdown.Item>
-                                <Dropdown.Item onClick={() => history.push('/')}>Home</Dropdown.Item>
+                                <Dropdown.Item onClick={() => history.push('/feed')}>Home</Dropdown.Item>
                             </Dropdown.Menu>
                         </Dropdown>
                     </div>

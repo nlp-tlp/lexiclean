@@ -5,8 +5,8 @@ import {
   Route,
 } from "react-router-dom";
 
+import Landing from './pages/Landing'
 import Project from './components/Project'
-
 import ProjectFeed from './components/ProjectFeed'
 
 
@@ -16,13 +16,20 @@ function App() {
     <Router>
       <Switch>
 
+
+
         <Route path="/project/:projectId">
           <Project/>
         </Route>
 
-        <Route path="/">
+        <Route path="/feed">
           <ProjectFeed />
         </Route>
+
+        <Route path="/">
+          <Landing/>
+        </Route>
+
 
       </Switch>
     </Router>
