@@ -40,6 +40,11 @@ export default function Landing() {
                 <h3>
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam ut ex in risus ullamcorper cursus.
                 </h3>
+                <h4
+                    style={{marginTop: '1em', color: 'rgb(143, 143, 143)', fontSize: '26px', backgroundColor: '#EAEAEA', fontWeight: 'bold', border: '2px solid rgb(143, 143, 143)', padding: '0.25em 1em 0.25em 1em', width: '50%', margin:'auto'}}
+                >
+                    Sign Up
+                </h4>
             </div>
             <div style={{display: 'flex', justifyContent:'space-evenly', marginBottom: '30vh', maxWidth: '60vw', margin: 'auto', padding: '0em 1em 0em 1em'}}>
                 <div style={{display: 'flex', flexDirection: 'row', padding: '0.5em'}}>
