@@ -9,10 +9,10 @@ const jwt = require('jsonwebtoken');
 // Get config variables
 dotenv.config();
 
-const generateJWT = (username) => {
+const generateJWT = (user_id) => {
     // 24hr expiry
     // console.log(username, process.env.TOKEN_SECRET);
-    return jwt.sign({'username': username}, process.env.TOKEN_SECRET, { expiresIn: '24h' })
+    return jwt.sign({'user_id': user_id}, process.env.TOKEN_SECRET, { expiresIn: '24h' })
 }
 
 // Create user
@@ -39,7 +39,7 @@ router.post('/signup', async (req, res) => {
             })
             const savedUser = await newUser.save();
             
-            res.json({'username': req.body.username, token: generateJWT(req.body.username)});
+            res.json({'username': req.body.username, token: generateJWT(saveduser.user_id)});
         }
 
     }catch(err){
@@ -70,7 +70,7 @@ router.post('/login', async (req, res) => {
             // Check if password is correct
             if (bcrypt.compareSync(req.body.password, user.password)){
                 // password correct
-                res.json({ user_id: user._id, token: generateJWT(user.username)})
+                res.json({ username: user.username, token: generateJWT(user._id)})
             } else {
                 res.json('incorrect password')
             }
@@ -92,6 +92,7 @@ router.post('/token/validate', async (req, res) => {
                 // res.json(err)
                 res.json({'valid': false})
             } else {
+                console.log(decoded.user_id);
                 res.json({ 'valid': true})
             }
         });

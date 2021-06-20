@@ -6,6 +6,8 @@ import axios from 'axios';
 import { MdAddCircle, MdRemoveCircle, MdBrush } from 'react-icons/md';
 import { CompactPicker } from 'react-color';
 
+import useToken from '../auth/useToken'
+
 
 const DEFAULT_COLOUR = "#9B9B9B"
 const REPLACE_COLOUR = "#99BF9C"
@@ -16,6 +18,9 @@ const schema = yup.object().shape({
   });
   
 export default function UploadForm({ setShowUpload, setIsSubmitting }) {
+  
+    const { token, setToken } = useToken();
+
     const [fileData, setFileData] = useState({'textFile': {'meta': null, 'data': null}, 'rpFile': {'meta': null, 'data': null}})
     const [dataFileLoaded, setDataFileLoaded] = useState(false);
     
@@ -129,25 +134,26 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
           console.log('maps', maps);
 
           const formPayload = {
+            token: token,
             name: values.projectName,
             description: values.projectDescription,
             texts: fileData['textFile'].data,
-            maps: maps
+            maps: maps,
           }
 
           console.log('form payload', formPayload)
 
-          if (formSubmitted === false){
-            console.log('submitting...');
-            setIsSubmitting(true);
-            const response = await axios.post('/api/project/create', formPayload);
+          // if (formSubmitted === false){
+          //   console.log('submitting...');
+          //   setIsSubmitting(true);
+          //   const response = await axios.post('/api/project/create', formPayload);
 
-            if (response.status === 200){
-                console.log('response of create project', response);
-                setFormSubmitted(true);
-                setShowUpload(false);
-            }
-          }
+          //   if (response.status === 200){
+          //       console.log('response of create project', response);
+          //       setFormSubmitted(true);
+          //       setShowUpload(false);
+          //   }
+          // }
         }
     }
 
