@@ -29,6 +29,7 @@ const useStyles = createUseStyles({
     marginLeft: '1em',
     minHeight: '2em',
     display: 'flex',
+    width: '90%'
   },
   indexColumn: {
     display: 'flex',
@@ -216,18 +217,20 @@ export default function AnnotationTable({project,
                 key={textIndex}
                 style={{background: text.annotated ? 'rgba(153,191,156,0.2)': null}}
               >
-                <div style={{display: 'flex', height: 'max-content', alignContent: 'flex-start'}}>
-                  <div className={classes.indexColumn}>
-                    <p className={classes.indexIcon}>
-                      {textIndex+1 + ((page-1)*pageLimit)}
-                    </p>
-                  </div>
-                  <div className={classes.textColumn}>
-                    <Text
-                      {...textProps}
-                    />
-                  </div>
+                <div className={classes.indexColumn}>
+                  <p className={classes.indexIcon}>
+                    {textIndex+1 + ((page-1)*pageLimit)}
+                  </p>
                 </div>
+                
+                <div className={classes.textColumn}>
+                  <Text
+                    {...textProps}
+                    />
+                </div>
+
+                {/* <div style={{display: 'flex', height: 'max-content', alignContent: 'flex-start'}}> */}
+                {/* </div> */}
                 <div
                   style={{fontSize: '26px', fontWeight: 'bold', color: 'grey'}}
                   onClick={() => handleTokenize(text._id)}

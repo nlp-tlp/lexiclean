@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import { createUseStyles } from 'react-jss';
-import { Spinner, Button } from 'react-bootstrap';
+import { Spinner, Button, Dropdown } from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
 
 import ProjectList from './ProjectList'
 import UploadModal from './modals/UploadModal'
 import DeleteProjectModal from './modals/DeleteProjectModal'
 import AnnotateBeginModal from './modals/AnnotateBeginModal'
-import Logout from './auth/Logout'
 
 const useStyles = createUseStyles({
     container: {
@@ -39,7 +38,7 @@ const useStyles = createUseStyles({
     }
 })
 
-export default function ProjectFeed({token, logout}) {
+export default function ProjectFeed({token, setToken}) {
     const classes = useStyles();
     const history = useHistory();
 
@@ -50,6 +49,12 @@ export default function ProjectFeed({token, logout}) {
     const [showAnnotate, setShowAnnotate] = useState(false);
     const [showUpload, setShowUpload] = useState(false);
     const [showProjectDelete, setShowProjectDelete] = useState(false);
+
+    const logout = () => {
+        localStorage.removeItem("token");
+        setToken(null)
+        history.push("/");
+    }
 
     useEffect(() => {
         // Fetches project on page load and when upload modal is interacted with.
@@ -97,7 +102,17 @@ export default function ProjectFeed({token, logout}) {
                     Lexiclean
                 </button>
                 <div style={{marginRight: '1em', padding: '0.25em'}}>
-                    <Logout/>
+                    <Dropdown>
+                        <Dropdown.Toggle variant="light" id="dropdown-basic">
+                            Menu
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu>
+                            <Dropdown.Item onClick={() => setShowUpload(true)}>New Project</Dropdown.Item>
+                            <Dropdown.Item onClick={() => history.push('/feed')}>Home</Dropdown.Item>
+                            <Dropdown.Divider />
+                            <Dropdown.Item onClick={logout}>Logout</Dropdown.Item>
+                        </Dropdown.Menu>
+                    </Dropdown>
                 </div>
             </div>
 
@@ -112,10 +127,8 @@ export default function ProjectFeed({token, logout}) {
                 <div
                     style={{margin: 'auto', textAlign: 'center', marginTop: '5em', fontSize: '2em'}}
                 >
-                    <p>
-                        No projects
-                    </p>
-                        <Button variant="dark" onClick={() => setShowUpload(true)}>Create Project</Button>
+                    <p>No projects</p>
+                    <Button variant="dark" onClick={() => setShowUpload(true)}>Create Project</Button>
                 </div>
                 :
                 <ProjectList 

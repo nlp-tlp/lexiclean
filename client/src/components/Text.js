@@ -9,7 +9,7 @@ const useStyles = createUseStyles({
         display: 'flex',
         flexDirection:'row',
         flexWrap: 'wrap',
-        maxHeight: '1em'
+        // maxHeight: '1em'
     }
 })
 
