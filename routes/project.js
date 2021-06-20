@@ -1,9 +1,25 @@
 const express = require('express');
 const router = express.Router();
+const dotenv = require('dotenv');
+const jwt = require('jsonwebtoken');
 const Project = require('../models/Project');
 const Map = require('../models/Map');
 const Text = require('../models/Text');
 const Token = require('../models/Token');
+
+// Get config variables
+dotenv.config();
+
+// const validateJWT = (jwt_token) => {
+//     jwt.verify(jwt_token, process.env.TOKEN_SECRET, function(err, decoded) {
+//         if (err){
+//             return {'valid': false}
+//         } else {
+//             return {'valid': true, user_id: decoded.user_id}
+//         }
+//     });
+// }
+
 
 
 // Fetch projects
@@ -19,28 +35,34 @@ router.get('/', async (req, res) => {
 
 // Fetch projects for project feed
 // Review - this is slow.
-router.get('/feed', async(req, res) => {
+router.post('/feed', async(req, res) => {
     console.log('fetching projects for feed');
     try{
         // TODO: Add current token count to project feed response - currently being difficult
+        
+        const decoded = jwt.verify(req.body.jwt_token, process.env.TOKEN_SECRET);
+        console.log('jwt res -> ', decoded)
 
-        const projects = await Project.find().populate('texts').lean();
-        // .populate('texts.tokens.token')
-        const feedInfo = projects.map(project => ({created_on: project.created_on,
-            description: project.description,
-            last_modified: project.last_modified,
-            name: project.name,
-            starting_token_count: project.starting_token_count,
-            // current_token_count: project.texts.map(text => text.tokens.map(token => token.token.replacement ? token.token.replacement : token.token.value )).flat(),
-            _id: project._id,
-            text_count: project.texts.length,
-            annotated_texts: project.texts.filter(text => text.annotated).length
-        }))
+        if (decoded.user_id){
+            const projects = await Project.find({ user: decoded.user_id }).populate('texts').lean();
 
-        res.json(feedInfo)
+            console.log(projects);
 
-
-
+            const feedInfo = projects.map(project => ({created_on: project.created_on,
+                description: project.description,
+                last_modified: project.last_modified,
+                name: project.name,
+                starting_token_count: project.starting_token_count,
+                // current_token_count: project.texts.map(text => text.tokens.map(token => token.token.replacement ? token.token.replacement : token.token.value )).flat(),
+                _id: project._id,
+                text_count: project.texts.length,
+                annotated_texts: project.texts.filter(text => text.annotated).length
+            }))
+    
+            res.json(feedInfo)
+        } else {
+            res.json({message: 'token invalid'})
+        }
     }catch(err){
         res.json({ message: err })
     }
@@ -75,6 +97,16 @@ router.get('/:projectId', async (req, res) => {
 router.post('/create', async (req, res) => {
     console.log('creating project')
     try{
+
+        // Check if token is valid
+        let user_id;
+        jwt.verify(req.body.token, process.env.TOKEN_SECRET, function(err, decoded) {
+            if (err){
+                res.json({'message': 'invalid token - cannot create project'})
+            } else {
+                user_id = decoded.user_id;
+            }
+        })
 
         // Load static English map (shared for all projects)
         console.log('Loading English map')
@@ -183,6 +215,7 @@ router.post('/create', async (req, res) => {
         const candidateTokens = tokenListResponse.filter(token => (Object.values(token.meta_tags).filter(tagBool => tagBool).length === 0 && !token.replacement)).map(token => token.value)
 
         const projectResponse = await Project.create({
+            user: user_id,
             name: req.body.name,
             description: req.body.description,
             texts: textObjectIds,
@@ -263,6 +296,8 @@ router.post('/create', async (req, res) => {
         // Return
         // res.json('Project created successfully.')
         res.json({'word tfids': tfidfs})
+
+
 
     }catch(err){
         res.json({ message: err })

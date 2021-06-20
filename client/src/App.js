@@ -2,22 +2,29 @@ import './App.css';
 import {
   BrowserRouter as Router,
   Switch,
-  Route,
+  Route
 } from "react-router-dom";
 
+
+import Login from './components/auth/Login'
+import useToken from './components/auth/useToken'
 import Landing from './pages/Landing'
 import Project from './components/Project'
 import ProjectFeed from './components/ProjectFeed'
 
 
-
 function App() {
+  const {token, setToken } = useToken();
+
+  if (window.location.pathname === '/'){
+    return <Landing />
+  } else if(!token){
+    return <Login setToken={setToken}/>
+  }
+
   return (
     <Router>
       <Switch>
-
-
-
         <Route path="/project/:projectId">
           <Project/>
         </Route>
@@ -26,10 +33,9 @@ function App() {
           <ProjectFeed />
         </Route>
 
-        <Route path="/">
+        {/* <Route path="/">
           <Landing/>
-        </Route>
-
+        </Route> */}
 
       </Switch>
     </Router>

@@ -54,7 +54,7 @@ export default function ProjectFeed() {
     useEffect(() => {
         // Fetches project on page load and when upload modal is interacted with.
         const fetchProjects = async () => {
-            const response = await axios.get('/api/project/feed');
+            const response = await axios.post('/api/project/feed', { jwt_token: localStorage.getItem('token') });
             if (response.status === 200){
                 console.log('projects', response.data);
                 setProjects(response.data);
