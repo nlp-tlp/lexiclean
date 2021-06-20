@@ -2,7 +2,7 @@ import './App.css';
 import {
   BrowserRouter as Router,
   Switch,
-  Route,
+  Route
 } from "react-router-dom";
 
 
@@ -14,10 +14,13 @@ import ProjectFeed from './components/ProjectFeed'
 
 
 function App() {
-
   const {token, setToken } = useToken();
 
-  if (!token) {
+  console.log(window.location.pathname);
+
+  if (window.location.pathname === '/'){
+    return <Landing />
+  } else if(!token){
     return <Login setToken={setToken}/>
   }
 
@@ -32,9 +35,9 @@ function App() {
           <ProjectFeed />
         </Route>
 
-        <Route path="/">
+        {/* <Route path="/">
           <Landing/>
-        </Route>
+        </Route> */}
 
       </Switch>
     </Router>

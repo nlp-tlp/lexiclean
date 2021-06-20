@@ -12,9 +12,9 @@ const useStyles = createUseStyles({
     }
 })
 
-const loginUser = async () => {
+const loginUser = async ({username, password}) => {
 
-    const response = await axios.post(`/api/auth/login`);
+    const response = await axios.post(`/api/auth/login`, {username: username, password: password });
     console.log(response.data);
     return response.data;
 }
@@ -28,11 +28,11 @@ export default function Login({ setToken }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const token = await loginUser({
+        const loginResponse = await loginUser({
             username,
             password
         });
-        setToken(token);
+        setToken(loginResponse.token);
     }
     
 
