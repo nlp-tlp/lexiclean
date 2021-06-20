@@ -5,6 +5,7 @@ import { useHistory } from 'react-router-dom';
 
 import SignUpModal from '../components/modals/SignUpModal'
 import useToken from '../components/auth/useToken';
+import Login from '../components/auth/Login'
 
 
 const useStyles = createUseStyles({
@@ -16,18 +17,14 @@ const useStyles = createUseStyles({
     }
 })
 
-export default function Landing() {
+export default function Landing({ logout }) {
     const classes = useStyles();
     const [showSignUp, setShowSignUp] = useState(false);
-
     const history = useHistory();
-
     const { token, setToken } = useToken();
-
     return (
         <>
             { showSignUp ? <SignUpModal showSignUp={showSignUp} setShowSignUp={setShowSignUp} /> : null}
-
             <div className={classes.container}>
                 <div
                     style={{display: 'flex', justifyContent:'space-between', padding: '1em', margin: '0em 1em 0em 1em', verticalAlign: 'middle'}}
@@ -35,11 +32,23 @@ export default function Landing() {
                     <div style={{fontSize: '24px', fontWeight: 'bolder'}}>
                         Lexiclean
                     </div>
-                    <button
-                        style={{color: 'rgb(143, 143, 143)', fontSize: '16px', fontWeight: 'bold', border: '2px solid rgb(143, 143, 143)', padding: '0.25em 1em 0.25em 1em'}}
-                    >
-                        { token ? "Logout" : "Login" }
-                    </button>
+                    {
+                        token ?
+                        <button
+                            style={{color: 'rgb(143, 143, 143)', fontSize: '16px', fontWeight: 'bold', border: '2px solid rgb(143, 143, 143)', padding: '0.25em 1em 0.25em 1em'}}
+                            onClick={logout}
+                        >
+                            Logout
+                        </button>
+                        :
+                        <button
+                            style={{color: 'rgb(143, 143, 143)', fontSize: '16px', fontWeight: 'bold', border: '2px solid rgb(143, 143, 143)', padding: '0.25em 1em 0.25em 1em'}}
+                            onClick={() => history.push('/login')}
+                        >
+                            Login
+                        </button>
+
+                    }
                 </div>
 
                 <div

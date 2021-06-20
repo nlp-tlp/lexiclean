@@ -20,29 +20,22 @@ router.post('/signup', async (req, res) => {
     console.log('Signing up user');
     // Expects body of username, email and password
     try{
-        console.log(req.body);
-
         // Check whether user exists
         const userExists = await User.exists({ username: req.body.username });
-
         if (userExists){
             res.json({ message: 'user already exists'});
         } else {
-
             // hash password with bcrypt
             const salt = bcrypt.genSaltSync(saltRounds);
             const hash = bcrypt.hashSync(req.body.password, salt);
-
             const newUser = new User({
                 username: req.body.username,
                 email: req.body.email,
                 password: hash
             })
             const savedUser = await newUser.save();
-            
             res.json({'username': req.body.username, token: generateJWT(savedUser._id)});
         }
-
     }catch(err){
         res.json({ message: err })
     }

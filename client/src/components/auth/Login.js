@@ -1,14 +1,20 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types';
-import { createUseStyles } from 'react-jss';
 import axios from 'axios';
+import { createUseStyles } from 'react-jss';
+import { Card, Form, Button } from 'react-bootstrap';
+import LoginImage from '../images/login.jpeg'
+import { useHistory, Redirect } from 'react-router-dom'
+import useToken from './useToken'
 
 
 const useStyles = createUseStyles({
     loginWrapper: {
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center'
+        alignItems: 'center',
+        height: '100vh',
+        margin: 'auto'
     }
 })
 
@@ -19,41 +25,54 @@ const loginUser = async ({username, password}) => {
     return response.data;
 }
 
-export default function Login({ setToken }) {
+export default function Login({ token, setToken }) {
     const classes = useStyles();
+    const history = useHistory();
 
     const [username, setUserName] = useState();
     const [password, setPassword] = useState();
   
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         const loginResponse = await loginUser({
             username,
             password
         });
         setToken(loginResponse.token);
+        history.push("/feed")
     }
     
-
     return (
-        <div className={classes.loginWrapper}>
-            <h1>Please Log In</h1>
-            <form onSubmit={handleSubmit}>
-                <label>
-                    <p>Username</p>
-                    <input type="text" onChange={e => setUserName(e.target.value)}/>
-                </label>
-                <label>
-                    <p>Password</p>
-                    <input type="password" onChange={e => setPassword(e.target.value)}/>
-                </label>
-                <div>
-                    <button type="submit">Submit</button>
-                </div>
-            </form>
-            
-        </div>
+        <Card style={{width: '40vw', margin: 'auto', marginTop: '25vh'}}>
+            <Card.Img src={LoginImage}/>
+            <Card.Body>
+                <Card.Title>
+                    Log In to Lexiclean
+                </Card.Title>
+                    <Form onSubmit={handleSubmit}>
+                        <Form.Group>
+                            <Form.Label>Username</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="Enter username"
+                                onChange={e => setUserName(e.target.value)}
+                                />
+                        </Form.Group>
+                        <Form.Group>
+                        <Form.Label>Password</Form.Label>
+                            <Form.Control
+                                type="password"
+                                placeholder="Password"
+                                onChange={e => setPassword(e.target.value)}
+                                />
+                        </Form.Group>
+                        <Button variant="primary" type="submit">Log in</Button>
+                    </Form>
+            </Card.Body>
+                    <a href="/" className="text-muted" style={{margin: '1em'}}>
+                        Return to landing page
+                    </a>
+        </Card>
     )
 }
 

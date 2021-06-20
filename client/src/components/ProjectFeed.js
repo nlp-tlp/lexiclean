@@ -8,6 +8,9 @@ import UploadModal from './modals/UploadModal'
 import DeleteProjectModal from './modals/DeleteProjectModal'
 import AnnotateBeginModal from './modals/AnnotateBeginModal'
 
+import Logout from './auth/Logout'
+
+
 const useStyles = createUseStyles({
     container: {
         paddingTop: '1em',
@@ -41,7 +44,7 @@ const useStyles = createUseStyles({
     },
 })
 
-export default function ProjectFeed() {
+export default function ProjectFeed({token, logout}) {
     const classes = useStyles();
 
     const [projects, setProjects] = useState();
@@ -100,6 +103,7 @@ export default function ProjectFeed() {
                 <div className={classes.menu}>
                     <Button variant="light" onClick={() => setShowUpload(true)}>Create Project</Button>
                 </div>
+                <Logout/>
             </div>
 
             {

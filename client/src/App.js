@@ -7,36 +7,30 @@ import {
 
 
 import Login from './components/auth/Login'
+import ProtectedRoute from './components/auth/ProtectedRoute'
 import useToken from './components/auth/useToken'
+import Unauthorized from './components/auth/Unauthorized';
 import Landing from './pages/Landing'
 import Project from './components/Project'
 import ProjectFeed from './components/ProjectFeed'
 
-
 function App() {
   const { token, setToken } = useToken();
-
-  if (window.location.pathname === '/'){
-    return <Landing />
-  } else if(!token){
-    return <Login setToken={setToken}/>
-  }
+  console.log('token ->', token);
+  const logout = () => {localStorage.removeItem("token"); setToken(null);}
 
   return (
     <Router>
       <Switch>
-        <Route path="/project/:projectId">
-          <Project/>
+        <ProtectedRoute exact path="/project/:projectId" token={token} logout={logout} component={Project}/>
+        <ProtectedRoute exact path="/feed" token={token} logout={logout} component={ProjectFeed} />
+        <Route exact path="/unauthorized" component={Unauthorized}/>
+        <Route exact path="/login">
+          <Login token={token} setToken={setToken} />
         </Route>
-
-        <Route path="/feed">
-          <ProjectFeed />
+        <Route exact path="/">
+          <Landing logout={logout}/>
         </Route>
-
-        {/* <Route path="/">
-          <Landing/>
-        </Route> */}
-
       </Switch>
     </Router>
   );
