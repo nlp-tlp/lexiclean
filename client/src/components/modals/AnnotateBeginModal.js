@@ -6,7 +6,7 @@ export default function AnnotateBeginModal({showAnnotate, setShowAnnotate, selec
     const history = useHistory();
 
     const confirmationAction = () => {
-        history.push(`/project/${selectedProject._id}`)
+        history.push(`/project/${selectedProject._id}/page/1`)
         setShowAnnotate(false);
     }
 

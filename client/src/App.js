@@ -21,7 +21,7 @@ function App() {
   return (
     <Router>
       <Switch>
-        <ProtectedRoute exact path="/project/:projectId" token={token} logout={logout} component={Project}/>
+        <ProtectedRoute exact path="/project/:projectId/page/:pageNumber" token={token} logout={logout} component={Project}/>
         <ProtectedRoute exact path="/feed" token={token} setToken={setToken} component={ProjectFeed} />
         <Route exact path="/unauthorized" component={Unauthorized}/>
         <Route exact path="/login">

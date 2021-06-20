@@ -18,6 +18,8 @@ const PAGE_LIMIT = 10;
 
 export default function Project() {
     const { projectId } = useParams();
+    let { pageNumber } = useParams();
+    pageNumber = parseInt(pageNumber);
 
     const [replacementDict, setReplacementDict] = useState({});
     const [currentTexts, setCurrentTexts] = useState();
@@ -87,7 +89,8 @@ export default function Project() {
         currentTexts,
         setCurrentTexts,
         saveTrigger,
-        setSaveTrigger
+        setSaveTrigger,
+        pageNumber
     }
 
 

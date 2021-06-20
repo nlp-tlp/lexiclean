@@ -55,7 +55,8 @@ export default function AnnotationTable({project,
                                           setToastInfo,
                                           currentTexts,
                                           setCurrentTexts,
-                                          saveTrigger
+                                          saveTrigger,
+                                          pageNumber
                                         }) {
   const classes = useStyles();
 
@@ -68,7 +69,7 @@ export default function AnnotationTable({project,
 
   const [paginatorLoaded, setPaginatorLoaded] = useState();
   const [totalPages, setTotalPages] = useState();
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(pageNumber);
   
   // TOKEN SELECT HANDLER
   const [selectedTokens, setSelectedTokens] = useState();
@@ -89,10 +90,9 @@ export default function AnnotationTable({project,
     // Fetch pagination metadata
     const fetchPaginationInfo = async () => {
       if (!paginatorLoaded || pageLimit){
-        // note large page is used as it will index to a page without any active data...
+          // note large page is used as it will index to a page without any active data...
           const response = await axios.get(`/api/text/filter/pages/${project._id}`, { params: {limit: pageLimit }})
           if (response.status === 200){
-            // console.log('pagination meta data response', response.data)
             setTotalPages(response.data.totalPages);
             setPaginatorLoaded(true);
           }
@@ -100,6 +100,19 @@ export default function AnnotationTable({project,
       }  
     fetchPaginationInfo();
   }, [paginatorLoaded, pageLimit])
+
+  useEffect(() => {
+    const fetchData = async () => {
+        setLoaded(false);
+        setPage(pageNumber);
+        const response = await axios.get(`/api/text/filter/${project._id}`, { params: { page: page, limit: pageLimit }})
+        if (response.status === 200){
+          setCurrentTexts(response.data);
+          setLoaded(true);
+        }
+      }
+    fetchData();
+  }, [page, pageLimit, saveTrigger, pageNumber]) // , tokenize// TODO review when implemented correctly.
 
 
   useEffect(() => {
@@ -119,21 +132,6 @@ export default function AnnotationTable({project,
     }
     fetchProjectMaps();
   }, [mapsLoaded])
-
-
-  useEffect(() => {
-    const fetchData = async () => {
-        setLoaded(false);
-        const response = await axios.get(`/api/text/filter/${project._id}`, { params: { page: page, limit: pageLimit }})
-        if (response.status === 200){
-          setCurrentTexts(response.data);
-          setLoaded(true);
-        }
-      }
-
-    fetchData();
-  }, [page, pageLimit, saveTrigger]) // , tokenize// TODO review when implemented correctly.
-
 
 
   // useEffect(() => {
@@ -249,6 +247,7 @@ export default function AnnotationTable({project,
           page={page}
           setPage={setPage}
           totalPages={totalPages}
+          project={project}
         />
         : null
       }
