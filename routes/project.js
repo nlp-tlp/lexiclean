@@ -34,20 +34,14 @@ router.get('/', async (req, res) => {
 })
 
 // Fetch projects for project feed
-// Review - this is slow.
+// Review - this is slow (returns lists of all unique text ids... this is slow for large projects in the feed)
 router.post('/feed', async(req, res) => {
     console.log('fetching projects for feed');
     try{
         // TODO: Add current token count to project feed response - currently being difficult
-        
         const decoded = jwt.verify(req.body.jwt_token, process.env.TOKEN_SECRET);
-        console.log('jwt res -> ', decoded)
-
         if (decoded.user_id){
             const projects = await Project.find({ user: decoded.user_id }).populate('texts').lean();
-
-            console.log(projects);
-
             const feedInfo = projects.map(project => ({created_on: project.created_on,
                 description: project.description,
                 last_modified: project.last_modified,
@@ -58,7 +52,6 @@ router.post('/feed', async(req, res) => {
                 text_count: project.texts.length,
                 annotated_texts: project.texts.filter(text => text.annotated).length
             }))
-    
             res.json(feedInfo)
         } else {
             res.json({message: 'token invalid'})

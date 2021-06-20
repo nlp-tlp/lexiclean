@@ -14,7 +14,7 @@ import ProjectFeed from './components/ProjectFeed'
 
 
 function App() {
-  const {token, setToken } = useToken();
+  const { token, setToken } = useToken();
 
   if (window.location.pathname === '/'){
     return <Landing />

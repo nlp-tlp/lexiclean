@@ -20,6 +20,7 @@ router.post('/signup', async (req, res) => {
     console.log('Signing up user');
     // Expects body of username, email and password
     try{
+        console.log(req.body);
 
         // Check whether user exists
         const userExists = await User.exists({ username: req.body.username });
@@ -39,7 +40,7 @@ router.post('/signup', async (req, res) => {
             })
             const savedUser = await newUser.save();
             
-            res.json({'username': req.body.username, token: generateJWT(saveduser.user_id)});
+            res.json({'username': req.body.username, token: generateJWT(savedUser._id)});
         }
 
     }catch(err){
