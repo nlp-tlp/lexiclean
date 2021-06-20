@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 require('dotenv/config');   // have access to .env
 
 // import routes
+const authRoute = require('./routes/auth');
 const projectsRoute = require('./routes/project');
 const mapRoute = require('./routes/map');
 const tokenRoute = require('./routes/token');
@@ -17,7 +18,7 @@ app.use(express.urlencoded({limit: '50mb'}));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({limit: '50mb'}));
 
-
+app.use('/api/auth', authRoute)
 app.use('/api/project', projectsRoute)
 app.use('/api/map', mapRoute)
 app.use('/api/token', tokenRoute)
