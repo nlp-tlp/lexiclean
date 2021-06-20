@@ -31,8 +31,9 @@ const useStyles = createUseStyles({
         fontFamily: 'sans-serif',
         color: '#F8F9FA',
         padding: '0.25em',
-        borderRadius: '0.5em',
         marginLeft: '1em',
+        backgroundColor: '#8F8F8F',
+        border: 'none'
     },
     menu: {
         marginRight: '1em',
@@ -90,9 +91,12 @@ export default function ProjectFeed() {
             style={{display: 'flex', flexDirection: 'column', height: '80vh', minHeight: '100%'}}
         >
             <div className={classes.header}>
-                <div className={classes.title}>
-                Lexiclean
-                </div>
+                <button 
+                    className={classes.title}
+                    onClick={() => window.location.href="/"}
+                >
+                    Lexiclean
+                </button>
                 <div className={classes.menu}>
                     <Button variant="light" onClick={() => setShowUpload(true)}>Create Project</Button>
                 </div>

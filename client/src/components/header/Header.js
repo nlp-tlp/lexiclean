@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
-import { useHistory } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import { createUseStyles } from 'react-jss';
 import { Dropdown, Container, Row, Col, Spinner } from 'react-bootstrap';
 import { MdSave } from 'react-icons/md'
@@ -18,8 +18,9 @@ const useStyles = createUseStyles({
         fontFamily: 'sans-serif',
         color: '#F8F9FA',
         padding: '0.25em',
-        borderRadius: '0.5em',
         marginLeft: '1em',
+        backgroundColor: '#8F8F8F',
+        border: 'none'
     },
     metricsContainer: {
         display: 'inline-block',
@@ -102,7 +103,12 @@ export default function Header({project,
                 style={{ paddingTop: '0.5em', paddingBottom: '0.5em', backgroundColor: '#8F8F8F', borderBottom: '2px #D9D9D9 solid' }}
             >
                 <Col md="2" style={{textAlign: 'center'}}>
-                    <p className={classes.title}>Lexiclean</p>
+                    <button 
+                        className={classes.title}
+                        onClick={() => window.location.href="/"}
+                    >
+                        Lexiclean
+                    </button>
                 </Col>
                 <Col md="8">
                     <p className="text-center" style={{fontSize: '2em', color: '#F8F9FA', fontWeight: 'bolder'}}>
