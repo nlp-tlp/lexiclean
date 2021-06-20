@@ -66,8 +66,8 @@ const useStyles = createUseStyles({
         marginTop: '1em',
         color: 'rgb(143, 143, 143)',
         fontSize: '26px',
-        backgroundColor: '#EAEAEA',
         fontWeight: 'bold',
+        backgroundColor: '#EAEAEA',
         border: '2px solid rgb(143, 143, 143)',
         padding: '0.25em 1em 0.25em 1em',
         width: '50%',
@@ -137,7 +137,7 @@ export default function Landing({ token, logout }) {
                         className={classes.signupButton}
                         onClick={token ? () => history.push("/feed") : () => history.push("/signup")}
                     >
-                        { token ? <div>Start Annotating <IoEnter /></div> : "Sign Up"}
+                        { token ? <div>Enter <IoEnter /></div> : "Sign Up"}
                     </Button>
 
                     <div className={classes.details}>

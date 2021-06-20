@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import { createUseStyles } from 'react-jss';
 import { Spinner, Button } from 'react-bootstrap';
+import { useHistory } from 'react-router-dom';
 
 import ProjectList from './ProjectList'
 import UploadModal from './modals/UploadModal'
@@ -40,6 +41,7 @@ const useStyles = createUseStyles({
 
 export default function ProjectFeed({token, logout}) {
     const classes = useStyles();
+    const history = useHistory();
 
     const [projects, setProjects] = useState();
     const [projectsLoaded, setProjectsLoaded] = useState(false);
@@ -90,7 +92,7 @@ export default function ProjectFeed({token, logout}) {
             <div className={classes.header}>
                 <button 
                     className={classes.title}
-                    onClick={() => window.location.href="/"}
+                    onClick={() => history.push("/")}
                 >
                     Lexiclean
                 </button>
