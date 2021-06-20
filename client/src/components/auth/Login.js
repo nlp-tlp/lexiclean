@@ -1,22 +1,10 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { createUseStyles } from 'react-jss';
 import { Card, Form, Button } from 'react-bootstrap';
 import LoginImage from '../images/login.jpeg'
-import { useHistory, Redirect } from 'react-router-dom'
-import useToken from './useToken'
+import { useHistory } from 'react-router-dom'
 
-
-const useStyles = createUseStyles({
-    loginWrapper: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        height: '100vh',
-        margin: 'auto'
-    }
-})
 
 const loginUser = async ({username, password}) => {
 
@@ -26,7 +14,6 @@ const loginUser = async ({username, password}) => {
 }
 
 export default function Login({ token, setToken }) {
-    const classes = useStyles();
     const history = useHistory();
 
     const [username, setUserName] = useState();

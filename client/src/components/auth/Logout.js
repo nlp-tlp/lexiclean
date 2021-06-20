@@ -1,6 +1,7 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import useToken from './useToken'
+import { Button } from 'react-bootstrap';
 
 export default function Logout() {
     const history = useHistory();
@@ -11,9 +12,9 @@ export default function Logout() {
         history.push("/");
     }
     return (
-        <button onClick={logout}>
+        <Button variant="light" onClick={logout}>
             Logout
-        </button>
+        </Button>
 
     )
 }

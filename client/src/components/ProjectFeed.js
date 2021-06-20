@@ -7,9 +7,7 @@ import ProjectList from './ProjectList'
 import UploadModal from './modals/UploadModal'
 import DeleteProjectModal from './modals/DeleteProjectModal'
 import AnnotateBeginModal from './modals/AnnotateBeginModal'
-
 import Logout from './auth/Logout'
-
 
 const useStyles = createUseStyles({
     container: {
@@ -37,11 +35,7 @@ const useStyles = createUseStyles({
         marginLeft: '1em',
         backgroundColor: '#8F8F8F',
         border: 'none'
-    },
-    menu: {
-        marginRight: '1em',
-        padding: '0.25em',
-    },
+    }
 })
 
 export default function ProjectFeed({token, logout}) {
@@ -100,10 +94,9 @@ export default function ProjectFeed({token, logout}) {
                 >
                     Lexiclean
                 </button>
-                <div className={classes.menu}>
-                    <Button variant="light" onClick={() => setShowUpload(true)}>Create Project</Button>
+                <div style={{marginRight: '1em', padding: '0.25em'}}>
+                    <Logout/>
                 </div>
-                <Logout/>
             </div>
 
             {
@@ -117,7 +110,10 @@ export default function ProjectFeed({token, logout}) {
                 <div
                     style={{margin: 'auto', textAlign: 'center', marginTop: '5em', fontSize: '2em'}}
                 >
+                    <p>
                         No projects
+                    </p>
+                        <Button variant="dark" onClick={() => setShowUpload(true)}>Create Project</Button>
                 </div>
                 :
                 <ProjectList 

@@ -5,8 +5,8 @@ import {
   Route
 } from "react-router-dom";
 
-
 import Login from './components/auth/Login'
+import SignUp from './components/auth/SignUp'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import useToken from './components/auth/useToken'
 import Unauthorized from './components/auth/Unauthorized';
@@ -16,7 +16,6 @@ import ProjectFeed from './components/ProjectFeed'
 
 function App() {
   const { token, setToken } = useToken();
-  console.log('token ->', token);
   const logout = () => {localStorage.removeItem("token"); setToken(null);}
 
   return (
@@ -26,10 +25,13 @@ function App() {
         <ProtectedRoute exact path="/feed" token={token} logout={logout} component={ProjectFeed} />
         <Route exact path="/unauthorized" component={Unauthorized}/>
         <Route exact path="/login">
-          <Login token={token} setToken={setToken} />
+          <Login token={token} setToken={setToken}/>
+        </Route>
+        <Route exact path="/signup">
+          <SignUp token={token} setToken={setToken}/>
         </Route>
         <Route exact path="/">
-          <Landing logout={logout}/>
+          <Landing token={token} logout={logout}/>
         </Route>
       </Switch>
     </Router>
