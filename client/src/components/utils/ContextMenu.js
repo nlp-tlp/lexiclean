@@ -3,7 +3,15 @@ import { Menu, Item, Submenu, theme } from "react-contexify";
 import { IoMdArrowDropright} from 'react-icons/io'
 import "react-contexify/dist/ReactContexify.css";
 
-export default function ContextMenu({menu_id, bgColourMap, tokenInfo, addMetaTag, removeMetaTag}) {
+const DEFAULT_MAPS = ['ua', 'rp', 'st'];    // Note this excludes 'en' 
+
+export default function ContextMenu({ menu_id,
+                                        bgColourMap,
+                                        tokenInfo,
+                                        addMetaTag,
+                                        removeMetaTag,
+                                        activeMaps
+                                    }) {
 
     const Apply = (field) => {
         console.log('apply one', field)
@@ -21,11 +29,10 @@ export default function ContextMenu({menu_id, bgColourMap, tokenInfo, addMetaTag
         removeMetaTag(field)
     }
 
-
     return (
         <Menu id={menu_id}>
             {
-                Object.keys(bgColourMap).filter(key => !['ua', 'rp', 'st'].includes(key)).map(item => (
+                Object.keys(bgColourMap).filter(key => !DEFAULT_MAPS.includes(key) && [...activeMaps, 'en'].includes(key)).map(item => (
                     <Submenu
                         label={<div style={{ backgroundColor: tokenInfo.meta_tags[item] ? bgColourMap[item] : null, padding: '5px', borderRadius: '5px'}}>{ item }</div>}
                         arrow={<IoMdArrowDropright/>}

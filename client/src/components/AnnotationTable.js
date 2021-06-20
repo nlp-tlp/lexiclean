@@ -14,18 +14,21 @@ const useStyles = createUseStyles({
     justifyContent: 'center',
     width: '80%',
     margin: 'auto',
-    userSelect: 'none', // Stops text from being selected on click
+    userSelect: 'none' // Stops text from being selected on click
   },
   row: {
     display: 'flex',
     justifyContent: 'space-between',
     padding: '1em',
     backgroundColor: '#F2F2F2',
-    marginTop: '1em'
+    marginTop: '1em',
+    minHeight: '100%',
+    maxWidth: '100%'
   },
   textColumn: {
     marginLeft: '1em',
-    minHeight: '2em'
+    minHeight: '2em',
+    display: 'flex',
   },
   indexColumn: {
     display: 'flex',
@@ -162,7 +165,7 @@ export default function AnnotationTable({project,
   }, [page])
 
 
-  // Tokenization logic... TODO: fix name.
+  // Tokenization logic... TODO: fix name of tokenize object
   const handleTokenize = (textId) => {
     if (tokenize){
       setTokenize();
@@ -213,17 +216,12 @@ export default function AnnotationTable({project,
                 key={textIndex}
                 style={{background: text.annotated ? 'rgba(153,191,156,0.2)': null}}
               >
-                <div
-                  style={{display: 'flex'}}
-                >
-                  <div
-                    className={classes.indexColumn}
-                  >
+                <div style={{display: 'flex', height: 'max-content', alignContent: 'flex-start'}}>
+                  <div className={classes.indexColumn}>
                     <p className={classes.indexIcon}>
                       {textIndex+1 + ((page-1)*pageLimit)}
                     </p>
                   </div>
-                  
                   <div className={classes.textColumn}>
                     <Text
                       {...textProps}

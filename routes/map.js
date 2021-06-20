@@ -11,8 +11,13 @@ router.post('/', async (req, res) => {
     console.log('Creating map');
     map = new Map({
         project_id: req.body.project_id,
-        type: req.body.type
+        type: req.body.type,
+        colour: req.body.colour,
+        active: true
     });
+
+    // Add to project array
+    const projectResponse = await Project.findByIdAndUpdate({ _id: req.body.project_id }, {$push: {"maps": map._id}}, {upsert: true});
 
     try {
         const savedMap = await map.save();
@@ -95,6 +100,18 @@ router.get('/:projectId', async (req, res) => {
         colourMap = {...colourMap, "ua": "#F2A477", "st": "#6BB0BF", "en": "#D9D9D9"}
         res.json({"contents": mapsRestructured, "map_keys": mapKeys, "colour_map": colourMap});
 
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+// Modify active state of map
+router.post('/status/:mapId', async (req, res) => {
+
+    try{
+        const mapResponse = await Map.findByIdAndUpdate({ _id : req.params.mapId}, { active: req.body.activeStatus});
+
+        res.json('Update successful')
     }catch(err){
         res.json({ message: err })
     }

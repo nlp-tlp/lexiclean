@@ -3,7 +3,7 @@ import { Modal, Button, Table } from 'react-bootstrap';
 import { MdFileDownload, MdLibraryBooks } from 'react-icons/md';
 import axios from 'axios';
 
-const DEFAULT_MAPS = ['rp', 'ua', 'st', 'en']
+const DEFAULT_MAPS = ['rp', 'ua', 'st', 'en'];
 
 export default function DownloadModal({showDownload, setShowDownload, project}) {
 

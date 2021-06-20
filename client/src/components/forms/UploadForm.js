@@ -7,7 +7,6 @@ import { MdAddCircle, MdRemoveCircle, MdBrush } from 'react-icons/md';
 import { CompactPicker } from 'react-color';
 
 
-
 const DEFAULT_COLOUR = "#9B9B9B"
 const REPLACE_COLOUR = "#99BF9C"
 
@@ -85,17 +84,23 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
 
     const addMetaTag = () => {
       console.log('adding meta tag')
+      console.log(tempMetaTag)
       if (tempMetaTag !== '' && tempData){
         console.log('adding ', tempData, 'to meta tags')
-        tempData[tempMetaTag]['colour'] = tempColour
-        setMetaTags(prevState => ({...prevState, ...tempData}));
+        if (Object.keys(tempData).includes(tempMetaTag)){
+          tempData[tempMetaTag]['colour'] = tempColour
+          console.log(tempData);
+          setMetaTags(prevState => ({...prevState, ...tempData}));
+        } else {
+          setMetaTags(prevState => ({...prevState, [tempMetaTag]: {meta: null, data: [], colour: tempColour}}))
+        }
 
         // Reset states
         setTempMetaTag('');
         setTempColour(DEFAULT_COLOUR)
         document.getElementById('formControlTempMetaTag').value = null; // essentially resets form
         setTempData({meta: null, data: null, colour: null});
-      }
+      } 
     }
 
     const removeMetaTag = (tagName) => {
@@ -112,11 +117,13 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
 
           const maps = Object.keys(metaTags).map(tagKey => ({"type": tagKey, "colour": metaTags[tagKey].colour,"tokens": metaTags[tagKey].data}))
 
-          if (Object.keys(fileData["rpFile"].data).length > 0){
+          console.log('maps', maps);
+
+          if (fileData["rpFIle"] && Object.keys(fileData["rpFile"].data).length > 0){
             // add replacements to maps if they exist
             maps.push({"type": "rp", "colour": REPLACE_COLOUR, "replacements": fileData["rpFile"].data})
           } else {
-            maps.push({"type": "rp", "color": REPLACE_COLOUR,"replacements": {}})
+            maps.push({"type": "rp", "colour": REPLACE_COLOUR,"replacements": {}})
           }
 
           console.log('maps', maps);
@@ -281,7 +288,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
               Object.keys(metaTags).length > 0?
               Object.keys(metaTags).map(key => (<tr>
                 <td>{key}</td>
-                <td>{metaTags[key].meta.name}</td>
+                <td>{metaTags[key].meta ? metaTags[key].meta.name : 'No data uploaded'}</td>
                 <td>
                   <Button style={{borderColor: metaTags[key].colour, backgroundColor: metaTags[key].colour, padding: '0.2em'}}>
                     <MdBrush style={{color: 'white'}}/>

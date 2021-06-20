@@ -76,7 +76,7 @@ router.post('/create', async (req, res) => {
     console.log('creating project')
     try{
 
-        // Load static English map
+        // Load static English map (shared for all projects)
         console.log('Loading English map')
         const enMap = await Map.findOne({ type: "en"}).lean();
 
@@ -91,8 +91,16 @@ router.post('/create', async (req, res) => {
         // TOOD: review the use of lowercasing texts here. Should this be done or should
         // casing be kept but for matching to ds, en, rp the lowercasing be used?
         // removes white space between tokens as this will break the validation of the Token model.
-        const normalisedTexts = req.body.texts.map(text => text.toLowerCase().replace(/\s+/g,' ').replace(/\.$/, '').trim()); 
-        const tokenizedTexts = normalisedTexts.map(text => text.split(' '));
+        const normalisedTexts = req.body.texts.map(text => text.toLowerCase()
+                                                               .replace('\t', ' ')
+                                                               .replace(/["',?;!:\(\)\[\]_\{\}\*]/g, ' ')
+                                                               .replace(/\s+/g,' ')
+                                                               .replace(/\.$/, '')
+                                                               .trim()); 
+        // remove texts that are empty after normalisation
+        const filteredTexts = normalisedTexts.filter(text => text.length > 0).map(text => text);
+        // tokenize
+        const tokenizedTexts = filteredTexts.map(text => text.split(' '));
         
         let globalTokenIndex = -1;  // this is used to index the tokenlist that is posted to mongo as a flat list when reconstructing texts
         const tokenTextMap = tokenizedTexts.map((text, textIndex) => text.map((token, tokenIndex) => {
@@ -113,24 +121,36 @@ router.post('/create', async (req, res) => {
         mapSets['en'] = new Set(enMap.tokens);
         // console.log('map sets -> ', mapSets);    // too large with enMap
 
+
+        // regex digit match (TODO: improve to match digits better)
+        const re = /^\d+$/g;
+
         console.log('Building token list');
         const tokenList = tokenizedTexts.flat().map((token, index) => {
-
-            const metaTags = Object.assign(...Object.keys(mapSets).filter(key => key !== 'rp').map(key => ({[key]: mapSets[key].has(token)})));
+            let metaTags = Object.assign(...Object.keys(mapSets).filter(key => key !== 'rp').map(key => ({[key]: mapSets[key].has(token)})));
             const hasReplacement = mapSets.rp.has(token);
+            // check if token is digit - if so, classify as English
+            const isDigit = token.match(re) !== null;
+            metaTags = isDigit ? {...metaTags, 'en': true}: metaTags;
+            
+            if (token === ''){
+                console.log(tokenizedTexts.flat().slice(index-10, index+10))
+            }
 
             return({
                     value: token,
                     meta_tags: metaTags,
-                    // Replacement is pre-filled if only replacement is found in map (user can remove in UI if necessary)
                     replacement: hasReplacement ? rpMap.replacements[0][token] : null,
-                    suggested_replacement: null
+                    suggested_replacement: null,
+                    active: true
                     })
             })
 
         console.log('token list length', tokenList.length);
         
-        // console.log('tokens without value', tokenList.filter(token => !token.value).length)
+        console.log('tokens without value', tokenList.filter(token => !token.value).length)
+
+        console.log('token without value', tokenList.filter(token => !token.value));
 
         const tokenListResponse = await Token.insertMany(tokenList);
 
@@ -139,7 +159,7 @@ router.post('/create', async (req, res) => {
         const builtTexts = tokenTextMap.map((text, index) => {
             return({
                     // project_id: 'ph', // Cannot insert real project_id here as the project hasn't been created. This is done below as an updateMany. Uses placeholder is null. 
-                    original: normalisedTexts[index],
+                    original: filteredTexts[index],
                     tokens: text.map(token => {
                         return({
                             index: token.index,

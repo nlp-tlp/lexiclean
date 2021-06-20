@@ -79,6 +79,7 @@ router.patch('/suggest/add/many/:projectId', async (req, res) => {
     }
 })
 
+
 // Remove suggested replacement on single token
 router.delete('/suggest/remove/single/:tokenId', async (req, res) => {
     console.log('Removing suggested replacement on single token');
@@ -168,6 +169,40 @@ router.patch('/suggest-confirm/', async (req, res) => {
         })))
 
         // Patch text with annotated status
+
+        res.json(suggestedReplaceResponse)
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+
+// Accept suggested replacements as actual replacements for n texts
+router.patch('/suggest/accept/:projectId', async (req, res) => {
+    console.log('accepting suggested replacements on texts');
+    try{
+        const textIds = req.body.textIds;
+        const textResponse = await Text.find({ _id: {$in: textIds}}).populate('tokens.token').lean();
+
+        // Filter texts for token that have suggestions
+        const candidateTokens = textResponse.map(text => text.tokens.filter(tokenInfo => tokenInfo.token.suggested_replacement).map(tokenInfo => tokenInfo.token)).flat();
+        console.log(candidateTokens);
+
+        // Create objects that convert suggestion to replacement
+        const suggestReplaceTokens = candidateTokens.map(token => ({"_id": token._id, "replacement": token.suggested_replacement }));
+        console.log(suggestReplaceTokens);
+
+        // Update tokens
+        const suggestedReplaceResponse = await Token.bulkWrite(suggestReplaceTokens.map(token => ({
+            updateOne: {
+                filter: { _id: token._id },
+                update: {
+                    "replacement": token.replacement,
+                    "suggested_replacement": null
+                },
+                upsert: true
+            }
+        })))
 
         res.json(suggestedReplaceResponse)
     }catch(err){

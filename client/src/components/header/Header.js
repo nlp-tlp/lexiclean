@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import { useHistory } from 'react-router-dom'
 import { createUseStyles } from 'react-jss';
-import { Dropdown, Container, Row, Col, Spinner, Card } from 'react-bootstrap';
+import { Dropdown, Container, Row, Col, Spinner } from 'react-bootstrap';
 import { MdSave } from 'react-icons/md'
 
 const useStyles = createUseStyles({
@@ -31,7 +31,7 @@ const useStyles = createUseStyles({
     menu: {
         marginRight: '1em',
         padding: '0.25em',
-        display: 'flex',
+        display: 'flex'
     },
     save: {
         marginLeft: '0.25em',
@@ -42,15 +42,16 @@ const useStyles = createUseStyles({
 })
 
 export default function Header({project,
-                                replacementDict,
+                                currentTexts,
                                 setShowDownload,
                                 setShowProgress,
                                 setShowSettings,
                                 setShowOverview,
                                 setShowLegend,
                                 setShowModifySchema,
-                                setSaved,
-                                pageChanged
+                                pageChanged,
+                                saveTrigger,
+                                setSaveTrigger
                             }) {
                                 
     const history = useHistory();
@@ -59,9 +60,6 @@ export default function Header({project,
     const [progress, setProgress] = useState();
     const [currentVocabSize, setCurrentVocabSize] = useState();
     const [currentOOVTokenCount, setCurrentOOVTokenCount] = useState();
-
-    const changeCount = Object.keys(replacementDict).map(textIndex => Object.keys(replacementDict[textIndex]).length).reduce((a, b) => a + b, 0);
-    const showSaveBtn = Object.keys(replacementDict).length > 0;
 
     useEffect(() => {
         const fetchProgressInfo = async () => {
@@ -82,10 +80,22 @@ export default function Header({project,
             }   
         }
         fetchProgressInfo();
-    }, [project, pageChanged])
+    }, [project, pageChanged, saveTrigger])
 
+
+    const savePageResults = async () => {
+        if (project._id){
+            const response = await axios.patch(`/api/token/suggest/accept/${project._id}`, { textIds: currentTexts.map(text => text._id) })
+            if (response.status === 200){
+                console.log('saved all suggestions on current page!')
+                // trigger change...
+                setSaveTrigger(!saveTrigger);
+            }
+        }
+    }
 
     return (
+        <>
         <Container className={classes.header}>
             <Row
                 className="justify-content-md-center"
@@ -122,13 +132,17 @@ export default function Header({project,
                 style={{backgroundColor: 'white', opacity: '0.9'}}
             >
                 <Col md="3" className="text-left">
-                    <p
-                        className={classes.save}
-                        onClick={() => setSaved(true)}
-                        title={`${changeCount} changes waiting`}
-                    >
-                        <MdSave/>
-                    </p>
+                    {
+                        progress && project && currentVocabSize ?
+                        <p
+                            className={classes.save}
+                            onClick={() => savePageResults()}
+                            title='Click to save the current pages suggestions'
+                        >
+                            <MdSave/>
+                        </p>
+                        : null
+                    }
                 </Col>
             {
                 progress && project && currentVocabSize ?
@@ -139,8 +153,11 @@ export default function Header({project,
                                     <p style={{margin: '0em', fontSize: '1.5em', fontWeight: 'bolder'}}>
                                     {progress.annotated} / {progress.total}
                                     </p>
-                                    <p style={{fontSize: '0.75em', fontWeight: 'bold'}}>
-                                    Docs Annotated
+                                    <p
+                                        style={{fontSize: '0.75em', fontWeight: 'bold'}}
+                                        title='Texts that have had classifications or replacements.'
+                                    >
+                                    Texts Annotated
                                     </p>
                                 </div>
                             </Col>
@@ -149,7 +166,10 @@ export default function Header({project,
                                     <p style={{margin: '0em', fontSize: '1.5em', fontWeight: 'bolder'}}>
                                         {Math.round((1-(currentVocabSize/project.metrics.starting_vocab_size)) * 100)}%
                                     </p>
-                                    <p style={{fontSize: '0.75em', fontWeight: 'bold'}}>
+                                    <p
+                                        style={{fontSize: '0.75em', fontWeight: 'bold'}}
+                                        title='Percentage of original vocabulary reduced through normalisation'
+                                    >
                                         Token Reduction
                                     </p>
                                 </div>
@@ -159,7 +179,10 @@ export default function Header({project,
                                     <p style={{margin: '0em', fontSize: '1.5em', fontWeight: 'bolder'}}>
                                         {project.metrics.starting_oov_token_count - currentOOVTokenCount} / {project.metrics.starting_oov_token_count}
                                     </p>
-                                    <p style={{fontSize: '0.75em', fontWeight: 'bold'}}>
+                                    <p
+                                        style={{fontSize: '0.75em', fontWeight: 'bold'}}
+                                        title='All tokens replaced or classified with meta-tags are captured'
+                                    >
                                         OOV Corrected
                                     </p>
                                 </div>
@@ -171,9 +194,7 @@ export default function Header({project,
             }
                 <Col md="3"></Col>
             </Row>
-
-
-
         </Container>
+        </>
     )
 }

@@ -20,6 +20,8 @@ export default function Project() {
     const { projectId } = useParams();
 
     const [replacementDict, setReplacementDict] = useState({});
+    const [currentTexts, setCurrentTexts] = useState();
+    const [saveTrigger, setSaveTrigger] = useState(false);
 
     const [showDownload, setShowDownload] = useState(false);
     const [showProgress, setShowProgress] = useState(false);
@@ -27,9 +29,6 @@ export default function Project() {
     const [showOverview, setShowOverview] = useState(false);
     const [showLegend, setShowLegend] = useState(false);
     const [showModifySchema, setShowModifySchema] = useState(false);
-
-
-    const [saved, setSaved] = useState(false)
 
     const [project, setProject] = useState({});
     const [projectLoaded, setProjectLoaded] = useState(false);
@@ -66,15 +65,16 @@ export default function Project() {
 
     const headerProps = {
         project,
-        replacementDict,
+        currentTexts,
         setShowDownload,
         setShowProgress,
         setShowSettings,
         setShowOverview,
         setShowLegend,
         setShowModifySchema,
-        setSaved,
-        pageChanged
+        pageChanged,
+        saveTrigger,
+        setSaveTrigger
     }
 
     const annotationTableProps = {
@@ -82,10 +82,12 @@ export default function Project() {
         replacementDict,
         setReplacementDict,
         pageLimit,
-        saved,
-        setSaved,
         setPageChanged,
-        setToastInfo
+        setToastInfo,
+        currentTexts,
+        setCurrentTexts,
+        saveTrigger,
+        setSaveTrigger
     }
 
 
@@ -105,9 +107,9 @@ export default function Project() {
                 show={showToast}
                 onClose={() => setShowToast(false)}
                 style={{
-                    position: 'absolute',
-                    top: 75,
-                    right: 50,
+                    position: 'fixed',
+                    top: 90,
+                    right: 20,
                     width: 200,
                     zIndex: 1000
                 }}
@@ -115,7 +117,8 @@ export default function Project() {
                 autohide
             >
                 <Toast.Header>
-                    <strong className="mr-auto">{toastInfo.type === 'replacement' ? 'Replacement' : 'Meta Tag' }</strong>
+                    <strong className="mr-auto">
+                        {toastInfo.type === 'replacement' ? 'Replacement' : 'Meta Tag' }</strong>
                     <small>just now</small>
                 </Toast.Header>
                 <Toast.Body>
@@ -136,9 +139,8 @@ export default function Project() {
                 </Toast.Body>
             </Toast>
             </>
-        : null
-
-        }
+            : null
+            }
 
         <div
             style={{display: 'flex', flexDirection: 'column', minHeight: '100%'}}
@@ -147,21 +149,14 @@ export default function Project() {
             <Header
                 {...headerProps}
             />
-            
-            <div
-                className="content"
-                style={{flex: '1 0 auto'}}
-            >
-                { !projectLoaded 
-                    ?
-                    <Spinner animation="border" />
-                    :
-                    <AnnotationTable
-                        {...annotationTableProps}
-                    />
-                }
-            </div>
-
+            { !projectLoaded 
+                ?
+                <Spinner animation="border" />
+                :
+                <AnnotationTable
+                    {...annotationTableProps}
+                />
+            }
         </div>
         </>
     )
