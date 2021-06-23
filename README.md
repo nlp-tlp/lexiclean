@@ -2,12 +2,12 @@
 ## Overview
 This repository contains associated code for the conference paper `Lexiclean - Multi-task Lexical Normalisation`. An online demonstration of the tool can be found at https://lexiclean.nlp-tlp.org.
 
-<!-- ![pipeline image](https://code-ittc.csiro.au/tyler.bikaun/mtbf_from_mwo/-/raw/master/model_overview.png) -->
+<img src="lexiclean_er-diagram.png" width= "60%" alt="entity relationship diagram"/>
 
 ## Requirements
 Software requirements of Lexiclean include mongodb and node.js. Lexiclean is built using the MERN stack (Mongo-Express-React-Node). Note: Express and React are bundled with Node.js.
 
-- MongoDB v4.4.6 (see: https://docs.mongodb.com/manual/installation/)
+- MongoDB (v4.4.6) (see: https://docs.mongodb.com/manual/installation/)
 - Node.js (v14.17.1) (see: https://nodejs.org/en/download/)
 
 ## Installation
