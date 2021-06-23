@@ -28,4 +28,5 @@ yarn-error.log*
 /data
 .env
 /analysis
-
+/exp
+/demo
