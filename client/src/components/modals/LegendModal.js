@@ -21,6 +21,13 @@ const useStyles = createUseStyles({
 })
 
 
+const DEFAULT_CLASSES = {
+    'rp': 'Replaced token',
+    'ua': 'Unassigned token',
+    'st': 'Suggested token',
+    'en': 'English token (in-vocabulary)'
+};
+
 export default function LegendModal({showLegend, setShowLegend, project}) {
     const classes = useStyles();
 
@@ -56,14 +63,26 @@ export default function LegendModal({showLegend, setShowLegend, project}) {
             </Modal.Header>
 
             <Modal.Body>
+                <p>
+                    This legend indicates colours assigned classes/meta-tags that are used to conextualise tokens
+                </p>
                 {
                     coloursLoaded ?
                         <div style={{display: 'flex', flexDirection: 'column', textAlign: 'center', backgroundColor: 'white'}}>
                                         <div className={classes.legend}>
                                             {
                                                 Object.keys(bgColourMap).map(key => (
-                                                    <div className={classes.legendItem} style={{backgroundColor: bgColourMap[key]}}>
-                                                        {key}
+                                                    <div style={{display: 'flex', flexDirection: 'row'}}>
+                                                        <div className={classes.legendItem} style={{backgroundColor: bgColourMap[key]}}>
+                                                            {key}
+                                                        </div>
+                                                        {
+                                                            Object.keys(DEFAULT_CLASSES).includes(key) ?
+                                                            <p style={{margin: 'auto'}}>
+                                                                { DEFAULT_CLASSES[key] }
+                                                            </p>
+                                                            : null
+                                                        }
                                                     </div>
                                                     ))
                                             }
