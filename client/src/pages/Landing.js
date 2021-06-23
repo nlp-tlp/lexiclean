@@ -1,15 +1,16 @@
 import React from 'react'
 import { createUseStyles } from 'react-jss';
-import { IoSpeedometer, IoEnter, IoExpand, IoTrophy } from 'react-icons/io5';
-import { MdBubbleChart } from 'react-icons/md';
+import { IoSpeedometer, IoEnter, IoExpand, IoTrophy, IoLogoGithub } from 'react-icons/io5';
 import { useHistory } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
+import BrandLogo from '../components/images/logo_min_transparent_black.png';
+import BrandImage from '../components/images/logo_transparent_black.png';
 
 const useStyles = createUseStyles({
     container: {
         display: 'flex',
         flexDirection:'column',
-        backgroundColor: 'rgb(217, 217, 217)',
+        backgroundColor: '#E2E2E2',
         height: '100vh'
     },
     header: {
@@ -36,13 +37,15 @@ const useStyles = createUseStyles({
             color: 'rgb(143, 143, 143)'
         }
     },
-    brandLogo: {
-        fontSize: '32px',
-        fontWeight: 'bolder'
+    brandImage: {
+        width: '50%',
+        height: 'auto',
+        margin: 'auto',
+        padding: '1vw'
     },
-    brandText: {
-        fontSize: '24px',
-        fontWeight: 'bolder'
+    brandLogo: {
+        width: '3vw',
+        height: 'auto'
     },
     main: {
         display: 'flex',
@@ -52,15 +55,11 @@ const useStyles = createUseStyles({
         width: '50vw',
         margin: 'auto'
     },
-    title: {
-        fontSize: '68px',
-        fontWeight: 'bold'
-    },
     topText: {
-
+        fontSize: '18px'
     },
     underText: {
-
+        fontSize: '26px'
     },
     signupButton:{
         marginTop: '1em',
@@ -70,7 +69,8 @@ const useStyles = createUseStyles({
         backgroundColor: '#EAEAEA',
         border: '2px solid rgb(143, 143, 143)',
         padding: '0.25em 1em 0.25em 1em',
-        width: '50%',
+        // width: '50%',
+        maxWidth: '20vw',
         margin:'auto',
         '&:hover':{
             backgroundColor: 'rgb(143, 143, 143)',
@@ -102,6 +102,15 @@ const useStyles = createUseStyles({
     detailIcon: {
         fontSize: '48px',
         margin: 'auto'
+    },
+    githubLogo: {
+        fontSize: '40px',
+        cursor: 'pointer',
+        marginLeft: '1em',
+        margin: 'auto',
+        '&:hover':{
+            color: 'rgb(143, 143, 143)',
+        }
     }
 })
 
@@ -112,23 +121,25 @@ export default function Landing({ token, logout }) {
         <>
             <div className={classes.container}>
                 <div className={classes.header}>
+                    <img className={classes.brandLogo} src={BrandLogo} alt="lexiclean logo"/>
                     <div style={{display: 'flex'}}>
-                        <MdBubbleChart className={classes.brandLogo}/>
-                        <p className={classes.brandText}>Lexiclean</p>
+                        <Button
+                            className={classes.logInOutButton}
+                            onClick={token ? logout : () => history.push('/login')}
+                        >
+                            { token ? "Logout": "Log In" }
+                        </Button>
+                        <IoLogoGithub
+                            className={classes.githubLogo}
+                            onClick={() => window.open("https://github.com/nlp-tlp/lexiclean", "_blank")}    
+                        />
+
                     </div>
-                    <Button
-                        className={classes.logInOutButton}
-                        onClick={token ? logout : () => history.push('/login')}
-                    >
-                        { token ? "Logout": "Log In" }
-                    </Button>
                 </div>
 
                 <div className={classes.main}>
                     <p className={classes.topText}>Multi-task Lexical Normalisation</p>
-                    <h1 className={classes.title}>
-                        Lexiclean
-                    </h1>
+                    <img className={classes.brandImage} src={BrandImage} alt="lexiclean logo"/>
                     <h3 className={classes.underText}>
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam ut ex in risus ullamcorper cursus.
                     </h3>
