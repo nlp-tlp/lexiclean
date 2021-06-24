@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const dotenv = require('dotenv');
+const logger = require('../logger');
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const jwt = require('jsonwebtoken');
+
 
 // Get config variables
 dotenv.config();
@@ -17,13 +19,14 @@ const generateJWT = (user_id) => {
 
 // Create user
 router.post('/signup', async (req, res) => {
-    console.log('Signing up user');
     // Expects body of username, email and password
+    logger.info('Signing up user', {route: '/signup'});
     try{
         // Check whether user exists
         const userExists = await User.exists({ username: req.body.username });
         if (userExists){
-            res.json({ message: 'user already exists'});
+            res.status(409).send({ error: 'User already exists'});
+            logger.err('User already exists', {route: '/signup'});
         } else {
             // hash password with bcrypt
             const salt = bcrypt.genSaltSync(saltRounds);
@@ -35,6 +38,7 @@ router.post('/signup', async (req, res) => {
             })
             const savedUser = await newUser.save();
             res.json({'username': req.body.username, token: generateJWT(savedUser._id)});
+            logger.info('User created successfully', {route: '/signup'});
         }
     }catch(err){
         res.json({ message: err })
@@ -44,34 +48,27 @@ router.post('/signup', async (req, res) => {
 
 // Login user
 router.post('/login', async (req, res) => {
-    console.log('Logging in user');
     // Expects body of username and password
+    logger.info('Logging in user', {route: '/login'});
     try{
-
         // Check whether user exists
         const userExists = await User.exists({ username: req.body.username });
-
         if (!userExists){
-            res.json({ message: 'user does not exist'});
+            res.status(409).send({ error: 'User does not exist'});
+            logger.error("User does not exist", {route: '/login'})
         } else {
-            console.log('user exists');
-            // if exists - check whether password entered is correct w/ bcrypt
-            // if password correct issue jwt token
-
             // Fetch user details
             const user = await User.findOne({ username: req.body.username }).lean();
-
             // Check if password is correct
             if (bcrypt.compareSync(req.body.password, user.password)){
                 // password correct
                 res.json({ username: user.username, token: generateJWT(user._id)})
+                logger.info("Login successful", {route: '/login'})
             } else {
-                res.json('incorrect password')
+                res.status(409).send({ error: 'Password incorrect'});
+                logger.warn("Incorrect password", {route: '/login'})
             }
-
         }
-
-
     }catch(err){
         res.json({ message: err })
     }
@@ -79,15 +76,15 @@ router.post('/login', async (req, res) => {
 
 // Validate JWT token
 router.post('/token/validate', async (req, res) => {
-    console.log('validating jwt');
+    logger.info('Validating JWT token', {route: '/token/validate'});
     try{
         jwt.verify(req.body.token, process.env.TOKEN_SECRET, function(err, decoded) {
             if (err){
-                // res.json(err)
                 res.json({'valid': false})
+                logger.err('Validation failed', {route: '/token/validate'});
             } else {
-                console.log(decoded.user_id);
                 res.json({ 'valid': true})
+                logger.info('Validation successful', {route: '/token/validate'});
             }
         });
     }catch(err){
