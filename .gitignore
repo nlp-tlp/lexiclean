@@ -30,3 +30,5 @@ yarn-error.log*
 /analysis
 /exp
 /demo
+
+logger/logs.json
