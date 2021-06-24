@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const logger = require('../logger');
 const Map = require('../models/Map');
 const Text = require('../models/Text');
 const Token = require('../models/Token');
@@ -8,22 +9,21 @@ const Project = require('../models/Project');
 
 // Create map
 router.post('/', async (req, res) => {
-    console.log('Creating map');
-    map = new Map({
-        project_id: req.body.project_id,
-        type: req.body.type,
-        colour: req.body.colour,
-        active: true
-    });
-
-    // Add to project array
-    const projectResponse = await Project.findByIdAndUpdate({ _id: req.body.project_id }, {$push: {"maps": map._id}}, {upsert: true});
-
+    logger.info('Creating map', {route: '/api/map/'});
     try {
+        map = new Map({
+            project_id: req.body.project_id,
+            type: req.body.type,
+            colour: req.body.colour,
+            active: true
+        });
+        
+        await Project.findByIdAndUpdate({ _id: req.body.project_id }, {$push: {"maps": map._id}}, {upsert: true});
         const savedMap = await map.save();
         res.json(savedMap);
     }catch(err){
         res.json({ message: err })
+        logger.err('Map creation failed', {route: '/api/map/'});
     }
 });
 
@@ -61,7 +61,7 @@ router.post('/static/', async (req, res) => {
 // Download map
 router.post('/download/:projectId', async (req, res) => {
     try{    
-        console.log(`Downloading ${req.body.mapName} mapping`)
+        logger.info(`Downloading ${req.body.mapName} mapping`, {route: `/api/map/download/${req.params.projectId}`});
         
         // Get tokens
         const tokens = await Token.find({project_id: req.params.projectId}).lean();
@@ -79,14 +79,15 @@ router.post('/download/:projectId', async (req, res) => {
 
     }catch(err){
         res.json({ message: err })
+        logger.err(`Failed to download ${req.body.mapName} mapping`, {route: `/api/map/download/${req.params.projectId}`});
     }
 })
 
 
 // Get maps associated to project
 router.get('/:projectId', async (req, res) => {
-    console.log('Fetching maps for project');
     // Here additional classes and colours are defined. TODO: integrate into front-end so the user is aware of these decisions.
+    logger.info('Fetching project maps', {route: `/api/map/${req.params.projectId}`});
     try{
         const response = await Project.find({_id: req.params.projectId}).populate('maps');
         const maps = response[0].maps;
@@ -99,21 +100,22 @@ router.get('/:projectId', async (req, res) => {
         let colourMap = Object.assign(...maps.map(map => ({[map.type]: map.colour})));
         colourMap = {...colourMap, "ua": "#F2A477", "st": "#6BB0BF", "en": "#D9D9D9"}
         res.json({"contents": mapsRestructured, "map_keys": mapKeys, "colour_map": colourMap});
-
     }catch(err){
         res.json({ message: err })
+        logger.info('Failed to fetch project maps', {route: `/api/map/${req.params.projectId}`});
     }
 })
 
+
 // Modify active state of map
 router.post('/status/:mapId', async (req, res) => {
-
+    logger.info('Updating map status', {route: `/api/map/status/${req.params.mapId}`});
     try{
         const mapResponse = await Map.findByIdAndUpdate({ _id : req.params.mapId}, { active: req.body.activeStatus});
-
         res.json('Update successful')
     }catch(err){
         res.json({ message: err })
+        logger.info('Failed to update map status', {route: `/api/map/status/${req.params.mapId}`});
     }
 })
 
