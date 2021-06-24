@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const logger = require('../logger');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 const Project = require('../models/Project');
@@ -10,33 +11,22 @@ const Token = require('../models/Token');
 // Get config variables
 dotenv.config();
 
-// const validateJWT = (jwt_token) => {
-//     jwt.verify(jwt_token, process.env.TOKEN_SECRET, function(err, decoded) {
-//         if (err){
-//             return {'valid': false}
-//         } else {
-//             return {'valid': true, user_id: decoded.user_id}
-//         }
-//     });
-// }
-
-
-
 // Fetch projects
 router.get('/', async (req, res) => {
-    console.log('fetching projects');
+    logger.info('Fetching all projects', {route: '/api/project/'})
     try{
         const projects = await Project.find();
         res.json(projects);
     }catch(err){
         res.json({ message: err })
+        logger.err('Failed to fetch all projects', {route: '/api/project/'})
     }
 })
 
 // Fetch projects for project feed
 // Review - this is slow (returns lists of all unique text ids... this is slow for large projects in the feed)
 router.post('/feed', async(req, res) => {
-    console.log('fetching projects for feed');
+    logger.info('Fetching project feed', {route: '/api/project/feed'})
     try{
         // TODO: Add current token count to project feed response - currently being difficult
         const decoded = jwt.verify(req.body.jwt_token, process.env.TOKEN_SECRET);
@@ -55,15 +45,18 @@ router.post('/feed', async(req, res) => {
             res.json(feedInfo)
         } else {
             res.json({message: 'token invalid'})
+            logger.err('Failed to fetch project feed - token invalid', {route: '/api/project/feed'})
         }
     }catch(err){
         res.json({ message: err })
+        logger.err('Failed to fetch project feed', {route: '/api/project/feed'})
     }
 })
 
 
 // UPDATE PROJECT
 router.patch('/:projectId', async (req, res) => {
+    logger.info('Updating single project', {route: '/api/project/'})
     try{
         const updatedProject = await Project.updateOne(
             { _id: req.params.projectId },
@@ -72,25 +65,27 @@ router.patch('/:projectId', async (req, res) => {
         res.json(updatedProject);
     }catch(err){
         res.json({ message: err })
+        logger.err('Failed to update single project', {route: '/api/project/'})
     }
 })
 
 // Fetch single project
 router.get('/:projectId', async (req, res) => {
     try{
+        logger.info('Fetching single project', {route: `/api/project/${req.params.projectId}`})
         const response = await Project.findOne({ _id: req.params.projectId})
         res.json(response);
     }catch(err){
         res.json({ message: err })
+        logger.err('Failed to fetch single project', {route: `/api/project/${req.params.projectId}`})
     }
 } )
 
 
 // Create project
 router.post('/create', async (req, res) => {
-    console.log('creating project')
+    logger.info('Creating project', {route: '/api/project/create'});
     try{
-
         // Check if token is valid
         let user_id;
         jwt.verify(req.body.token, process.env.TOKEN_SECRET, function(err, decoded) {
@@ -118,7 +113,7 @@ router.post('/create', async (req, res) => {
         // removes white space between tokens as this will break the validation of the Token model.
         const normalisedTexts = req.body.texts.map(text => text.toLowerCase()
                                                                .replace('\t', ' ')
-                                                               .replace(/["',?;!:\(\)\[\]_\{\}\*]/g, ' ')
+                                                               .replace(/[."',?;!:\(\)\[\]_\{\}\*]/g, ' ')
                                                                .replace(/\s+/g,' ')
                                                                .replace(/\.$/, '')
                                                                .trim()); 
@@ -173,9 +168,9 @@ router.post('/create', async (req, res) => {
 
         console.log('token list length', tokenList.length);
         
-        console.log('tokens without value', tokenList.filter(token => !token.value).length)
+        // console.log('tokens without value', tokenList.filter(token => !token.value).length)
 
-        console.log('token without value', tokenList.filter(token => !token.value));
+        // console.log('token without value', tokenList.filter(token => !token.value));
 
         const tokenListResponse = await Token.insertMany(tokenList);
 
@@ -232,7 +227,6 @@ router.post('/create', async (req, res) => {
         // - Update texts in texts collection with their inverse tf-idf weight
         let counts = {};
         let keys = [];
-
         for (var i = 0; i < tokenizedTexts.length; i++){
             var text = tokenizedTexts[i];
 
@@ -253,14 +247,16 @@ router.post('/create', async (req, res) => {
             }
         }
 
+        console.log(new Date().toLocaleTimeString(), 'built tf-idf matrices')
+
         // Aggregate doc counts into df e.g. {key: {tf: #, df #}}
         Object.keys(counts).map(key => (counts[key].tf = counts[key].tf, counts[key].df = counts[key].df.length));
-        // console.log(counts);
+        console.log(new Date().toLocaleTimeString(), 'aggregated counts');
 
         // Compute tf-idf scores for each token; not assignment is used to flatten array of objects.
         // console.log('tokenized texts length', tokenizedTexts.length)
         const tfidfs = Object.assign(...Object.keys(counts).map(key => ({[key]: (counts[key].tf === 0 || tokenizedTexts.length / counts[key].df === 0) ? 0 : counts[key].tf * Math.log10(tokenizedTexts.length / counts[key].df)})));
-        // console.log(tfidfs);
+        console.log(new Date().toLocaleTimeString(), '- Calculated tf-idf weights');
 
         // Compute average document tf-idf
         // - 1. get set of candidate tokens (derived up-stream)
@@ -270,20 +266,31 @@ router.post('/create', async (req, res) => {
         const candidateTokensUnique = new Set(candidateTokens)
 
         // 2. cannot use set operations here as there can be duplicates in the tokenized text; note filter at the end is to remove the nulls
-        // console.log(tokenListResponse)
-        const textsWithTokensPopulated = textResponse.map(text => ({_id: text._id, tokenizedText: text.tokens.map(token => tokenListResponse.filter(resToken => resToken._id === token.token).map(token => token.value)).flat()}))
-        // console.log('texts with candidate tokens', textsWithTokensPopulated.length);
+        // console.log('text response', textResponse);
+        // console.log('text response, token expanded', textResponse[0].tokens)
+        // console.log('token response', tokenListResponse);   // token list response
+
+        // Build map of all tokens by their id - {_id : }
+        const tokenMap = Object.fromEntries(tokenListResponse.map(token => ([[token._id], token])))
+        // console.log('tokenMap', tokenMap)
+
+        // Expand token information in text objects by linking to token objcets in tokenMap. Currently text only has token: {_id, index, token} where token is the ID of the token. _id here is the id in the array in the text object.
+        // const textsWithTokensPopulated = textResponse.map(text => ({_id: text._id, tokenizedText: text.tokens.map(token => tokenListResponse.filter(resToken => resToken._id === token.token).map(token => token.value)).flat()}))
+        const textsWithTokensPopulated = textResponse.map(text => ({ _id: text._id, tokenizedText: text.tokens.map(token => tokenMap[token.token].value)}))
+        // console.log('textsWithTokensPopulated -> ', textsWithTokensPopulated)
+        console.log(new Date().toLocaleTimeString(), 'texts with candidate tokens ', textsWithTokensPopulated.length)
 
         const textTokenWeights = textsWithTokensPopulated.map(text => ({_id: text._id, tokenWeights: text.tokenizedText.filter(token => candidateTokensUnique.has(token)).map(token => tfidfs[token])}))
         // If text has no token weights, give its aggregate value an incredibly high number (10000).
         // Note: text weight is a sum rather than average. THis is because we want to identify when multiple, high, tfidf tokens are present rather than averaging them out.
         const textWeights = textTokenWeights.map(text => ({_id: text._id, weight: text.tokenWeights.length > 0 ? text.tokenWeights.reduce((a, b) => a + b) : -1}));
+        console.log('text objects with weights built', new Date().toLocaleTimeString())
 
         // Add weight to text
         // - create update objects
-        console.log('Updating texts with TF-IDF scores')
+        console.log('Updating texts with TF-IDF scores', new Date().toLocaleTimeString())
         const bwTextWeightObjs = textWeights.map(text => ({updateOne: { filter: { _id: text._id}, update: {weight: text.weight}, options: {upsert: true}}}));
-        console.log('bulk write text objects created - writing to database')
+        console.log('bulk write text objects created - writing to database', new Date().toLocaleTimeString())
         const bwTextResponse = await Text.bulkWrite(bwTextWeightObjs);
 
         // Return
@@ -294,6 +301,7 @@ router.post('/create', async (req, res) => {
 
     }catch(err){
         res.json({ message: err })
+        logger.err('Failed to create project', {route: '/api/project/create'});
     }
 })
 
@@ -302,6 +310,8 @@ router.post('/create', async (req, res) => {
 router.delete('/:projectId', async (req, res) => {
     console.log('deleting project');
     try{
+        logger.info('Deleting project', {route: `/api/project/${projectId}`});
+
         const projectResponse = await Project.findOne({_id: req.params.projectId}).populate('texts')
 
         console.log(projectResponse)
@@ -315,39 +325,33 @@ router.delete('/:projectId', async (req, res) => {
         const textDelete = await Text.deleteMany({ _id: textIds})
         const tokenDelete = await Token.deleteMany({ _id: tokenIds})
         const mapDelete = await Map.deleteMany({ _id: mapIds})
-
-
-
         res.json('Successfully deleted project.')
-
 
     }catch(error){
         res.json({ message: err })
+        logger.err('Failed to delete project', {route: `/api/project/${projectId}`});
     }
 })
 
 
 // Get count of unique tokens within project
-router.get('/token-count/:projectId', async (req, res) => {
-    console.log('Getting token count');
+router.get('/counts/token/:projectId', async (req, res) => {
     try{
+        logger.info('Get project token counts', {route: `/api/project/counts/token/${projectId}`});
         const textRes = await Text.find({ project_id: req.params.projectId })
                                         .populate('tokens.token')
                                         .lean();
-        
-        
-
 
         const uniqueTokens = new Set(textRes.map(text => text.tokens.map(token => token.token.replacement ? token.token.replacement : token.token.value )).flat());
 
         // Unlike on project creation, the other meta-tags need to be checked such as removed, noise, etc.
         const allTokens = textRes.map(text => text.tokens.map(token => token.token)).flat();
         const candidateTokens = allTokens.filter(token => (Object.values(token.meta_tags).filter(tagBool => tagBool).length === 0 && !token.replacement)).map(token => token.value)
-
         res.json({'vocab_size': uniqueTokens.size, 'oov_tokens': candidateTokens.length});
 
     }catch(err){
         res.json({ message: err })
+        logger.err('Failed to get project token counts', {route: `/api/project/counts/token/${projectId}`});
     }
 })
 
@@ -356,13 +360,15 @@ router.get('/token-count/:projectId', async (req, res) => {
 router.get('/download/result/:projectId', async (req, res) => {
     console.log('Preparing annotation results')
     try{
+        logger.info('Downloading project results', {route: `/api/project/download/result/${projectId}`});
+
         const texts = await Text.find({ project_id : req.params.projectId }).populate('tokens.token').lean();
         // Format results similar to WNUT 2015 (see: http://noisy-text.github.io/2015/norm-shared-task.html), with some modifications
         // {"tid": <text_id>, "input": [<token>, <token>, ...], "output": [<token>, <token>, ...], "class": [[<class_1>,<class_n>], [<class_1>,<class_n>], ...]}
         const results = texts.map(text => (
             {
                 "tid": text._id,
-                "input": text.tokens.map(token => token.token.value),
+                "input": text.original.split(' '), //text.tokens.map(token => token.token.value),
                 // Here tokens marked with 'replace' should be converted to an empty string
                 "output": text.tokens.map(tokenInfo => tokenInfo.token.removed ? '' : tokenInfo.token.replacement ? tokenInfo.token.replacement : tokenInfo.token.value),
                 "class": text.tokens.map(tokenInfo => tokenInfo.token.meta_tags)
@@ -371,49 +377,8 @@ router.get('/download/result/:projectId', async (req, res) => {
         res.json(results)
     }catch(err){
         res.json({ message: json })
+        logger.err('Failed to download project results', {route: `/api/project/download/result/${projectId}`});
     } 
-})
-
-
-// Download maps and lists
-// builds replacement map
-// builds domain-specific terms, noise, abbreviation, sensitive, and unsure lists
-router.get('/maps-download/:projectId', async (req, res) => {
-    console.log('Preparing project maps');
-    try{
-
-        // Fetch texts and then strip markups from tokens on texts
-        const texts = await Text.find({ project_id: req.params.projectId }).populate('tokens.token').lean();
-        console.log(texts[0])
-
-        // build replacement map - currently array of objects (TODO: build 1-to-N objects)
-        // note: filter removes nulls
-        const replacements = texts.map(text => text.tokens.map(token => token.token.replacement ? {[token.token.value]: token.token.replacement} : null)).flat().filter(ele => ele)
-
-        // Build lists
-        // note: filter removes nulls
-        // set is used to get unique tokens
-        const dsList = [...new Set(texts.map(text => text.tokens.map(token => (token.token.domain_specific && token.token.replacement) ? token.token.replacement : token.token.domain_specific ? token.token.value : null)).flat().filter(ele => ele))]
-        const noiseList = [...new Set(texts.map(text => text.tokens.map(token => (token.token.noise && token.token.replacement) ? token.token.replacement : token.token.noise ? token.token.value : null)).flat().filter(ele => ele))]
-        const abrvList = [...new Set(texts.map(text => text.tokens.map(token => (token.token.abbreviation && token.token.replacement) ? token.token.replacement : token.token.abbreviation ? token.token.value : null)).flat().filter(ele => ele))]
-        const sensitiveList = [...new Set(texts.map(text => text.tokens.map(token => (token.token.sensitive && token.token.replacement) ? token.token.replacement : token.token.sensitive ? token.token.value : null)).flat().filter(ele => ele))]
-        const unsureList = [...new Set(texts.map(text => text.tokens.map(token => (token.token.unsure && token.token.replacement) ? token.token.replacement : token.token.unsure ? token.token.value : null)).flat().filter(ele => ele))]
-
-        const output = {
-            'replacement_map': replacements,
-            'domain_specific_tokens': dsList,
-            'noise_tokens': noiseList,
-            'abbreviation_tokens': abrvList,
-            'sensitive_tokens': sensitiveList,
-            'unsure_tokens': unsureList,
-        }
-
-        res.json(output);
-
-
-    }catch(err){
-        res.json({ message: err })
-    }
 })
 
 module.exports = router;

@@ -1,24 +1,26 @@
 const express = require('express');
 const router = express.Router();
+const logger = require('../logger');
 const mongoose = require('mongoose');
 const Text = require('../models/Text');
 const Token = require('../models/Token');
 
 
-// get single text
+// Get single text
 router.get('/:textId', async (req, res) => {
     try{
+        logger.info('Get single text', {route: `/api/text/${req.params.textId}`})
         const response = await Text.findOne({ _id: req.params.textId})
                                     .populate('tokens.token');
         res.json(response);
     }catch(err){
         res.json({ message: err })
+        logger.err('Failed to get single text', {route: `/api/text/${req.params.textId}`})
     }
 })
 
 // get all texts
 router.get('/', async (req, res) => {
-
     try{
         const response = await Text.find()
                                     .populate('tokens.token');
@@ -31,8 +33,8 @@ router.get('/', async (req, res) => {
 
 // Get number of annotated documents
 router.get('/progress/:projectId', async (req, res) => {
-    console.log('Getting progress');
     try{
+        logger.info('Getting project text annotation progress', {route: `/api/text/progress/${projectId}`});
         const textsAnnotated = await Text.find({ project_id: req.params.projectId, annotated: true}).count();
         const textsTotal = await Text.find({project_id: req.params.projectId}).count();
         res.json({
@@ -41,43 +43,39 @@ router.get('/progress/:projectId', async (req, res) => {
         })
     }catch(err){
         res.json({ message: err })
+        logger.err('Failed to get project text annotation progress', {route: `/api/text/progress/${projectId}`});
     }
 })
 
 
-
 // Get number of total pages for paginator
 router.get('/filter/pages/:projectId', async (req, res) => {
-    console.log('getting number of pages for paginator')
     try{
+        logger.info('Getting number of pages for paginator', {route: `/api/text/filter/pages/${projectId}`});
         const textsCount = await Text.find({ project_id : req.params.projectId}).count();
         const pages = Math.ceil(textsCount/req.query.limit);
         res.json({"totalPages": pages})
     }catch(err){
         res.json({ message: err })
+        logger.err('Failed to get number of pages for paginator', {route: `/api/text/filter/pages/${projectId}`});
     }
 })
 
 
 // PAGINATE DATA FILTERED BY PROJECT ID
 // If any issues arise with results - refer to: https://github.com/aravindnc/mongoose-aggregate-paginate-v2/issues/18
-// TODO: Add sort functionality (this will require patching data with annotated status when results are patched)
 router.get('/filter/:projectId', async (req, res) => {
     console.log('Paginating through texts');
     try {
         const skip = parseInt((req.query.page - 1) * req.query.limit)
         const limit = parseInt(req.query.limit)
-        // console.log(skip, limit);
-
         // Paginate Aggregation
         const textAggregation = await Text.aggregate([
             {
                 $match: { 
                     project_id: mongoose.Types.ObjectId(req.params.projectId), 
-                    // annotated: false
                 }
             },
-            // COMMENTED OUT SECTION BELOW WAS USED FOR CANDIDATE CAPTURING AND FILTERING. THIS IS REMOVED IN PLACE OF TF-IDF
             {
                 $lookup: {
                     from: 'tokens', // need to use MongoDB collection name - NOT mongoose model name
@@ -86,11 +84,9 @@ router.get('/filter/:projectId', async (req, res) => {
                     as: 'tokens_detail'
                 }
             },
-            // // Merges data in text model and that retrieved from the tokens collection into single object
             {
                 $project: {
                     annotated: "$annotated",
-                    // candidates: "$candidates",
                     weight: "$weight",
                     tokens: {
                         $map : {
@@ -103,41 +99,8 @@ router.get('/filter/:projectId', async (req, res) => {
                     }
                 }
             },
-            // // To sort data based on the number of replacement candidates e.g. those that are not ds, en, abrv, unsure, etc.
-            // // First need to addField aggregated over these fields and then sort descending using the calculated field 
-            // {
-            //     $addFields: {
-            //         candidates_bool: "$tokens.english_word"
-            //     }
-            // },
-            // {
-            //     $project:
-            //     {
-            //         annotated: "$annotated",
-            //         tokens: "$tokens",
-            //         candidates: {
-            //             $map: {
-            //                 input: "$candidates_bool",
-            //                 as: "candidate",
-            //                 in: {$cond: {if: "$$candidate", then: 0, else: 1}}  // 1 if not english word else 0 
-            //             }
-            //         }
-            //     }
-            // },
-            // {
-            //     $addFields: {
-            //         candidate_count: {$sum: "$candidates"}
-            //     }
-            // },
-
-            // Sort based on the number of candidates
-            // Note: sort order is left to right
-            // Note doing sequential sorts just overrides the n-1 sort operation.
-            // TODO: also sort by the first token alphabetically.
-            // 
             {
-                // $sort: {'annotated': -1, 'candidate_count': -1} // -1 descending, 1 ascending
-                $sort: {'annotated': -1, 'weight': -1}   // weight is sorted smallest to highest
+                $sort: { 'weight': -1 }
             },
             // Paginate over documents
             {
@@ -150,22 +113,16 @@ router.get('/filter/:projectId', async (req, res) => {
         ])
         .allowDiskUse(true)
         .exec();
-
         res.json(textAggregation);
-
-
-        // const response = await Text.aggregatePaginate(textAggregation, options);
-        // res.json(response);
-        
     }catch(err){
         res.json({ message: err })
+        logger.err('Failed to get text pagination results', {route: `/api/text/filter/${projectId}`});
     }
 })
 
 
 // Get candidate counts across all documents bucketed by their page number
 // This is used for effort estimation for users
-// TODO: REVIEW
 router.get('/overview/:projectId', async (req, res) => {
     console.log('Getting candidate overview');
     try{
@@ -263,10 +220,10 @@ router.get('/overview/:projectId', async (req, res) => {
 })
 
 
-
 // Check if text has been annotated - if so, patch the annotated field on the text
-router.patch('/check-annotations/', async (req, res) => {
-    console.log('Checking annotation states of texts')
+// TODO: refactor
+router.patch('/annotations/update', async (req, res) => {
+    logger.info('Checking annotation states of texts', {route: '/api/text/annotations/update'})
     try{
         const textsRes = await Text.find({ _id : { $in: req.body.textIds}}).populate('tokens.token').lean();
         const checkTextState = (text) => {
@@ -284,6 +241,7 @@ router.patch('/check-annotations/', async (req, res) => {
 
     }catch(err){
         res.json({ message: err })
+        logger.err('Failed to update annotation states of texts', {route: '/api/text/annotations/update'})
     }
 })
 
@@ -291,8 +249,8 @@ router.patch('/check-annotations/', async (req, res) => {
 // Tokenization - update single text
 // This requires special logic to determine which tokens changed
 router.patch('/tokenize/:textId', async (req, res) => {
-    console.log('Updating tokenization of a single text')
     try{
+        logger.info('Tokenizing one text', {route: `/api/text/tokenize/${req.params.textId}`});
         const projectId = req.body.project_id;
 
         const newString = req.body.new_string;
@@ -303,6 +261,7 @@ router.patch('/tokenize/:textId', async (req, res) => {
         
         // console.log(newString === originalString ? 'NO CHANGE IN STRING' : 'CHANGE DETECTED IN STRINGS')
         console.log(originalTokenMap)
+        
 
         // Detect modified tokens - new string should have LESS tokens than the original.
         let tokenCandidates = originalString.split(' ');
@@ -401,10 +360,9 @@ router.patch('/tokenize/:textId', async (req, res) => {
 
         // TODO: Still need to capture the changes in the token_tokenized field...
 
-
-
     }catch(err){
         res.json({ message: err })
+        logger.err('Failed to tokenize text', {route: `/api/text/tokenize/${req.params.textId}`});
     }
 })
 
