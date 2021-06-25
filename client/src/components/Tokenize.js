@@ -1,16 +1,16 @@
 import React, { useState } from 'react'
 import { createUseStyles } from 'react-jss';
 import { useContextMenu } from "react-contexify";
+import TextareaAutosize from 'react-textarea-autosize';
 import TextContextMenu from './utils/TextContextMenu';
 import axios from 'axios';
 
 const useStyles = createUseStyles({
     text: {
-        padding: '0.5em 0em 0.5em 1.1em',
+        padding: '0.7em 0em 0.7em 1.1em',
         marginRight: '0.5em',
         marginBottom: '0.5em',
         border: 'none',
-        verticalAlign: 'center',
         textAlign: 'left',
         borderRadius: '4px',
         '&:hover': {
@@ -18,6 +18,7 @@ const useStyles = createUseStyles({
         },
         wordSpacing: '1em',
         backgroundColor: '#ffffbf',
+        resize: 'none'
     }
 })
 
@@ -29,10 +30,14 @@ export default function Tokenize({ project, textIntermediate, setTextIntermediat
     const MENU_ID = `menu-${textIntermediate._id}`;
     const { show: showContextMenu } = useContextMenu({ id: MENU_ID });
 
+    const MAX_WIDTH = document.getElementById('text-container').offsetWidth; // px
+
     // If tokenize mode then show full string WITH replacements
     const [originalText, setOriginalText] = useState(textIntermediate.tokens.map(tokenInfo => tokenInfo.replacement ? tokenInfo.replacement : tokenInfo.value).join(' '))
     const [textString, setTextString] = useState(textIntermediate.tokens.map(tokenInfo => tokenInfo.replacement ? tokenInfo.replacement : tokenInfo.value).join(' '))
-    const [inputWidth, setInputWidth] = useState(`${(originalText.length + 2) * 10 > MIN_WIDTH ? (originalText.length + 2) * 12 : MIN_WIDTH }px`)
+    const [inputWidth, setInputWidth] = useState(`${((originalText.length + 2) * 10 > MIN_WIDTH && (originalText.length + 2) * 10 < MAX_WIDTH) ? (originalText.length + 2) * 12 : ((originalText.length + 2) * 10 > MAX_WIDTH) ? MAX_WIDTH : MIN_WIDTH }px`)
+
+    console.log((originalText.length+2) * 10)
 
     const handleTextChange = (e) => {
         if (originalText.split(' ').join('') === e.target.value.split(' ').join('')){
@@ -44,7 +49,7 @@ export default function Tokenize({ project, textIntermediate, setTextIntermediat
         if (isSingle){
             const response = await axios.patch(`/api/text/tokenize/${textIntermediate._id}`, { 'new_string': textString, 'project_id': project._id});
             if (response.status === 200){
-                console.log(response.data)
+                // console.log(response.data)
                 setTextIntermediate(response.data);
             }
         }   
@@ -52,7 +57,17 @@ export default function Tokenize({ project, textIntermediate, setTextIntermediat
 
     return (
         <div>
-            <input
+            <TextareaAutosize
+                type="text"
+                value={textString}
+                onChange={e => handleTextChange(e)}
+                autoComplete="off"
+                className={classes.text}
+                onContextMenu={e => showContextMenu(e)}
+                style={{ width: inputWidth}}
+            />
+            {/* <textarea
+                contentEditable="true"
                 type="text"
                 value={textString}
                 onChange={e => handleTextChange(e)}
@@ -60,11 +75,13 @@ export default function Tokenize({ project, textIntermediate, setTextIntermediat
                 className={classes.text}
                 onContextMenu={(e) => showContextMenu(e)}
                 style={{ width: inputWidth }}
-        />
+            /> */}
         <TextContextMenu
             menu_id={MENU_ID}
             textString={textString}
+            setTextString={setTextString}
             updateText={updateText}
+            originalText={originalText}
         />
     </div>
     )

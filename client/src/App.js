@@ -18,6 +18,8 @@ function App() {
   const { token, setToken } = useToken();
   const logout = () => {localStorage.removeItem("token"); setToken(null);}
 
+  // console.log('app js', token);
+
   return (
     <Router>
       <Switch>

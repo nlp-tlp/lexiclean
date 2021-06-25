@@ -72,7 +72,7 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
                                         <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-around', paddingLeft: '0.5em', padding: '0em', margin: 'auto', textAlign: 'center'}}>
                                             <div>
                                                 <p style={{fontWeight: 'bolder', fontSize: '18px', margin: '0'}}>{project.annotated_texts}/{project.text_count}</p>
-                                                <p style={{fontSize: '14px'}}>Complete</p>
+                                                <p style={{fontSize: '14px'}}>Docs</p>
                                             </div>
                                         </div>
                                     </div>
@@ -83,7 +83,7 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
                                         <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-around', paddingLeft: '0.5em', padding: '0em', margin: 'auto', textAlign: 'center'}}>
                                             <div>
                                                 <p style={{fontWeight: 'bolder', fontSize: '18px', margin: '0'}}>{project.annotated_texts}/{project.text_count}</p>
-                                                <p style={{fontSize: '14px'}}>Complete</p>
+                                                <p style={{fontSize: '14px'}}>Reduction</p>
                                             </div>
                                         </div>
                                     </div>
@@ -94,7 +94,7 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
                                         <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-around', paddingLeft: '0.5em', padding: '0em', margin: 'auto', textAlign: 'center'}}>
                                             <div>
                                                 <p style={{fontWeight: 'bolder', fontSize: '18px', margin: '0'}}>{project.annotated_texts}/{project.text_count}</p>
-                                                <p style={{fontSize: '14px'}}>Complete</p>
+                                                <p style={{fontSize: '14px'}}>Corrected</p>
                                             </div>
                                         </div>
                                     </div>

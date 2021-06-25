@@ -38,11 +38,12 @@ export default function Token({tokenInfo,
                                 changeTrigger,
                                 setChangeTrigger,
                                 setToastInfo,
-                                activeMaps
+                                activeMaps,
+                                setSavePending
                             }) {
     const classes = useStyles();
 
-    console.log('token info -> ', tokenInfo); // using for tokenize dev... issues atm with resulting data structures...
+    // console.log('token info -> ', tokenInfo); // using for tokenize dev... issues atm with resulting data structures...
 
     const { projectId } = useParams();
     
@@ -124,7 +125,7 @@ export default function Token({tokenInfo,
     }
 
     useEffect(() => {
-        // was currentToken
+        // Handles when tokens have bulk replacements added
         if (!edited && !replacedToken && Object.keys(replacementDict).includes(originalToken)){ //  && !suggestedToken &&
             console.log('Change occured - Updating tokens to reflect changes')
             setSuggestedToken(replacementDict[originalToken]);
@@ -134,21 +135,23 @@ export default function Token({tokenInfo,
 
     const addReplacement = async (isSingle) => {
         const response = await axios.patch(`/api/token/replace/add/single/${tokenId}`, { replacement: currentToken });
+        // setShowPopover(false); // use here if the front end wants to appear to be quick rather than waiting for slow responses when rendering large pages
         if (isSingle && response.status === 200){
             setChangeTrigger(!changeTrigger);
             setShowPopover(false);
         } else if(!isSingle && response.status === 200) {
             const response = await axios.patch(`/api/token/suggest/add/many/${projectId}`, { original_token: originalToken, replacement: currentToken });
             if (response.status === 200){
-                // console.log(response.data);
+                console.log('replace response -> ', response.data);
                 if (tokenId === localStorage.getItem('id')){
                     setReplacementDict(prevState => ({...prevState, [originalToken]: currentToken}))
                 }
 
-                setToastInfo({type: "replacement", content: {original: originalToken, replacement: currentToken, count: response.data.nModified + 1}});
+                setToastInfo({type: "replacement", content: {original: originalToken, replacement: currentToken, count: response.data.matches + 1}});
 
                 setChangeTrigger(!changeTrigger);
                 setShowPopover(false);
+                setSavePending(true);
             }
         }
     }
@@ -174,15 +177,29 @@ export default function Token({tokenInfo,
         setChangeTrigger(!changeTrigger);
     }
 
-    const addSuggestedReplacement = async () => {
+    const addSuggestedReplacement = async (isSingle) => {
+        // 'accept all' for suggested replacements is a WIP as its challenging to trigger side effect
         const response = await axios.patch(`/api/token/suggest/add/single/${tokenId}`, { suggested_replacement: currentToken });
-        if (response.status === 200){
-            console.log('succesfully added suggested replacement.');
+        if (response.status === 200){ // isSingle && 
+            console.log('succesfully added one suggested replacement');
             setSuggestedToken(null);
             setReplacedToken(currentToken);
             setCurrentToken(currentToken);
             setShowAddSuggestionPopover(false)
         }
+        // else if(!isSingle && response.status === 200){
+        //     console.log('updating many tokens with suggestion');
+        //     const response = await axios.patch(`/api/token/suggest/accept/single/${projectId}`, { tokenValue: originalToken });
+        //     if (response.status === 200){
+        //         console.log('succesfully updated suggested tokens...')
+        //         // setSuggestedToken(null);
+        //         setReplacedToken(currentToken);
+        //         setCurrentToken(currentToken);
+        //         setShowAddSuggestionPopover(false);
+        //         setChangeTrigger(!changeTrigger);
+        //     }
+
+        // }
     }
 
     const removeSuggestedReplacement = async () => {
@@ -228,18 +245,17 @@ export default function Token({tokenInfo,
             if (response.status === 200){
                 const metaTagUpdate = {...tokenInfo1.meta_tags, [field]: value}
                 setTokenInfo1(prevState => ({...prevState, meta_tags: metaTagUpdate}))
-                setMetaTagUpdated(true)
+                setToastInfo({type: "meta", content: {original: originalToken, metaTag: field, metaTagValue: value, count: 1}});
+                setMetaTagUpdated(true);
             }
         } else {
             // meta-tag to cascaded across all tokens that have the same value
-            // TODO: cascade meta-tags across data set when pagianting
-
             const response = await axios.patch(`/api/token/meta/add/many/${projectId}`, { "originalToken": originalToken, "field": field, "value": value });
             if (response.status === 200){
-                // console.log('response for multiple token meta tag update')
+                console.log('response for multiple token meta tag update', response.data)
                 const metaTagUpdate = {...tokenInfo1.meta_tags, [field]: value}
                 setTokenInfo1(prevState => ({...prevState, meta_tags: metaTagUpdate}))
-                setToastInfo({type: "meta", content: {original: originalToken, metaTag: field, metaTagValue: value, count: response.data.nModified + 1}});
+                setToastInfo({type: "meta", content: {original: originalToken, metaTag: field, metaTagValue: value, count: response.data.matches}});
             }
 
             // Add meta tag to suggestion map

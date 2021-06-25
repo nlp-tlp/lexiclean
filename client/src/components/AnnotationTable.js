@@ -56,7 +56,8 @@ export default function AnnotationTable({project,
                                           currentTexts,
                                           setCurrentTexts,
                                           saveTrigger,
-                                          pageNumber
+                                          pageNumber,
+                                          setSavePending
                                         }) {
   const classes = useStyles();
 
@@ -154,10 +155,9 @@ export default function AnnotationTable({project,
   // }, [page]) // saved
 
   useEffect(() => {
-    // Checks if text has been annotated
     const updateTextAnnotationStates = async () => {
       if (currentTexts){
-        await axios.patch('/api/text/check-annotations/', { textIds: currentTexts.map(text => text._id) });
+        await axios.patch('/api/text/annotations/update', { textIds: currentTexts.map(text => text._id) });
       }
     }
     updateTextAnnotationStates();
@@ -206,7 +206,8 @@ export default function AnnotationTable({project,
                     setChangeTrigger,
                     setToastInfo,
                     saveTrigger,
-                    activeMaps
+                    activeMaps,
+                    setSavePending
                }
     
             return(

@@ -1,36 +1,68 @@
 import React, { useState } from 'react'
+import { createUseStyles } from 'react-jss';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Card, Form, Button } from 'react-bootstrap';
+import { Card, Form, Button, Alert } from 'react-bootstrap';
 import LoginImage from '../images/login.jpeg'
 import { useHistory } from 'react-router-dom'
 
 
-const loginUser = async ({username, password}) => {
-
-    const response = await axios.post(`/api/auth/login`, {username: username, password: password });
-    console.log(response.data);
-    return response.data;
-}
+const useStyles = createUseStyles({
+    card: {
+        width: '20em',
+        margin: 'auto',
+        marginTop: '5vh'
+    }
+})
 
 export default function Login({ token, setToken }) {
     const history = useHistory();
+    const classes = useStyles();
 
     const [username, setUserName] = useState();
     const [password, setPassword] = useState();
-  
+
+    const [showAlert, setShowAlert] = useState(false);
+    const [alertText, setAlertText] = useState();
+
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const loginResponse = await loginUser({
-            username,
-            password
+        
+        await axios.post('/api/auth/login', { username: username, password: password })
+        .then(response => {
+            console.log(response);
+            if (response.status === 200){
+                setToken(response.data.token);
+                history.push("/feed");
+            }
+        })
+        .catch(error => {
+            if (error.response.status === 409){
+                console.log(error);
+                setAlertText(error.response.data.error);
+                setShowAlert(true);
+            }
         });
-        setToken(loginResponse.token);
-        history.push("/feed")
     }
     
     return (
-        <Card style={{width: '40vw', margin: 'auto', marginTop: '25vh'}}>
+        <>
+        {showAlert ? 
+            <Alert
+                variant="danger"
+                onClose={() => setShowAlert(false)}
+                dismissible
+            >
+                <Alert.Heading>Oops!</Alert.Heading>
+                <p>
+                    {alertText}
+                </p>
+            </Alert>
+        : null}
+        <Card
+            className={classes.card}
+        >
             <Card.Img src={LoginImage}/>
             <Card.Body>
                 <Card.Title>
@@ -60,6 +92,7 @@ export default function Login({ token, setToken }) {
                         Return to landing page
                     </a>
         </Card>
+        </>
     )
 }
 

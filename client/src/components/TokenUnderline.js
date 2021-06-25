@@ -83,12 +83,13 @@ export default function TokenUnderline({ changeTrigger,
 
     const classes = useStyles();
 
-    const addOne = () => {
-        addSuggestedReplacement();
+    const addOne = (isSingle) => {
+        addSuggestedReplacement(isSingle);
     }
 
-    const addAll = () => {
-        addSuggestedReplacement();
+    const addAll = (isSingle) => {
+        // Needs to be updated to 'accept all' api route
+        addSuggestedReplacement(isSingle);
     }
 
     const ignore = () => {
@@ -111,9 +112,7 @@ export default function TokenUnderline({ changeTrigger,
                                                     className={classes.actionBtnActive}
                                                     onClick={() => remove()}
                                                 >
-                                                    <p
-                                                        className={classes.actionText}
-                                                    >
+                                                    <p className={classes.actionText}>
                                                         <MdDelete/>Remove
                                                     </p>
                                                 </div>
@@ -131,8 +130,8 @@ export default function TokenUnderline({ changeTrigger,
                                             <p className={classes.suggestedTextSingle}>{currentToken}</p>
                                         </div>
                                         <div className={classes.actionContainer}>
-                                            <div className={classes.actionBtnActive} onClick={() => addOne()}><p className={classes.actionText}><MdBookmark/>Accept</p></div>
-                                            <div className={classes.actionBtnActive} onClick={() => addAll()}><p className={classes.actionText}><MdBrush/>Accept all</p></div>
+                                            <div className={classes.actionBtnActive} onClick={() => addOne(true)}><p className={classes.actionText}><MdBookmark/>Accept</p></div>
+                                            {/* <div className={classes.actionBtnActive} onClick={() => addAll(false)}><p className={classes.actionText}><MdBrush/>Accept all</p></div> */}
                                             <div className={classes.actionBtnActive} onClick={() => ignore()}><p className={classes.actionText}><MdDelete/>Ignore</p></div>
                                         </div>
                                     </div>

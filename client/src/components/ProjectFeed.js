@@ -3,6 +3,8 @@ import axios from 'axios';
 import { createUseStyles } from 'react-jss';
 import { Spinner, Button, Dropdown } from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
+import BrandImage from './images/logo_transparent_white.png';
+
 
 import ProjectList from './ProjectList'
 import UploadModal from './modals/UploadModal'
@@ -11,10 +13,10 @@ import AnnotateBeginModal from './modals/AnnotateBeginModal'
 
 const useStyles = createUseStyles({
     container: {
-        paddingTop: '1em',
-        paddingBottom: '1em',
-        backgroundColor: '#8F8F8F',
-        maxWidth: '100%'
+        display: 'flex',
+        flexDirection: 'column',
+        height: '80vh',
+        minHeight: '100%'
     },
     header: {
         paddingTop: '0.5em',
@@ -25,16 +27,11 @@ const useStyles = createUseStyles({
         justifyContent: 'space-between',
         borderBottom: '1px #D9D9D9 solid'
     },
-    title: {
-        fontWeight: 'bolder',
-        fontSize: '1.5em',
-        textAlign: 'left',
-        fontFamily: 'sans-serif',
-        color: '#F8F9FA',
+    brandLogo: {
+        width: '12em',
         padding: '0.25em',
         marginLeft: '1em',
-        backgroundColor: '#8F8F8F',
-        border: 'none'
+        cursor: 'pointer'
     }
 })
 
@@ -91,16 +88,14 @@ export default function ProjectFeed({token, setToken}) {
             : null
         }
 
-        <div
-            style={{display: 'flex', flexDirection: 'column', height: '80vh', minHeight: '100%'}}
-        >
+        <div className={classes.container}>
             <div className={classes.header}>
-                <button 
-                    className={classes.title}
+                <img
+                    className={classes.brandLogo}
+                    src={BrandImage}
                     onClick={() => history.push("/")}
-                >
-                    Lexiclean
-                </button>
+                    alt="lexiclean logo"
+                />
                 <div style={{marginRight: '1em', padding: '0.25em'}}>
                     <Dropdown>
                         <Dropdown.Toggle variant="light" id="dropdown-basic">
@@ -108,7 +103,7 @@ export default function ProjectFeed({token, setToken}) {
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                             <Dropdown.Item onClick={() => setShowUpload(true)}>New Project</Dropdown.Item>
-                            <Dropdown.Item onClick={() => history.push('/feed')}>Home</Dropdown.Item>
+                            <Dropdown.Item onClick={() => history.push('/')}>Home</Dropdown.Item>
                             <Dropdown.Divider />
                             <Dropdown.Item onClick={logout}>Logout</Dropdown.Item>
                         </Dropdown.Menu>

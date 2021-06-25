@@ -1,6 +1,6 @@
 import React from 'react'
 import { createUseStyles } from 'react-jss';
-import { IoSpeedometer, IoEnter, IoExpand, IoTrophy, IoLogoGithub } from 'react-icons/io5';
+import { IoSpeedometer, IoEnter, IoExpand, IoTrophy, IoLogoGithub, IoLogoYoutube } from 'react-icons/io5';
 import { useHistory } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
 import BrandLogo from '../components/images/logo_min_transparent_black.png';
@@ -38,13 +38,13 @@ const useStyles = createUseStyles({
         }
     },
     brandImage: {
-        width: '50%',
+        width: '25em',
         height: 'auto',
         margin: 'auto',
-        padding: '1vw'
+        padding: '1em'
     },
     brandLogo: {
-        width: '3vw',
+        width: '2em',
         height: 'auto'
     },
     main: {
@@ -69,7 +69,6 @@ const useStyles = createUseStyles({
         backgroundColor: '#EAEAEA',
         border: '2px solid rgb(143, 143, 143)',
         padding: '0.25em 1em 0.25em 1em',
-        // width: '50%',
         maxWidth: '20vw',
         margin:'auto',
         '&:hover':{
@@ -94,6 +93,7 @@ const useStyles = createUseStyles({
         display: 'flex',
         flexDirection: 'row',
         padding: '0.5em',
+        flex: '1 1 0'
     },
     detailText: {
         display: 'flex',
@@ -106,7 +106,16 @@ const useStyles = createUseStyles({
     githubLogo: {
         fontSize: '40px',
         cursor: 'pointer',
-        marginLeft: '1em',
+        marginRight: '1em',
+        margin: 'auto',
+        '&:hover':{
+            color: 'rgb(143, 143, 143)',
+        }
+    },
+    youtubeLogo: {
+        fontSize: '40px',
+        cursor: 'pointer',
+        marginRight: '1em',
         margin: 'auto',
         '&:hover':{
             color: 'rgb(143, 143, 143)',
@@ -123,17 +132,20 @@ export default function Landing({ token, logout }) {
                 <div className={classes.header}>
                     <img className={classes.brandLogo} src={BrandLogo} alt="lexiclean logo"/>
                     <div style={{display: 'flex'}}>
+                        <IoLogoGithub
+                            className={classes.githubLogo}
+                            onClick={() => window.open("https://github.com/nlp-tlp/lexiclean", "_blank")}    
+                        />
+                        <IoLogoYoutube
+                            className={classes.youtubeLogo}
+                            onClick={() => window.open("https://youtube.com", "_blank")}
+                        />
                         <Button
                             className={classes.logInOutButton}
                             onClick={token ? logout : () => history.push('/login')}
                         >
                             { token ? "Logout": "Log In" }
                         </Button>
-                        <IoLogoGithub
-                            className={classes.githubLogo}
-                            onClick={() => window.open("https://github.com/nlp-tlp/lexiclean", "_blank")}    
-                        />
-
                     </div>
                 </div>
 

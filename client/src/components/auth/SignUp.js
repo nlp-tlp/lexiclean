@@ -1,10 +1,20 @@
 import React, { useState } from 'react'
+import { createUseStyles } from 'react-jss';
+import { useHistory } from 'react-router-dom'
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import axios from 'axios';
-import { Card, Form, Button, Col } from 'react-bootstrap';
+import { Card, Form, Button, Col, Alert } from 'react-bootstrap';
 import SignUpImage from '../images/signup.jpeg'
-import { useHistory } from 'react-router-dom'
+
+const useStyles = createUseStyles({
+    card: {
+        width: '20em',
+        margin: 'auto',
+        marginTop: '5vh'
+    }
+})
+
 
 const schema = yup.object().shape({
     username: yup.string().required(),
@@ -14,29 +24,54 @@ const schema = yup.object().shape({
 
 export default function SignUp({ token, setToken }) {
     const history = useHistory();
-
+    const classes = useStyles();
     const [formSubmitted, setFormSubmitted] = useState(false);
+    const [showAlert, setShowAlert] = useState(false);
     
-    const signupUser = async (values) => {
+    const signupUser = async (values, handleReset) => {
           console.log('form payload', values)
           if (formSubmitted === false){
-            console.log('submitting...');
-            const response = await axios.post('/api/auth/signup', values);
-
-            if (response.status === 200){
-              setToken(response.data.token)
-              setFormSubmitted(true);
-              history.push("/feed");
+            // console.log('submitting...');
+            await axios.post('/api/auth/signup', values)
+                        .then(response => {
+                            console.log(response);
+                            if (response.status === 200){
+                              setToken(response.data.token)
+                              setFormSubmitted(true);
+                              history.push("/feed");
+                            }
+                        })
+                        .catch(error => {
+                            if (error.response.status === 409){
+                                console.log(error)
+                                setFormSubmitted(false);
+                                setShowAlert(true);
+                                handleReset();
+                            }
+                        });
             }
-          }
     }
      
     return (
-        <Card style={{width: '40vw', margin: 'auto', marginTop: '25vh'}}>
+        <>
+        {showAlert ? 
+            <Alert
+                variant="danger"
+                onClose={() => setShowAlert(false)}
+                dismissible
+            >
+                <Alert.Heading>Oops!</Alert.Heading>
+                <p>
+                    Username already exists.
+                </p>
+            </Alert>
+        : null}
+
+        <Card className={classes.card}>
             <Card.Img src={SignUpImage}/>
             <Card.Body>
                 <Card.Title>
-                    Sign Up to Lexiclean
+                    Welcome! Sign up to begin
                 </Card.Title>
                 <Formik
                     validationSchema={schema}
@@ -110,9 +145,10 @@ export default function SignUp({ token, setToken }) {
                     )}
                     </Formik>
             </Card.Body>
-                    <a href="/" className="text-muted" style={{margin: '1em'}}>
-                        Return to landing page
-                    </a>
+            <a href="/" className="text-muted" style={{margin: '1em'}}>
+                Return to landing page
+            </a>
         </Card>
+        </>
     )
 }

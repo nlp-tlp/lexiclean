@@ -6,22 +6,21 @@ export default function useToken() {
     const getToken = () => {
         const tokenString = localStorage.getItem('token');
         const userToken = JSON.parse(tokenString);
-
+        return userToken;
         // Check if token valid
-        axios({
-                method: 'post',
-                url: '/api/auth/token/validate',
-                data: {token: userToken}})
-                .then(function (response) {
-                  if (response.status === 200){
-                    if (response.data.valid){
-                      return userToken;
-                    } else if (!response.data.valid) {
-                      localStorage.removeItem('token');
-                    }
-                  }
-                })
+      //   const response = await axios.post('/api/auth/token/validate', {token: userToken});
+
+      //   if (response.status === 200){
+      //     // console.log(response.data);
+      //     if (response.data.valid){
+      //       return userToken;
+      //     } else {
+      //       return undefined;
+      //     }
+      //   }
       }
+
+      // console.log('get token', getToken());
 
     const [token, setToken] = useState(getToken());
 

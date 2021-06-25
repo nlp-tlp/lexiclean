@@ -52,7 +52,9 @@ export default function Header({project,
                                 setShowModifySchema,
                                 pageChanged,
                                 saveTrigger,
-                                setSaveTrigger
+                                setSaveTrigger,
+                                savePending,
+                                setSavePending
                             }) {
                                 
     const history = useHistory();
@@ -72,7 +74,7 @@ export default function Header({project,
                     console.log(response.data)
                 }
 
-                const countResponse = await axios.get(`/api/project/token-count/${project._id}`);
+                const countResponse = await axios.get(`/api/project/counts/token/${project._id}`);
                 if (countResponse){
                     setCurrentVocabSize(countResponse.data.vocab_size);
                     setCurrentOOVTokenCount(countResponse.data.oov_tokens);
@@ -90,6 +92,7 @@ export default function Header({project,
             if (response.status === 200){
                 console.log('saved all suggestions on current page!')
                 // trigger change...
+                setSavePending(false);
                 setSaveTrigger(!saveTrigger);
             }
         }
@@ -145,7 +148,7 @@ export default function Header({project,
                             onClick={() => savePageResults()}
                             title='Click to save the current pages suggestions'
                         >
-                            <MdSave/>
+                            <MdSave style={{color: savePending ? 'rgb(107, 176, 191)' : ''}}/>
                         </p>
                         : null
                     }
@@ -170,13 +173,13 @@ export default function Header({project,
                             <Col>
                                 <div style={{display: 'flex', flexDirection: 'column', padding: '0em', width: '100%'}}>
                                     <p style={{margin: '0em', fontSize: '1.5em', fontWeight: 'bolder'}}>
-                                        {Math.round((1-(currentVocabSize/project.metrics.starting_vocab_size)) * 100)}%
+                                        {currentVocabSize} / {project.metrics.starting_vocab_size}
                                     </p>
                                     <p
                                         style={{fontSize: '0.75em', fontWeight: 'bold'}}
-                                        title='Percentage of original vocabulary reduced through normalisation'
+                                        title='Comparison between of current vocabulary and starting vocabulary'
                                     >
-                                        Token Reduction
+                                        Current Vocab / Starting Vocab
                                     </p>
                                 </div>
                             </Col>

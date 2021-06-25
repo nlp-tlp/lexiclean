@@ -28,14 +28,15 @@ export default function Text({project,
                               changeTrigger,
                               setChangeTrigger,
                               setToastInfo,
-                              activeMaps
+                              activeMaps,
+                              setSavePending
                             }) {
     const classes = useStyles();
     const textIndex = text._id ? text._id : null;
 
     const [textIntermediate, setTextIntermediate] = useState(text);
 
-    console.log('text info ->', text);
+    // console.log('text info ->', text);
 
     return (
         <div
@@ -67,7 +68,8 @@ export default function Text({project,
                             changeTrigger,
                             setChangeTrigger,
                             setToastInfo,
-                            activeMaps
+                            activeMaps,
+                            setSavePending
                         }
                     return(<Token {...tokenProps} />)})
                 : <p>Loading...</p>

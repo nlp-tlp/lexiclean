@@ -24,6 +24,7 @@ export default function Project() {
     const [replacementDict, setReplacementDict] = useState({});
     const [currentTexts, setCurrentTexts] = useState();
     const [saveTrigger, setSaveTrigger] = useState(false);
+    const [savePending, setSavePending] = useState(false);
 
     const [showDownload, setShowDownload] = useState(false);
     const [showProgress, setShowProgress] = useState(false);
@@ -76,7 +77,9 @@ export default function Project() {
         setShowModifySchema,
         pageChanged,
         saveTrigger,
-        setSaveTrigger
+        setSaveTrigger,
+        savePending,
+        setSavePending
     }
 
     const annotationTableProps = {
@@ -90,7 +93,8 @@ export default function Project() {
         setCurrentTexts,
         saveTrigger,
         setSaveTrigger,
-        pageNumber
+        pageNumber,
+        setSavePending
     }
 
 
