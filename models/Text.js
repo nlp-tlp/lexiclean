@@ -37,6 +37,9 @@ const TextSchema = mongoose.Schema({
     },
     tokens_tokenized: [
     ],
+    rank: {
+        type: Number
+    },
     last_modified: {
         type: Date,
         required: true,
