@@ -23,7 +23,7 @@ router.post('/', async (req, res) => {
         res.json(savedMap);
     }catch(err){
         res.json({ message: err })
-        logger.err('Map creation failed', {route: '/api/map/'});
+        logger.error('Map creation failed', {route: '/api/map/'});
     }
 });
 
@@ -79,7 +79,7 @@ router.post('/download/:projectId', async (req, res) => {
 
     }catch(err){
         res.json({ message: err })
-        logger.err(`Failed to download ${req.body.mapName} mapping`, {route: `/api/map/download/${req.params.projectId}`});
+        logger.error(`Failed to download ${req.body.mapName} mapping`, {route: `/api/map/download/${req.params.projectId}`});
     }
 })
 

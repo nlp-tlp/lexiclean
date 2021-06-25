@@ -15,7 +15,7 @@ router.get('/:textId', async (req, res) => {
         res.json(response);
     }catch(err){
         res.json({ message: err })
-        logger.err('Failed to get single text', {route: `/api/text/${req.params.textId}`})
+        logger.error('Failed to get single text', {route: `/api/text/${req.params.textId}`})
     }
 })
 
@@ -34,16 +34,18 @@ router.get('/', async (req, res) => {
 // Get number of annotated documents
 router.get('/progress/:projectId', async (req, res) => {
     try{
-        logger.info('Getting project text annotation progress', {route: `/api/text/progress/${projectId}`});
+        logger.info('Getting project text annotation progress', {route: `/api/text/progress/${req.params.projectId}`});
         const textsAnnotated = await Text.find({ project_id: req.params.projectId, annotated: true}).count();
         const textsTotal = await Text.find({project_id: req.params.projectId}).count();
+        console.log({"time": new Date(Date.now()).toLocaleString(), "text_annotated": textsAnnotated})
+        
         res.json({
             "annotated": textsAnnotated,
             "total": textsTotal
         })
     }catch(err){
         res.json({ message: err })
-        logger.err('Failed to get project text annotation progress', {route: `/api/text/progress/${projectId}`});
+        logger.error('Failed to get project text annotation progress', {route: `/api/text/progress/${req.params.projectId}`});
     }
 })
 
@@ -51,13 +53,13 @@ router.get('/progress/:projectId', async (req, res) => {
 // Get number of total pages for paginator
 router.get('/filter/pages/:projectId', async (req, res) => {
     try{
-        logger.info('Getting number of pages for paginator', {route: `/api/text/filter/pages/${projectId}`});
+        logger.info('Getting number of pages for paginator', {route: `/api/text/filter/pages/${req.params.projectId}`});
         const textsCount = await Text.find({ project_id : req.params.projectId}).count();
         const pages = Math.ceil(textsCount/req.query.limit);
         res.json({"totalPages": pages})
     }catch(err){
         res.json({ message: err })
-        logger.err('Failed to get number of pages for paginator', {route: `/api/text/filter/pages/${projectId}`});
+        logger.error('Failed to get number of pages for paginator', {route: `/api/text/filter/pages/${req.params.projectId}`});
     }
 })
 
@@ -65,7 +67,7 @@ router.get('/filter/pages/:projectId', async (req, res) => {
 // PAGINATE DATA FILTERED BY PROJECT ID
 // If any issues arise with results - refer to: https://github.com/aravindnc/mongoose-aggregate-paginate-v2/issues/18
 router.get('/filter/:projectId', async (req, res) => {
-    console.log('Paginating through texts');
+    //console.log('Paginating through texts');
     try {
         const skip = parseInt((req.query.page - 1) * req.query.limit)
         const limit = parseInt(req.query.limit)
@@ -87,7 +89,8 @@ router.get('/filter/:projectId', async (req, res) => {
             {
                 $project: {
                     annotated: "$annotated",
-                    weight: "$weight",
+                    // weight: "$weight",
+                    rank: "$rank",
                     tokens: {
                         $map : {
                             input: { $zip: { inputs: [ "$tokens", "$tokens_detail"]}},
@@ -100,7 +103,7 @@ router.get('/filter/:projectId', async (req, res) => {
                 }
             },
             {
-                $sort: { 'weight': -1 }
+                $sort: { 'rank': 1 } // 'weight': -1
             },
             // Paginate over documents
             {
@@ -116,7 +119,7 @@ router.get('/filter/:projectId', async (req, res) => {
         res.json(textAggregation);
     }catch(err){
         res.json({ message: err })
-        logger.err('Failed to get text pagination results', {route: `/api/text/filter/${projectId}`});
+        logger.error('Failed to get text pagination results', {route: `/api/text/filter/${req.params.projectId}`});
     }
 })
 
@@ -124,10 +127,10 @@ router.get('/filter/:projectId', async (req, res) => {
 // Get candidate counts across all documents bucketed by their page number
 // This is used for effort estimation for users
 router.get('/overview/:projectId', async (req, res) => {
-    console.log('Getting candidate overview');
+    //console.log('Getting candidate overview');
     try{
         const limit = parseInt(req.query.limit)
-        console.log('bucket size', limit);
+        //console.log('bucket size', limit);
         
         // Aggregation
         const textAggregation = await Text.aggregate([
@@ -236,12 +239,12 @@ router.patch('/annotations/update', async (req, res) => {
         }
         const annotatedTextIds = textsRes.filter(text => checkTextState(text)).map(text => text._id);
         // Patch annotated field on texts
-        const testUpdateRes = await Text.updateMany({ _id: { $in : annotatedTextIds}}, {"annotated": true})
+        const testUpdateRes = await Text.updateMany({ _id: { $in : annotatedTextIds}}, {annotated: true, last_modified: new Date(Date.now())})
         res.json(testUpdateRes);
 
     }catch(err){
         res.json({ message: err })
-        logger.err('Failed to update annotation states of texts', {route: '/api/text/annotations/update'})
+        logger.error('Failed to update annotation states of texts', {route: '/api/text/annotations/update'})
     }
 })
 
@@ -260,7 +263,7 @@ router.patch('/tokenize/:textId', async (req, res) => {
         const originalString = Object.values(originalTokenMap).join(' ')
         
         // console.log(newString === originalString ? 'NO CHANGE IN STRING' : 'CHANGE DETECTED IN STRINGS')
-        console.log(originalTokenMap)
+        //console.log(originalTokenMap)
         
 
         // Detect modified tokens - new string should have LESS tokens than the original.
@@ -291,18 +294,18 @@ router.patch('/tokenize/:textId', async (req, res) => {
             }
         }).filter(ele => ele);   // filter used to remove nulls
 
-        console.log('diffs', diffs)
+        //console.log('diffs', diffs)
 
         // Remove tokens that have been tokenized propery and add the new token into the correct spot
         const map = new Map(diffs.map(({newToken, originalIndex, oldToken}) => [newToken, { newToken, originalIndex, oldToken: [] }])); 
         for (let {newToken, originalIndex, oldToken} of diffs) map.get(newToken).oldToken.push(...[oldToken].flat());
         const diffsFormatted = [...map.values()]
-        console.log('diffsFormatted -> ', diffsFormatted)
+        //console.log('diffsFormatted -> ', diffsFormatted)
         
         
         // This works, but may fail if there are multiple changes to the SAME token? TODO: review.
         const tokensToAdd = diffsFormatted.map(diff => ({"index": newString.split(' ').indexOf(diff.newToken), "value": diff.newToken, "originalIndex": diff.originalIndex}))
-        console.log('tokensToAdd -> ', tokensToAdd)
+        //console.log('tokensToAdd -> ', tokensToAdd)
         
         
         // add new tokens to tokens array
@@ -335,21 +338,21 @@ router.patch('/tokenize/:textId', async (req, res) => {
 
             })
         
-        console.log('token list -> ', tokenList);
+        //console.log('token list -> ', tokenList);
 
         const tokenListResponse = await Token.insertMany(tokenList);
-        console.log('tokenListResponse -> ', tokenListResponse);
+        //console.log('tokenListResponse -> ', tokenListResponse);
 
         
-        console.log('Updating text');
+        //console.log('Updating text');
         // // NOTE: (TODO)  - weights do not get updated when tokenization is performed. This is because tokens may be OOV for tf-id.       
         
         const textUpdatePayload = {'tokens': tokenListResponse.map((token, index) => ({'index': index, 'token': token._id}))}
-        console.log('textUpdatePayload ->', textUpdatePayload)
+        //console.log('textUpdatePayload ->', textUpdatePayload)
 
         // Update by writing over tokens
         const textResponseAfterAddition = await Text.findByIdAndUpdate({ _id: req.params.textId}, textUpdatePayload, {new: true}).populate('tokens.token').lean();
-        console.log('textResponseAfterAddition -> ', textResponseAfterAddition)
+        //console.log('textResponseAfterAddition -> ', textResponseAfterAddition)
 
         // convert text into same format as the paginator (this is expected by front-end components)
         const outputTokens = textResponseAfterAddition.tokens.map(token => ({...token.token, index: token.index, token: token.token._id}))
@@ -362,7 +365,7 @@ router.patch('/tokenize/:textId', async (req, res) => {
 
     }catch(err){
         res.json({ message: err })
-        logger.err('Failed to tokenize text', {route: `/api/text/tokenize/${req.params.textId}`});
+        logger.error('Failed to tokenize text', {route: `/api/text/tokenize/${req.params.textId}`});
     }
 })
 

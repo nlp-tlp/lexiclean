@@ -1,13 +1,8 @@
-const { format, createLogger, transports, transport } = require('winston');
-const { timestamp, combine, printf, colorize, errors, json } = format;
-
-const devLogFormat = printf(({ level, message, timestamp, stack }) => {
-  return `${timestamp} ${level}: ${stack || message}`;
-});
+const { format, createLogger, transports } = require('winston');
+const { timestamp, combine, errors, json } = format;
 
 const logger = createLogger({
   format: combine(
-    //   colorize(),
       timestamp({ format: 'YYYY-MM-DD HH:mm:ss'}),
       errors({stack: true}),
       json()

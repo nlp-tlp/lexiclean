@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
         res.json(projects);
     }catch(err){
         res.json({ message: err })
-        logger.err('Failed to fetch all projects', {route: '/api/project/'})
+        logger.error('Failed to fetch all projects', {route: '/api/project/'})
     }
 })
 
@@ -45,11 +45,11 @@ router.post('/feed', async(req, res) => {
             res.json(feedInfo)
         } else {
             res.json({message: 'token invalid'})
-            logger.err('Failed to fetch project feed - token invalid', {route: '/api/project/feed'})
+            logger.error('Failed to fetch project feed - token invalid', {route: '/api/project/feed'})
         }
     }catch(err){
         res.json({ message: err })
-        logger.err('Failed to fetch project feed', {route: '/api/project/feed'})
+        logger.error('Failed to fetch project feed', {route: '/api/project/feed'})
     }
 })
 
@@ -65,7 +65,7 @@ router.patch('/:projectId', async (req, res) => {
         res.json(updatedProject);
     }catch(err){
         res.json({ message: err })
-        logger.err('Failed to update single project', {route: '/api/project/'})
+        logger.error('Failed to update single project', {route: '/api/project/'})
     }
 })
 
@@ -77,7 +77,7 @@ router.get('/:projectId', async (req, res) => {
         res.json(response);
     }catch(err){
         res.json({ message: err })
-        logger.err('Failed to fetch single project', {route: `/api/project/${req.params.projectId}`})
+        logger.error('Failed to fetch single project', {route: `/api/project/${req.params.projectId}`})
     }
 } )
 
@@ -113,12 +113,16 @@ router.post('/create', async (req, res) => {
         // removes white space between tokens as this will break the validation of the Token model.
         const normalisedTexts = req.body.texts.map(text => text.toLowerCase()
                                                                .replace('\t', ' ')
-                                                               .replace(/[."',?;!:\(\)\[\]_\{\}\*]/g, ' ')
+                                                               .replace(/[~",?;!:\(\)\[\]_\{\}\*]/g, ' ') // doesn't include period (.) or single quote (')
                                                                .replace(/\s+/g,' ')
                                                                .replace(/\.$/, '')
                                                                .trim()); 
         // remove texts that are empty after normalisation
-        const filteredTexts = normalisedTexts.filter(text => text.length > 0).map(text => text);
+        let filteredTexts = normalisedTexts.filter(text => text.length > 0).map(text => text);
+
+        // remove duplicates
+        filteredTexts = [...new Set(filteredTexts)];
+
         // tokenize
         const tokenizedTexts = filteredTexts.map(text => text.split(' '));
         
@@ -224,6 +228,7 @@ router.post('/create', async (req, res) => {
 
         // IMPLEMENT TF-IDF ALGORITHM
         console.log('Calculating TF-IDF scores')
+        
         // - Update texts in texts collection with their inverse tf-idf weight
         let counts = {};
         let keys = [];
@@ -247,16 +252,16 @@ router.post('/create', async (req, res) => {
             }
         }
 
-        console.log(new Date().toLocaleTimeString(), 'built tf-idf matrices')
+        console.log(new Date(Date.now()).toLocaleString(), 'built tf-idf matrices')
 
         // Aggregate doc counts into df e.g. {key: {tf: #, df #}}
         Object.keys(counts).map(key => (counts[key].tf = counts[key].tf, counts[key].df = counts[key].df.length));
-        console.log(new Date().toLocaleTimeString(), 'aggregated counts');
+        console.log(new Date(Date.now()).toLocaleString(), 'aggregated counts');
 
         // Compute tf-idf scores for each token; not assignment is used to flatten array of objects.
         // console.log('tokenized texts length', tokenizedTexts.length)
         const tfidfs = Object.assign(...Object.keys(counts).map(key => ({[key]: (counts[key].tf === 0 || tokenizedTexts.length / counts[key].df === 0) ? 0 : counts[key].tf * Math.log10(tokenizedTexts.length / counts[key].df)})));
-        console.log(new Date().toLocaleTimeString(), '- Calculated tf-idf weights');
+        console.log(new Date(Date.now()).toLocaleString(), '- Calculated tf-idf weights');
 
         // Compute average document tf-idf
         // - 1. get set of candidate tokens (derived up-stream)
@@ -278,19 +283,24 @@ router.post('/create', async (req, res) => {
         // const textsWithTokensPopulated = textResponse.map(text => ({_id: text._id, tokenizedText: text.tokens.map(token => tokenListResponse.filter(resToken => resToken._id === token.token).map(token => token.value)).flat()}))
         const textsWithTokensPopulated = textResponse.map(text => ({ _id: text._id, tokenizedText: text.tokens.map(token => tokenMap[token.token].value)}))
         // console.log('textsWithTokensPopulated -> ', textsWithTokensPopulated)
-        console.log(new Date().toLocaleTimeString(), 'texts with candidate tokens ', textsWithTokensPopulated.length)
+        console.log(new Date(Date.now()).toLocaleString(), 'texts with candidate tokens ', textsWithTokensPopulated.length)
 
         const textTokenWeights = textsWithTokensPopulated.map(text => ({_id: text._id, tokenWeights: text.tokenizedText.filter(token => candidateTokensUnique.has(token)).map(token => tfidfs[token])}))
         // If text has no token weights, give its aggregate value an incredibly high number (10000).
         // Note: text weight is a sum rather than average. THis is because we want to identify when multiple, high, tfidf tokens are present rather than averaging them out.
         const textWeights = textTokenWeights.map(text => ({_id: text._id, weight: text.tokenWeights.length > 0 ? text.tokenWeights.reduce((a, b) => a + b) : -1}));
-        console.log('text objects with weights built', new Date().toLocaleTimeString())
+        console.log('text objects with weights built', new Date(Date.now()).toLocaleString())
+
+        // Rank texts by their weight
+        const textWeightsSorted = textWeights.sort((a, b) => (b.weight - a.weight)).map((text, index) => ({ ...text, rank: index }));
+        // console.log('text objects with weights ranked', textWeightsSorted)
 
         // Add weight to text
         // - create update objects
-        console.log('Updating texts with TF-IDF scores', new Date().toLocaleTimeString())
-        const bwTextWeightObjs = textWeights.map(text => ({updateOne: { filter: { _id: text._id}, update: {weight: text.weight}, options: {upsert: true}}}));
-        console.log('bulk write text objects created - writing to database', new Date().toLocaleTimeString())
+        console.log('Updating texts with TF-IDF scores', new Date(Date.now()).toLocaleString())
+        const bwTextWeightObjs = textWeightsSorted.map(text => ({updateOne: { filter: { _id: text._id}, update: {weight: text.weight, rank: text.rank}, options: {upsert: true}}}));
+
+        console.log('bulk write text objects created - writing to database', new Date(Date.now()).toLocaleString())
         const bwTextResponse = await Text.bulkWrite(bwTextWeightObjs);
 
         // Return
@@ -301,20 +311,20 @@ router.post('/create', async (req, res) => {
 
     }catch(err){
         res.json({ message: err })
-        logger.err('Failed to create project', {route: '/api/project/create'});
+        logger.error('Failed to create project', {route: '/api/project/create'});
     }
 })
 
 
 // Delete project
 router.delete('/:projectId', async (req, res) => {
-    console.log('deleting project');
+    // console.log('deleting project');
     try{
-        logger.info('Deleting project', {route: `/api/project/${projectId}`});
+        logger.info('Deleting project', {route: `/api/project/${req.params.projectId}`});
 
         const projectResponse = await Project.findOne({_id: req.params.projectId}).populate('texts')
 
-        console.log(projectResponse)
+        // console.log(projectResponse)
         // Get ids of associated documents
         const textIds = projectResponse.texts.map(text => text._id);
         const tokenIds = projectResponse.texts.map(text => text.tokens.map(token => token.token)).flat();
@@ -329,7 +339,7 @@ router.delete('/:projectId', async (req, res) => {
 
     }catch(error){
         res.json({ message: err })
-        logger.err('Failed to delete project', {route: `/api/project/${projectId}`});
+        logger.error('Failed to delete project', {route: `/api/project/${req.params.projectId}`});
     }
 })
 
@@ -337,7 +347,7 @@ router.delete('/:projectId', async (req, res) => {
 // Get count of unique tokens within project
 router.get('/counts/token/:projectId', async (req, res) => {
     try{
-        logger.info('Get project token counts', {route: `/api/project/counts/token/${projectId}`});
+        logger.info('Get project token counts', {route: `/api/project/counts/token/${req.params.projectId}`});
         const textRes = await Text.find({ project_id: req.params.projectId })
                                         .populate('tokens.token')
                                         .lean();
@@ -347,20 +357,22 @@ router.get('/counts/token/:projectId', async (req, res) => {
         // Unlike on project creation, the other meta-tags need to be checked such as removed, noise, etc.
         const allTokens = textRes.map(text => text.tokens.map(token => token.token)).flat();
         const candidateTokens = allTokens.filter(token => (Object.values(token.meta_tags).filter(tagBool => tagBool).length === 0 && !token.replacement)).map(token => token.value)
+        
+        console.log({"time": new Date(Date.now()).toLocaleString(), "vocab_size": uniqueTokens.size, "candidateTokens": candidateTokens.length})
         res.json({'vocab_size': uniqueTokens.size, 'oov_tokens': candidateTokens.length});
 
     }catch(err){
         res.json({ message: err })
-        logger.err('Failed to get project token counts', {route: `/api/project/counts/token/${projectId}`});
+        logger.error('Failed to get project token counts', {route: `/api/project/counts/token/${req.params.projectId}`});
     }
 })
 
 
 // Download results
 router.get('/download/result/:projectId', async (req, res) => {
-    console.log('Preparing annotation results')
+    // console.log('Preparing annotation results')
     try{
-        logger.info('Downloading project results', {route: `/api/project/download/result/${projectId}`});
+        logger.info('Downloading project results', {route: `/api/project/download/result/${req.params.projectId}`});
 
         const texts = await Text.find({ project_id : req.params.projectId }).populate('tokens.token').lean();
         // Format results similar to WNUT 2015 (see: http://noisy-text.github.io/2015/norm-shared-task.html), with some modifications
@@ -377,7 +389,7 @@ router.get('/download/result/:projectId', async (req, res) => {
         res.json(results)
     }catch(err){
         res.json({ message: json })
-        logger.err('Failed to download project results', {route: `/api/project/download/result/${projectId}`});
+        logger.error('Failed to download project results', {route: `/api/project/download/result/${req.params.projectId}`});
     } 
 })
 

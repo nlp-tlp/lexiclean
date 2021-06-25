@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const dotenv = require('dotenv');
 const logger = require('../logger');
+const dotenv = require('dotenv');
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -26,7 +26,7 @@ router.post('/signup', async (req, res) => {
         const userExists = await User.exists({ username: req.body.username });
         if (userExists){
             res.status(409).send({ error: 'User already exists'});
-            logger.err('User already exists', {route: '/signup'});
+            logger.error('User already exists', {route: '/signup'});
         } else {
             // hash password with bcrypt
             const salt = bcrypt.genSaltSync(saltRounds);
@@ -81,7 +81,7 @@ router.post('/token/validate', async (req, res) => {
         jwt.verify(req.body.token, process.env.TOKEN_SECRET, function(err, decoded) {
             if (err){
                 res.json({'valid': false})
-                logger.err('Validation failed', {route: '/token/validate'});
+                logger.error('Validation failed', {route: '/token/validate'});
             } else {
                 res.json({ 'valid': true})
                 logger.info('Validation successful', {route: '/token/validate'});
