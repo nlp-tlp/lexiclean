@@ -26,6 +26,11 @@ DB_CONNECTION=mongodb://localhost:27017/lexiclean
 TOKEN_SECRET=<secret_key>
 ```
 
+#### Pre-populating static English lexicon
+Before commencing an annotation project, an English lexicon (`en_lexicon.json`) needs to be inserted into the database. Ensure that the `DB_CONNECTION` is specified before insertion. To insert the lexicon into the database, run the following from the root directory:
+```
+  node en_lexicon_insert.js
+```
 
 ## Usage
 After installation of Lexiclean, launch the application by running `npm run app` from the root directory `/`.
