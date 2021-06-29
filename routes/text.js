@@ -37,7 +37,8 @@ router.get('/progress/:projectId', async (req, res) => {
         logger.info('Getting project text annotation progress', {route: `/api/text/progress/${req.params.projectId}`});
         const textsAnnotated = await Text.find({ project_id: req.params.projectId, annotated: true}).count();
         const textsTotal = await Text.find({project_id: req.params.projectId}).count();
-        console.log({"time": new Date(Date.now()).toLocaleString(), "text_annotated": textsAnnotated})
+
+        logger.info('annotation progress', {text_annotated: textsAnnotated})
         
         res.json({
             "annotated": textsAnnotated,

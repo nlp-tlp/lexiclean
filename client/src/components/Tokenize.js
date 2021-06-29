@@ -33,8 +33,8 @@ export default function Tokenize({ project, textIntermediate, setTextIntermediat
     const MAX_WIDTH = document.getElementById('text-container').offsetWidth; // px
 
     // If tokenize mode then show full string WITH replacements
-    const [originalText, setOriginalText] = useState(textIntermediate.tokens.map(tokenInfo => tokenInfo.replacement ? tokenInfo.replacement : tokenInfo.value).join(' '))
-    const [textString, setTextString] = useState(textIntermediate.tokens.map(tokenInfo => tokenInfo.replacement ? tokenInfo.replacement : tokenInfo.value).join(' '))
+    const [originalText, setOriginalText] = useState(textIntermediate.tokens.map(tokenInfo => tokenInfo.value).join(' '))
+    const [textString, setTextString] = useState(textIntermediate.tokens.map(tokenInfo => tokenInfo.value).join(' '))
     const [inputWidth, setInputWidth] = useState(`${((originalText.length + 2) * 10 > MIN_WIDTH && (originalText.length + 2) * 10 < MAX_WIDTH) ? (originalText.length + 2) * 12 : ((originalText.length + 2) * 10 > MAX_WIDTH) ? MAX_WIDTH : MIN_WIDTH }px`)
 
     console.log((originalText.length+2) * 10)

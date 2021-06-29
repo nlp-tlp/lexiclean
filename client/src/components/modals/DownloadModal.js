@@ -3,7 +3,7 @@ import { Modal, Button, Table } from 'react-bootstrap';
 import { MdFileDownload, MdLibraryBooks } from 'react-icons/md';
 import axios from 'axios';
 
-const DEFAULT_MAPS = ['rp', 'ua', 'st', 'en'];
+const DEFAULT_MAPS = ['ua', 'st', 'en'];
 
 export default function DownloadModal({showDownload, setShowDownload, project}) {
 
@@ -56,17 +56,35 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
             console.log('map was succesfully formatted');
             console.log(response.data);
 
-            // Prepare for file download
-            const fileName = `${project.name}_map_${mapName}`;
-            const json = JSON.stringify(response.data, null, 4);
-            const blob = new Blob([json], {type: 'application/json'});
-            const href = await URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = href;
-            link.download = fileName + '.json';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            if (mapName === 'rp'){
+                // Only replacements are output as JSON
+                
+                // Prepare for file download
+                const fileName = `${project.name}_map_replacements`;
+                const json = JSON.stringify(response.data, null, 2);
+                const blob = new Blob([json], {type: 'application/json'});
+                const href = await URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = href;
+                link.download = fileName + '.json';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+            } else {
+                // Others are output as TXT
+                const fileName = `${project.name}_map_${mapName}`;
+                const text = response.data.values.join('\n');
+                const blob = new Blob([text], {type: 'text/plain'});
+                const href = await URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = href;
+                link.download = fileName + '.txt';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
         }
 
 
@@ -99,8 +117,8 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
                             maps ?
                                 maps.map((mapName, index) => (
                                 <tr key={index}>
-                                    <td>{mapName}</td>
-                                    <td>Mapping in JSON format</td>
+                                    <td>{mapName === 'rp' ? 'replacements' : mapName}</td>
+                                    <td>{mapName === 'rp' ? 'Mapping in JSON format' : 'Mapping in TXT format'}</td>
                                     <td>
                                         <MdFileDownload style={{fontSize: '22px', margin: 'auto', color: 'black'}} onClick={() => downloadMaps(project, mapName)}/> 
                                     </td>

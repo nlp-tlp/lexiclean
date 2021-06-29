@@ -120,15 +120,15 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
           // Only require raw texts, users might not have any other artifacts.
           console.log('raw texts loaded')
 
-          const maps = Object.keys(metaTags).map(tagKey => ({"type": tagKey, "colour": metaTags[tagKey].colour,"tokens": metaTags[tagKey].data}))
-
+          const maps = Object.keys(metaTags).map(tagKey => ({"type": tagKey, "colour": metaTags[tagKey].colour, "tokens": metaTags[tagKey].data, "active": true}))
           console.log('maps', maps);
 
-          if (fileData["rpFIle"] && Object.keys(fileData["rpFile"].data).length > 0){
+
+          if (fileData["rpFile"] && Object.keys(fileData["rpFile"].data).length > 0){
             // add replacements to maps if they exist
-            maps.push({"type": "rp", "colour": REPLACE_COLOUR, "replacements": fileData["rpFile"].data})
+            maps.push({"type": "rp", "colour": REPLACE_COLOUR, "replacements": fileData["rpFile"].data, "active": true})
           } else {
-            maps.push({"type": "rp", "colour": REPLACE_COLOUR,"replacements": {}})
+            maps.push({"type": "rp", "colour": REPLACE_COLOUR, "replacements": {}, "active": true})
           }
 
           console.log('maps', maps);
@@ -257,7 +257,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
         <small>
           Meta tags are used to give tokens higher level classifications. Here meta tag classes can be defined and mappings can be uploaded (if available).
         </small>
-        <Table striped bordered hover>
+        <Table striped bordered hover size="sm">
           <thead>
             <tr>
               <th>Name</th>
@@ -308,8 +308,8 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
             }
           </tbody>
         </Table>
-        <small>Suggested: <i>domain_specific</i>, <i>sensitive</i>, <i>noise</i></small>
-        <br/>
+        {/* <small>Suggested: <i>domain_specific</i>, <i>sensitive</i>, <i>noise</i></small> */}
+        {/* <br/> */}
         <small>(Note: please use underscores between words instead of white space)</small>
 
         <div style={{display: 'flex', justifyContent: 'space-evenly', marginTop: '4em'}}>

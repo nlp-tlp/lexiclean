@@ -103,6 +103,9 @@ router.post('/create', async (req, res) => {
         // Build maps
         console.log('Building maps')
         const mapResponse = await Map.insertMany(req.body.maps);
+        
+        console.log(mapResponse)
+        console.log('maps has response')
         const rpMap = mapResponse.filter(map => map.type === 'rp')[0];  // this should always be present in the maps
         
         // Build texts and tokens including filtering
@@ -358,7 +361,7 @@ router.get('/counts/token/:projectId', async (req, res) => {
         const allTokens = textRes.map(text => text.tokens.map(token => token.token)).flat();
         const candidateTokens = allTokens.filter(token => (Object.values(token.meta_tags).filter(tagBool => tagBool).length === 0 && !token.replacement)).map(token => token.value)
         
-        console.log({"time": new Date(Date.now()).toLocaleString(), "vocab_size": uniqueTokens.size, "candidateTokens": candidateTokens.length})
+        logger.info('vocab counts', {"vocab_size": uniqueTokens.size, "candidateTokens": candidateTokens.length})
         res.json({'vocab_size': uniqueTokens.size, 'oov_tokens': candidateTokens.length});
 
     }catch(err){

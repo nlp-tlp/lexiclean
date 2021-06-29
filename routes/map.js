@@ -64,18 +64,46 @@ router.post('/download/:projectId', async (req, res) => {
         logger.info(`Downloading ${req.body.mapName} mapping`, {route: `/api/map/download/${req.params.projectId}`});
         
         // Get tokens
-        const tokens = await Token.find({project_id: req.params.projectId}).lean();
+        const tokens = await Token.find({ project_id: req.params.projectId }).lean();
         // console.log(tokens);
+
+        if (req.body.mapName === 'rp'){
+            // Filter tokens for those with replacements
+            const tokensReplaced = tokens.filter(token => token.replacement);
+            console.log('Tokens replaced -> ', tokensReplaced.length);
+
+            const replacementPairs = tokensReplaced.map(token => ({token: token.value, replacement: token.replacement}));
+            console.log(replacementPairs[1])
+
+            // Filter out duplicate replacements
+            const uniqueReplacementPairs = replacementPairs.filter((thing, index, self) => 
+                index === self.findIndex((t) => (
+                    t.token === thing.token && t.replacement === thing.replacement
+                ))
+            )
+            
+            console.log('Unique replacement pairs -> ', uniqueReplacementPairs);
+
+            // Convert to token:replacement for
+            const replacements = uniqueReplacementPairs.map(pair => ({[pair.token] : pair.replacement})).reduce(((r, c) => Object.assign(r, c)), {});
+
+            // console.log(replacements)
+
+            res.json(replacements)
+
+
+        } else {
+            // Filter tokens for those annotated with map
+            const tokensMapped = tokens.filter(token => token.meta_tags[req.body.mapName])
+            // console.log(tokensMapped);
+    
+            // Filter for unique values only.
+            const tokenValues = [... new Set(tokensMapped.map(token => token.replacement ? token.replacement : token.value))];
+            // console.log(tokenValues);
+            res.json({'values': tokenValues})
+        }
         
-        // Filter tokens for those annotated with map
-        const tokensMapped = tokens.filter(token => token.meta_tags[req.body.mapName])
-        // console.log(tokensMapped);
 
-        // Filter for unique values only.
-        const tokenValues = [... new Set(tokensMapped.map(token => token.value))];
-        // console.log(tokenValues);
-
-        res.json({[req.body.mapName]: tokenValues})
 
     }catch(err){
         res.json({ message: err })
