@@ -104,8 +104,8 @@ router.post('/create', async (req, res) => {
         console.log('Building maps')
         const mapResponse = await Map.insertMany(req.body.maps);
         
-        console.log(mapResponse)
-        console.log('maps has response')
+        // console.log(mapResponse)
+        // console.log('maps has response')
         const rpMap = mapResponse.filter(map => map.type === 'rp')[0];  // this should always be present in the maps
         
         // Build texts and tokens including filtering

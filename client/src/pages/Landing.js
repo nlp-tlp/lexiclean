@@ -130,11 +130,13 @@ export default function Landing({ token, logout }) {
         <>
             <div className={classes.container}>
                 <div className={classes.header}>
-                    <img className={classes.brandLogo} src={BrandLogo} alt="lexiclean logo"/>
+                    <div>
+                    </div>
+                    {/* <img className={classes.brandLogo} src={BrandLogo} alt="lexiclean logo"/> */}
                     <div style={{display: 'flex'}}>
                         <IoLogoGithub
                             className={classes.githubLogo}
-                            onClick={() => window.open("https://github.com/nlp-tlp/lexiclean", "_blank")}    
+                            onClick={() => window.open("https://github.com/nlp-tlp/lexiclean", "_blank")}
                         />
                         <IoLogoYoutube
                             className={classes.youtubeLogo}
@@ -150,10 +152,10 @@ export default function Landing({ token, logout }) {
                 </div>
 
                 <div className={classes.main}>
-                    <p className={classes.topText}>Multi-task Lexical Normalisation</p>
+                    {/* <p className={classes.topText}>Multi-task Lexical Normalisation</p> */}
                     <img className={classes.brandImage} src={BrandImage} alt="lexiclean logo"/>
                     <h3 className={classes.underText}>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam ut ex in risus ullamcorper cursus.
+                        Lexiclean is an annotation tool built rapid multi-task annotation of corpora for the task of lexical normalisation.
                     </h3>
 
                     <Button

@@ -4,6 +4,7 @@ import { Formik } from 'formik';
 import * as yup from 'yup';
 import axios from 'axios';
 import { MdAddCircle, MdRemoveCircle, MdBrush } from 'react-icons/md';
+import { IoInformationCircleSharp } from 'react-icons/io5';
 import { CompactPicker } from 'react-color';
 
 import useToken from '../auth/useToken'
@@ -11,6 +12,13 @@ import useToken from '../auth/useToken'
 
 const DEFAULT_COLOUR = "#9B9B9B"
 const REPLACE_COLOUR = "#99BF9C"
+
+
+const infoContent = {
+  "raw_text": {"title": "Raw Text Documents", "content": "Raw text documents are those that will be annotated for lexical normalisation."},
+  "replacements": {"title": "Replacements", "content": "Replacements should be in the form of a 1:1 (IV:OOV) mapping."},
+  "meta_tags": {"title": "Meta Tags", "content": "Meta tags are used to give tokens higher level classifications.\nHere meta tag classes can be defined and a gazetteer uploaded (if available)."}
+}
 
 const schema = yup.object().shape({
     projectName: yup.string().required(),
@@ -29,15 +37,8 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
     const [tempData, setTempData] = useState({meta: null, data: null});
     const [tempColour, setTempColour] = useState(DEFAULT_COLOUR)
     const [metaTags, setMetaTags] = useState({});
-    
-
     const [formSubmitted, setFormSubmitted] = useState(false);
     
-    useEffect(() => {
-      console.log('meta tags', metaTags);
-    }, [metaTags])
-
-
     const readFile = (fileKey, fileMeta) => {
         let reader = new FileReader();
         reader.readAsText(fileMeta);
@@ -168,12 +169,36 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
             color={tempColour}
             onChange={color => setTempColour(color.hex)}
             onChangeComplete={color => setTempColour(color.hex)}
-
           />
         </Popover.Content>
       </Popover>
     )
 
+    const infoPopover = (content) => {
+    return(<Popover id="popover-info">
+      <Popover.Title>
+        Information
+      </Popover.Title>
+      <Popover.Content>
+        {content}
+      </Popover.Content>
+    </Popover>
+    )}
+
+    const infoOverlay = (info) => {
+      return(
+      <div style={{'marginBottom': '0.5em'}}>
+          {info.title}
+        <OverlayTrigger
+          trigger="click"
+          placement="right"
+          overlay={infoPopover(info.content)}
+          >
+          <IoInformationCircleSharp />
+        </OverlayTrigger>
+      </div>
+      )
+    } 
 
     return (
     <Formik
@@ -196,7 +221,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
         <Form noValidate onSubmit={handleSubmit}>
           <Form.Row>
             <Form.Group as={Col} md="12" controlId="validationFormik01">
-              <Form.Label>Project Name</Form.Label>
+              <Form.Label>Name</Form.Label>
               <Form.Control
                 type="text"
                 placeholder="Enter Name"
@@ -212,7 +237,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
           </Form.Row>
           <Form.Row>
             <Form.Group as={Col} md="12" controlId="validationFormik02">
-              <Form.Label>Project Description</Form.Label>
+              <Form.Label>Description</Form.Label>
               <Form.Control
                 type="text"
                 placeholder="Enter Description"
@@ -230,45 +255,42 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
         <Form.Group>
           <Form.Row>
                 <Col>
+                    { infoOverlay(infoContent['raw_text']) }
                     <Form.File
                         id="exampleFormControlFile1"
-                        label="Raw text documents"
                         onChange={(e) => setFileData(prevState => ({...prevState, "textFile": {"meta": e.target.files[0], "data": readFile("textFile", e.target.files[0])}}))}
                     />
                     <Form.Text id="passwordHelpBlock" muted>
-                        Raw text documents are those that will be annotated for lexical normalisation.
-                        These should be in text (.txt) format.
+                        File format (.txt)
                     </Form.Text>
                 </Col>
                 <Col>
+                  { infoOverlay(infoContent['replacements']) }
                     <Form.File
                         id="exampleFormControlFile3"
-                        label="Replacements"
                         onChange={(e) => setFileData(prevState => ({...prevState, "rpFile": {"meta": e.target.files[0], "data": readFile("rpFile", e.target.files[0])}}))}
                         />
                     <Form.Text id="passwordHelpBlock" muted>
-                        Replacements should be in .csv or .json file format.
+                        File format (.csv or .json) 
                     </Form.Text>
                 </Col>
             </Form.Row>
         </Form.Group>
 
-        <h3>Meta Tags</h3>
-        <small>
-          Meta tags are used to give tokens higher level classifications. Here meta tag classes can be defined and mappings can be uploaded (if available).
-        </small>
-        <Table striped bordered hover size="sm">
+
+        { infoOverlay(infoContent['meta_tags']) }
+        <Table striped bordered hover size="sm" style={{fontSize: '14px'}}>
           <thead>
             <tr>
               <th>Name</th>
-              <th>Upload</th>
+              <th>Gazetteer</th>
               <th>Colour</th>
               <th>Add</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td ><input type="text" style={{width: '8em'}} value={tempMetaTag} onChange={e => setTempMetaTag(e.target.value)}></input></td>
+              <td><input type="text" style={{width: '8em'}} value={tempMetaTag} onChange={e => setTempMetaTag(e.target.value)}></input></td>
               <td>
                 <Form.File
                     id="formControlTempMetaTag"
@@ -308,10 +330,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
             }
           </tbody>
         </Table>
-        {/* <small>Suggested: <i>domain_specific</i>, <i>sensitive</i>, <i>noise</i></small> */}
-        {/* <br/> */}
         <small>(Note: please use underscores between words instead of white space)</small>
-
         <div style={{display: 'flex', justifyContent: 'space-evenly', marginTop: '4em'}}>
           <Button variant="secondary" onClick={() => setShowUpload(false)}>Cancel</Button>
           <Button type="submit">Create Project</Button>

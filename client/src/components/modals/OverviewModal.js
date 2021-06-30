@@ -1,12 +1,10 @@
 // https://github.com/uber/react-vis/blob/master/packages/showcase/plot/labeled-heatmap.js
 import React, { useState, useEffect } from 'react'
 import { Modal, Button, Spinner } from 'react-bootstrap';
-import {XYPlot, XAxis, YAxis, HeatmapSeries, Hint, LabelSeries, ChartLabel, LineSeries} from 'react-vis';
+import { XYPlot, XAxis, YAxis, HeatmapSeries, Hint, LabelSeries, ChartLabel, LineSeries} from 'react-vis';
 import axios from 'axios';
 
-
 export default function OverviewModal({showOverview, setShowOverview, projectId, pageLimit}) {
-
     const [seriesType, setSeriesType] = useState()
     const [data, setData] = useState();
     const [loading, setLoading] = useState(true);
@@ -16,8 +14,6 @@ export default function OverviewModal({showOverview, setShowOverview, projectId,
         const fetchData = async () => {
             const response = await axios.get(`/api/text/overview/${projectId}`, { params: {limit: pageLimit }})
             if(response.status === 200){
-                console.log(response.data);
-
                 setSeriesType(response.data.type);
                 setData(response.data.data)
                 setLoading(false);
@@ -32,8 +28,7 @@ export default function OverviewModal({showOverview, setShowOverview, projectId,
             onHide={() => setShowOverview(false)}
             backdrop="static"
             keyboard={false}
-            size="lg"
-            
+            size="lg"            
         >
             <Modal.Header closeButton>
                 <Modal.Title>Overview (experimental)</Modal.Title>

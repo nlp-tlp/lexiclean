@@ -28,7 +28,8 @@ const useStyles = createUseStyles({
         borderBottom: '1px #D9D9D9 solid'
     },
     brandLogo: {
-        width: '12em',
+        height: '3em',
+        // transform: 'scale(0.25, 0.25)',
         padding: '0.25em',
         marginLeft: '1em',
         cursor: 'pointer'
@@ -58,7 +59,7 @@ export default function ProjectFeed({token, setToken}) {
         const fetchProjects = async () => {
             const response = await axios.post('/api/project/feed', { jwt_token: JSON.parse(localStorage.getItem('token')) });
             if (response.status === 200){
-                console.log('projects', response.data);
+                // console.log('projects', response.data);
                 setProjects(response.data);
                 setProjectsLoaded(true);
             }
