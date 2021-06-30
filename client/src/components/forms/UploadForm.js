@@ -281,8 +281,8 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
         { infoOverlay(infoContent['meta_tags']) }
         <Table striped bordered hover size="sm" style={{fontSize: '14px'}}>
           <thead>
-            <tr>
-              <th>Name</th>
+            <tr style={{textAlign: 'center'}}>
+              <th>Tag Name</th>
               <th>Gazetteer</th>
               <th>Colour</th>
               <th>Add</th>
@@ -330,10 +330,10 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
             }
           </tbody>
         </Table>
-        <small>(Note: please use underscores between words instead of white space)</small>
+        <small>Note: Please use underscores instead of white space in tag names</small>
         <div style={{display: 'flex', justifyContent: 'space-evenly', marginTop: '4em'}}>
           <Button variant="secondary" onClick={() => setShowUpload(false)}>Cancel</Button>
-          <Button type="submit">Create Project</Button>
+          <Button type="submit" variant="dark">Create Project</Button>
         </div>
 
         </Form>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom';
+import { createUseStyles } from 'react-jss';
 import axios from 'axios';
-import { Spinner, Toast } from 'react-bootstrap';
+import { Spinner, Toast, Navbar } from 'react-bootstrap';
 
 import AnnotationTable from './AnnotationTable'
 import Header from './header/Header'
@@ -13,10 +14,19 @@ import OverviewModal from './modals/OverviewModal'
 import LegendModal from './modals/LegendModal'
 import ModifySchemaModal from './modals/ModifySchemaModal'
 
+const useStyles = createUseStyles({
+    container: {
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100%',
+    }
+})
+
 
 const PAGE_LIMIT = 10;
 
 export default function Project() {
+    const classes = useStyles();
     const { projectId } = useParams();
     let { pageNumber } = useParams();
     pageNumber = parseInt(pageNumber);
@@ -149,10 +159,8 @@ export default function Project() {
             : null
             }
 
-        <div
-            style={{display: 'flex', flexDirection: 'column', minHeight: '100%'}}
-            tabIndex="0"
-        >
+
+        <div className={classes.container} tabIndex="0">
             <Header
                 {...headerProps}
             />
@@ -165,6 +173,13 @@ export default function Project() {
                 />
             }
         </div>
+
+        <Navbar bg="light" fixed="bottom">
+            <Navbar.Text className="m-auto">
+                © UWA NLP-TLP Group 2021.
+            </Navbar.Text>
+        </Navbar>
+
         </>
     )
 }

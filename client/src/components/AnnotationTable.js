@@ -180,9 +180,7 @@ export default function AnnotationTable({project,
       >
         {
           (!loaded || !mapsLoaded) ?
-            <div
-              style={{margin: 'auto', marginTop: '5em'}}
-            >
+            <div style={{margin: 'auto', marginTop: '5em'}}>
               <Spinner animation="border" />
             </div>
           :
@@ -221,15 +219,11 @@ export default function AnnotationTable({project,
                     {textIndex+1 + ((page-1)*pageLimit)}
                   </p>
                 </div>
-                
                 <div className={classes.textColumn}>
                   <Text
                     {...textProps}
                     />
                 </div>
-
-                {/* <div style={{display: 'flex', height: 'max-content', alignContent: 'flex-start'}}> */}
-                {/* </div> */}
                 <div
                   style={{fontSize: '26px', fontWeight: 'bold', color: 'grey'}}
                   onClick={() => handleTokenize(text._id)}
@@ -244,12 +238,12 @@ export default function AnnotationTable({project,
       
       {
         loaded ? 
-        <Paginator 
-          page={page}
-          setPage={setPage}
-          totalPages={totalPages}
-          project={project}
-        />
+          <Paginator 
+            page={page}
+            setPage={setPage}
+            totalPages={totalPages}
+            project={project}
+          />
         : null
       }
     </>

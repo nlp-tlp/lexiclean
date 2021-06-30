@@ -6,7 +6,14 @@ import { createUseStyles } from 'react-jss';
 
 import DownloadModal from './modals/DownloadModal';
 
+
+const DELETE_COLOUR = '#D95F69';
 const useStyles = createUseStyles({
+    container: {
+        width: '75%',
+        margin: 'auto',
+        marginTop: '2em'
+    },
     projectListItemContainer: {
         display: 'flex',
         justifyContent: 'space-between'
@@ -76,7 +83,6 @@ const useStyles = createUseStyles({
 
 export default function ProjectList({projects, setSelectedProject, setShowAnnotate, setShowProjectDelete}) {
     const classes = useStyles();
-
     const [showDownload, setShowDownload] = useState(false);
     const [downloadProject, setDownloadProject] = useState();
 
@@ -107,7 +113,7 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
             />
             : null
         }
-        <div style={{width: '75%', margin: 'auto', marginTop: '2em'}}>
+        <div className={classes.container}>
             <ListGroup>
             {
                 projects.map((project, index) => {
@@ -163,7 +169,7 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
                                 <div className={classes.actionContainer}>
                                     <MdEdit className={classes.actionIcon} onClick={() => confirmationAction(index)}/>
                                     <MdFileDownload className={classes.actionIcon} onClick={() => downloadHandler(project)}/> 
-                                    <MdDelete className={classes.actionIcon} style={{color: '#D95F69'}} onClick={() => deleteAction(index)}/>
+                                    <MdDelete className={classes.actionIcon} style={{color: DELETE_COLOUR}} onClick={() => deleteAction(index)}/>
                                 </div>
                             </div>
                         </ListGroup.Item>

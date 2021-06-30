@@ -1,8 +1,20 @@
 import React from 'react'
 import { Pagination } from 'react-bootstrap';
 import { useHistory } from 'react-router-dom'
+import { createUseStyles } from 'react-jss';
+
+const useStyles = createUseStyles({
+  container: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginTop: '1em',
+    marginBottom: '4em'
+  }
+});
+
 
 export default function Paginator({page, setPage, totalPages, project}) {
+    const classes = useStyles()  
     const history = useHistory();
 
     const routeChange = (page) => {
@@ -11,7 +23,7 @@ export default function Paginator({page, setPage, totalPages, project}) {
     }
 
     return (
-        <div style={{display: 'flex', justifyContent: 'center', marginTop: '1em'}}>
+        <div className={classes.container}>
           <Pagination>
             {
               page > 4 ?

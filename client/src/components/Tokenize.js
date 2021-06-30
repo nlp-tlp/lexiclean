@@ -3,6 +3,7 @@ import { createUseStyles } from 'react-jss';
 import { useContextMenu } from "react-contexify";
 import TextareaAutosize from 'react-textarea-autosize';
 import TextContextMenu from './utils/TextContextMenu';
+import {ErrorBoundary} from 'react-error-boundary';
 import axios from 'axios';
 
 const useStyles = createUseStyles({
@@ -16,9 +17,9 @@ const useStyles = createUseStyles({
         '&:hover': {
             opacity: '0.8'
         },
-        wordSpacing: '1em',
+        wordSpacing: '2.5em',
         backgroundColor: '#ffffbf',
-        resize: 'none'
+        resize: 'none',
     }
 })
 
@@ -35,9 +36,7 @@ export default function Tokenize({ project, textIntermediate, setTextIntermediat
     // If tokenize mode then show full string WITH replacements
     const [originalText, setOriginalText] = useState(textIntermediate.tokens.map(tokenInfo => tokenInfo.value).join(' '))
     const [textString, setTextString] = useState(textIntermediate.tokens.map(tokenInfo => tokenInfo.value).join(' '))
-    const [inputWidth, setInputWidth] = useState(`${((originalText.length + 2) * 10 > MIN_WIDTH && (originalText.length + 2) * 10 < MAX_WIDTH) ? (originalText.length + 2) * 12 : ((originalText.length + 2) * 10 > MAX_WIDTH) ? MAX_WIDTH : MIN_WIDTH }px`)
-
-    console.log((originalText.length+2) * 10)
+    const [inputWidth, setInputWidth] = useState(`${((originalText.length + 2) * 10 > MIN_WIDTH && (originalText.length + 2) * 10 < MAX_WIDTH) ? (originalText.length + 2) * 16 : ((originalText.length + 2) * 10 > MAX_WIDTH) ? MAX_WIDTH : MIN_WIDTH }px`)
 
     const handleTextChange = (e) => {
         if (originalText.split(' ').join('') === e.target.value.split(' ').join('')){
@@ -49,40 +48,41 @@ export default function Tokenize({ project, textIntermediate, setTextIntermediat
         if (isSingle){
             const response = await axios.patch(`/api/text/tokenize/${textIntermediate._id}`, { 'new_string': textString, 'project_id': project._id});
             if (response.status === 200){
-                // console.log(response.data)
                 setTextIntermediate(response.data);
             }
         }   
     }
 
+    const ErrorHandler = () => {
+        return (
+            <div>
+                <p>Something went wrong...</p>
+            </div>
+        )
+    }
+
     return (
-        <div>
-            <TextareaAutosize
-                type="text"
-                value={textString}
-                onChange={e => handleTextChange(e)}
-                autoComplete="off"
-                className={classes.text}
-                onContextMenu={e => showContextMenu(e)}
-                style={{ width: inputWidth}}
-            />
-            {/* <textarea
-                contentEditable="true"
-                type="text"
-                value={textString}
-                onChange={e => handleTextChange(e)}
-                autoComplete="off"
-                className={classes.text}
-                onContextMenu={(e) => showContextMenu(e)}
-                style={{ width: inputWidth }}
-            /> */}
-        <TextContextMenu
-            menu_id={MENU_ID}
-            textString={textString}
-            setTextString={setTextString}
-            updateText={updateText}
-            originalText={originalText}
-        />
-    </div>
+        <ErrorBoundary
+            FallbackComponent={ErrorHandler}
+        >
+            <div>
+                <TextareaAutosize
+                    type="text"
+                    value={textString}
+                    onChange={e => handleTextChange(e)}
+                    autoComplete="off"
+                    className={classes.text}
+                    onContextMenu={e => showContextMenu(e)}
+                    style={{ width: inputWidth}}
+                    />
+                <TextContextMenu
+                    menu_id={MENU_ID}
+                    textString={textString}
+                    setTextString={setTextString}
+                    updateText={updateText}
+                    originalText={originalText}
+                    />
+            </div>
+        </ErrorBoundary>
     )
 }

@@ -2,25 +2,16 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import { useHistory } from 'react-router-dom'
 import { createUseStyles } from 'react-jss';
-import { Dropdown, Container, Row, Col, Spinner } from 'react-bootstrap';
-import { MdSave } from 'react-icons/md'
+import { Container, Row, Col, Spinner, Navbar, Nav, NavDropdown } from 'react-bootstrap';
+import { MdBubbleChart, MdSave } from 'react-icons/md'
+
 
 const useStyles = createUseStyles({
     header: {
         maxWidth: '100%',
+        width: "100vw!important",
         position: 'sticky',
         top: '0',
-    },
-    title: {
-        fontWeight: 'bolder',
-        fontSize: '1.5em',
-        textAlign: 'left',
-        fontFamily: 'sans-serif',
-        color: '#F8F9FA',
-        padding: '0.25em',
-        marginLeft: '1em',
-        backgroundColor: '#8F8F8F',
-        border: 'none'
     },
     metricsContainer: {
         display: 'inline-block',
@@ -66,19 +57,19 @@ export default function Header({project,
 
     useEffect(() => {
         const fetchProgressInfo = async () => {
-            console.log('fetching progress data')
+            // console.log('fetching progress data')
             if (project._id) {
                 const response = await axios.get(`/api/text/progress/${project._id}`)
                 if (response.status === 200){
                     setProgress(response.data);
-                    console.log(response.data)
+                    // console.log(response.data)
                 }
 
                 const countResponse = await axios.get(`/api/project/counts/token/${project._id}`);
                 if (countResponse){
                     setCurrentVocabSize(countResponse.data.vocab_size);
                     setCurrentOOVTokenCount(countResponse.data.oov_tokens);
-                    console.log('count response', countResponse.data);
+                    // console.log('count response', countResponse.data);
                 } 
             }   
         }
@@ -90,7 +81,7 @@ export default function Header({project,
         if (project._id){
             const response = await axios.patch(`/api/token/suggest/accept/${project._id}`, { textIds: currentTexts.map(text => text._id) })
             if (response.status === 200){
-                console.log('saved all suggestions on current page!')
+                // console.log('saved all suggestions on current page!')
                 // trigger change...
                 setSavePending(false);
                 setSaveTrigger(!saveTrigger);
@@ -101,46 +92,35 @@ export default function Header({project,
     return (
         <>
         <Container className={classes.header}>
-            <Row
-                className="justify-content-md-center"
-                style={{ paddingTop: '0.5em', paddingBottom: '0.5em', backgroundColor: '#8F8F8F', borderBottom: '2px #D9D9D9 solid' }}
-            >
-                <Col md="2" style={{textAlign: 'center'}}>
-                    <button 
-                        className={classes.title}
-                        onClick={() => window.location.href="/"}
-                    >
-                        Lexiclean
-                    </button>
-                </Col>
-                <Col md="8">
-                    <p className="text-center" style={{fontSize: '2em', color: '#F8F9FA', fontWeight: 'bolder'}}>
-                        {project.name}
-                    </p>
-                </Col>
-                <Col md="2">
-                    <div className={classes.menu}>
-                        <Dropdown>
-                            <Dropdown.Toggle variant="light" id="dropdown-basic">
-                                Menu
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu>
-                                {/* <Dropdown.Item onClick={() => setShowOverview(true)}>Overview</Dropdown.Item> */}
-                                <Dropdown.Item onClick={() => setShowLegend(true)}>Legend</Dropdown.Item>
-                                <Dropdown.Item onClick={() => setShowDownload(true)}>Download Results</Dropdown.Item>
-                                {/* <Dropdown.Item onClick={() => setShowProgress(true)}>Review Progress</Dropdown.Item> */}
-                                <Dropdown.Item onClick={() => setShowModifySchema(true)}>Modify Schema</Dropdown.Item>
-                                <Dropdown.Item onClick={() => setShowSettings(true)}>Settings</Dropdown.Item>
-                                <Dropdown.Item onClick={() => history.push('/feed')}>Home</Dropdown.Item>
-                            </Dropdown.Menu>
-                        </Dropdown>
-                    </div>
-                </Col>
-            </Row>
-            <Row
-                style={{backgroundColor: 'white', opacity: '0.9'}}
-            >
-                <Col md="3" className="text-left">
+
+            <Navbar collapseOnSelect expand="lg" bg="light" variant="light" sticky="top">
+                <Navbar.Brand href="/">
+                    <MdBubbleChart style={{fontSize: '40px'}}/>
+                </Navbar.Brand>
+                <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+                <Navbar.Collapse id="responsive-navbar-nav">
+                    <Nav className="mr-auto" style={{fontSize: '28px', fontWeight: 'bold'}}>
+                        { project.name }
+                    </Nav>
+                    <Nav>
+                    <NavDropdown title="Menu" alignRight>
+                        <NavDropdown.Item onClick={() => setShowLegend(true)}>Legend</NavDropdown.Item>
+                        <NavDropdown.Item onClick={() => setShowDownload(true)}>Download Results</NavDropdown.Item>
+                        <NavDropdown.Item onClick={() => setShowModifySchema(true)}>Modify Schema</NavDropdown.Item>
+                        <NavDropdown.Item onClick={() => setShowSettings(true)}>Settings</NavDropdown.Item>
+                        <NavDropdown.Divider/>
+                        {/* <NavDropdown.Item onClick={logout}>Logout</NavDropdown.Item> */}
+                        <NavDropdown.Item onClick={() => history.push('/feed')}>Home</NavDropdown.Item>
+                        <NavDropdown.Item disabled>
+                            Signed in as: Name
+                        </NavDropdown.Item>
+                    </NavDropdown>
+                    </Nav>
+                </Navbar.Collapse>
+            </Navbar>
+
+            <Row style={{backgroundColor: 'white', opacity: '0.9'}} >
+                <Col md="2" className="text-left">
                     {
                         progress && project && currentVocabSize ?
                         <p
@@ -155,7 +135,7 @@ export default function Header({project,
                 </Col>
             {
                 progress && project && currentVocabSize ?
-                    <Col md="6" className="text-center">
+                    <Col md="8" className="text-center">
                         <Row style={{marginTop: '0.5em', backgroundColor: 'white', opacity: '1'}}>
                             <Col>
                                 <div style={{display: 'flex', flexDirection: 'column', padding: '0em', width: '100%'}}>
@@ -199,9 +179,9 @@ export default function Header({project,
                         </Row>
                     </Col>
                 :
-                <Col md="6" className="text-center"><Spinner animation="border" size="sm" variant="light"/></Col>
+                <Col md="8" className="text-center"><Spinner animation="border" size="sm" variant="light"/></Col>
             }
-                <Col md="3"></Col>
+                <Col md="2"></Col>
             </Row>
         </Container>
         </>

@@ -10,15 +10,14 @@ import SignUp from './components/auth/SignUp'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import useToken from './components/auth/useToken'
 import Unauthorized from './components/auth/Unauthorized';
-import Landing from './pages/Landing'
+import Landing from './Landing/Landing'
+
 import Project from './components/Project'
 import ProjectFeed from './components/ProjectFeed'
 
 function App() {
   const { token, setToken } = useToken();
   const logout = () => {localStorage.removeItem("token"); setToken(null);}
-
-  // console.log('app js', token);
 
   return (
     <Router>

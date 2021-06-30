@@ -259,12 +259,13 @@ router.patch('/tokenize/:textId', async (req, res) => {
 
         const newString = req.body.new_string;
         const textResponse = await Text.findOne({ _id: req.params.textId}).populate('tokens.token').lean();
+
         // TODO: review whether it makes sense to map the replacements (if available)
         const originalTokenMap = Object.assign(...textResponse.tokens.map((token, index) => ({[index]: token.token.replacement ? token.token.replacement : token.token.value})))
         const originalString = Object.values(originalTokenMap).join(' ')
         
-        // console.log(newString === originalString ? 'NO CHANGE IN STRING' : 'CHANGE DETECTED IN STRINGS')
-        //console.log(originalTokenMap)
+        console.log(newString === originalString ? 'NO CHANGE IN STRING' : 'CHANGE DETECTED IN STRINGS')
+        console.log(originalTokenMap)
         
 
         // Detect modified tokens - new string should have LESS tokens than the original.
@@ -295,18 +296,18 @@ router.patch('/tokenize/:textId', async (req, res) => {
             }
         }).filter(ele => ele);   // filter used to remove nulls
 
-        //console.log('diffs', diffs)
+        console.log('diffs', diffs)
 
         // Remove tokens that have been tokenized propery and add the new token into the correct spot
         const map = new Map(diffs.map(({newToken, originalIndex, oldToken}) => [newToken, { newToken, originalIndex, oldToken: [] }])); 
         for (let {newToken, originalIndex, oldToken} of diffs) map.get(newToken).oldToken.push(...[oldToken].flat());
         const diffsFormatted = [...map.values()]
-        //console.log('diffsFormatted -> ', diffsFormatted)
+        console.log('diffsFormatted -> ', diffsFormatted)
         
         
         // This works, but may fail if there are multiple changes to the SAME token? TODO: review.
         const tokensToAdd = diffsFormatted.map(diff => ({"index": newString.split(' ').indexOf(diff.newToken), "value": diff.newToken, "originalIndex": diff.originalIndex}))
-        //console.log('tokensToAdd -> ', tokensToAdd)
+        console.log('tokensToAdd -> ', tokensToAdd)
         
         
         // add new tokens to tokens array
@@ -339,27 +340,29 @@ router.patch('/tokenize/:textId', async (req, res) => {
 
             })
         
-        //console.log('token list -> ', tokenList);
+        console.log('token list -> ', tokenList);
 
         const tokenListResponse = await Token.insertMany(tokenList);
-        //console.log('tokenListResponse -> ', tokenListResponse);
+        console.log('tokenListResponse -> ', tokenListResponse);
 
         
-        //console.log('Updating text');
-        // // NOTE: (TODO)  - weights do not get updated when tokenization is performed. This is because tokens may be OOV for tf-id.       
+        console.log('Updating text');
+        // NOTE: (TODO)  - weights do not get updated when tokenization is performed. This is because tokens may be OOV for tf-id.       
         
         const textUpdatePayload = {'tokens': tokenListResponse.map((token, index) => ({'index': index, 'token': token._id}))}
-        //console.log('textUpdatePayload ->', textUpdatePayload)
+        console.log('textUpdatePayload ->', textUpdatePayload)
 
         // Update by writing over tokens
         const textResponseAfterAddition = await Text.findByIdAndUpdate({ _id: req.params.textId}, textUpdatePayload, {new: true}).populate('tokens.token').lean();
-        //console.log('textResponseAfterAddition -> ', textResponseAfterAddition)
+        console.log('textResponseAfterAddition -> ', textResponseAfterAddition)
 
         // convert text into same format as the paginator (this is expected by front-end components)
         const outputTokens = textResponseAfterAddition.tokens.map(token => ({...token.token, index: token.index, token: token.token._id}))
-        // console.log('output tokens->', outputTokens);
+        console.log('output tokens->', outputTokens);
+        
         const outputText = {...textResponseAfterAddition, tokens: outputTokens}
-        // console.log(outputText)
+        console.log(outputText)
+        
         res.json(outputText)
 
         // TODO: Still need to capture the changes in the token_tokenized field...

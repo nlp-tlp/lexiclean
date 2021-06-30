@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import { createUseStyles } from 'react-jss';
-import { Spinner, Button, Dropdown } from 'react-bootstrap';
+import { Spinner, Button, Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
-import BrandImage from './images/logo_transparent_white.png';
-
+import { MdBubbleChart } from 'react-icons/md';
 
 import ProjectList from './ProjectList'
 import UploadModal from './modals/UploadModal'
@@ -17,22 +16,6 @@ const useStyles = createUseStyles({
         flexDirection: 'column',
         height: '80vh',
         minHeight: '100%'
-    },
-    header: {
-        paddingTop: '0.5em',
-        paddingBottom: '0.5em',
-        backgroundColor: '#8F8F8F',
-        maxWidth: '100%',
-        display: 'flex',
-        justifyContent: 'space-between',
-        borderBottom: '1px #D9D9D9 solid'
-    },
-    brandLogo: {
-        height: '3em',
-        // transform: 'scale(0.25, 0.25)',
-        padding: '0.25em',
-        marginLeft: '1em',
-        cursor: 'pointer'
     }
 })
 
@@ -59,7 +42,6 @@ export default function ProjectFeed({token, setToken}) {
         const fetchProjects = async () => {
             const response = await axios.post('/api/project/feed', { jwt_token: JSON.parse(localStorage.getItem('token')) });
             if (response.status === 200){
-                // console.log('projects', response.data);
                 setProjects(response.data);
                 setProjectsLoaded(true);
             }
@@ -89,29 +71,29 @@ export default function ProjectFeed({token, setToken}) {
             : null
         }
 
-        <div className={classes.container}>
-            <div className={classes.header}>
-                <img
-                    className={classes.brandLogo}
-                    src={BrandImage}
-                    onClick={() => history.push("/")}
-                    alt="lexiclean logo"
-                />
-                <div style={{marginRight: '1em', padding: '0.25em'}}>
-                    <Dropdown>
-                        <Dropdown.Toggle variant="light" id="dropdown-basic">
-                            Menu
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu>
-                            <Dropdown.Item onClick={() => setShowUpload(true)}>New Project</Dropdown.Item>
-                            <Dropdown.Item onClick={() => history.push('/')}>Home</Dropdown.Item>
-                            <Dropdown.Divider />
-                            <Dropdown.Item onClick={logout}>Logout</Dropdown.Item>
-                        </Dropdown.Menu>
-                    </Dropdown>
-                </div>
-            </div>
+        <Navbar collapseOnSelect expand="md" bg="light" variant="light">
+            <Navbar.Brand href="/">
+                <MdBubbleChart style={{fontSize: '40px'}}/>
+            </Navbar.Brand>
+            <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+            <Navbar.Collapse id="responsive-navbar-nav">
+                <Nav className="mr-auto">
+                </Nav>
+                <Nav>
+                <NavDropdown title="Menu" alignRight>
+                    <NavDropdown.Item onClick={() => setShowUpload(true)}>New Project</NavDropdown.Item>
+                    <NavDropdown.Item onClick={() => history.push('/')}>Home</NavDropdown.Item>
+                    <NavDropdown.Divider/>
+                    <NavDropdown.Item onClick={logout}>Logout</NavDropdown.Item>
+                    <NavDropdown.Item disabled>
+                        Signed in as: Name
+                    </NavDropdown.Item>
+                </NavDropdown>
+                </Nav>
+            </Navbar.Collapse>
+        </Navbar>
 
+        <div className={classes.container}>
             {
                 !projectsLoaded ? 
                 <div
@@ -124,7 +106,7 @@ export default function ProjectFeed({token, setToken}) {
                     style={{margin: 'auto', textAlign: 'center', marginTop: '5em', fontSize: '2em'}}
                 >
                     <p>No projects</p>
-                    <Button variant="dark" onClick={() => setShowUpload(true)}>Create Project</Button>
+                    <Button variant="dark" size="lg" onClick={() => setShowUpload(true)}>Create Project</Button>
                 </div>
                 :
                 <ProjectList 
@@ -135,6 +117,12 @@ export default function ProjectFeed({token, setToken}) {
                 />
             }
         </div>
+
+        <Navbar bg="light" fixed="bottom">
+            <Navbar.Text className="m-auto">
+                © UWA NLP-TLP Group 2021.
+            </Navbar.Text>
+        </Navbar>
         </>
     )
 }

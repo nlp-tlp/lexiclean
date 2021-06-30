@@ -4,7 +4,6 @@ import { createUseStyles } from 'react-jss';
 
 import UploadForm from '../forms/UploadForm';
 
-
 const useStyles = createUseStyles({
     model: {
         width: '50%'
