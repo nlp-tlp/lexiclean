@@ -4,6 +4,7 @@ const logger = require('../logger');
 const mongoose = require('mongoose');
 const Text = require('../models/Text');
 const Token = require('../models/Token');
+const Map = require('../models/Map');
 
 
 // Get single text
@@ -323,7 +324,6 @@ router.patch('/tokenize/:textId', async (req, res) => {
                     value: origTokenResponse.value,
                     meta_tags: origTokenResponse.meta_tags,
                     suggested_replacement: origTokenResponse.suggested_replacement,
-                    suggested_meta_tags: origTokenResponse.suggested_meta_tags,
                     project_id: origTokenResponse.project_id
                 }
                 )
@@ -362,7 +362,7 @@ router.patch('/tokenize/:textId', async (req, res) => {
         
         const outputText = {...textResponseAfterAddition, tokens: outputTokens}
         console.log(outputText)
-        
+
         res.json(outputText)
 
         // TODO: Still need to capture the changes in the token_tokenized field...

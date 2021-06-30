@@ -20,10 +20,6 @@ const TokenSchema = mongoose.Schema({
         required: false,
         default: null
     },
-    suggested_meta_tags: [{
-        name: { type: String, required: false },
-        value: { type: String, required: false }
-    }],
     project_id: {
         type: Schema.Types.ObjectId,
         ref: 'Project',
