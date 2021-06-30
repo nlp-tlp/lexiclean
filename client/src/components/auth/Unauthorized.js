@@ -11,17 +11,17 @@ export default function Unauthorized() {
             <Card.Img src={UnauthorizedImage}/>
             <Card.Body>
                 <Card.Title>
-                    Unable to Access Page (Unauthorized)
+                    Unable to Access Page (Unauthorised)
                 </Card.Title>
                 <Button
-                    variant="primary"
+                    variant="dark"
                     onClick={() => history.push("/login")}
                 >
                     Log In
                 </Button>
                 <div style={{marginTop: "1em"}}>
                     <a href="/" className="text-muted">
-                        Return to Landing
+                        Return to landing page
                     </a>
                 </div>
             </Card.Body>

@@ -9,7 +9,7 @@ import { useHistory } from 'react-router-dom'
 
 const useStyles = createUseStyles({
     card: {
-        width: '20em',
+        width: '25em',
         margin: 'auto',
         marginTop: '5vh'
     }
