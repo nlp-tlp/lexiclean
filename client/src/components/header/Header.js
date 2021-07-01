@@ -61,17 +61,15 @@ export default function Header({project,
         const fetchProgressInfo = async () => {
             // console.log('fetching progress data')
             if (project._id) {
-                const response = await axios.get(`/api/text/progress/${project._id}`)
+                // const response = await axios.get(`/api/text/progress/${project._id}`)
+                // if (response.status === 200){
+                //     setProgress(response.data);
+                // }
+                const response = await axios.get(`/api/project/counts/${project._id}`);
                 if (response.status === 200){
-                    setProgress(response.data);
-                    // console.log(response.data)
-                }
-
-                const countResponse = await axios.get(`/api/project/counts/token/${project._id}`);
-                if (countResponse){
-                    setCurrentVocabSize(countResponse.data.vocab_size);
-                    setCurrentOOVTokenCount(countResponse.data.oov_tokens);
-                    // console.log('count response', countResponse.data);
+                    setProgress(response.data.text);
+                    setCurrentVocabSize(response.data.token.vocab_size);
+                    setCurrentOOVTokenCount(response.data.token.oov_tokens);
                 } 
             }   
         }
@@ -83,8 +81,6 @@ export default function Header({project,
         if (project._id){
             const response = await axios.patch(`/api/token/suggest/accept/${project._id}`, { textIds: currentTexts.map(text => text._id) })
             if (response.status === 200){
-                // console.log('saved all suggestions on current page!')
-                // trigger change...
                 setSavePending(false);
                 setSaveTrigger(!saveTrigger);
             }
@@ -94,7 +90,6 @@ export default function Header({project,
     return (
         <>
         <Container className={classes.header}>
-
             <Navbar collapseOnSelect expand="lg" bg="light" variant="light" sticky="top">
                 <Navbar.Brand href="/">
                     <MdBubbleChart style={{fontSize: '40px'}}/>
@@ -112,7 +107,6 @@ export default function Header({project,
                         <NavDropdown.Item onClick={() => setShowSettings(true)}>Settings</NavDropdown.Item>
                         <NavDropdown.Divider/>
                         <NavDropdown.Item onClick={() => history.push('/feed')}>Return To Feed</NavDropdown.Item>
-                        {/* <NavDropdown.Item onClick={logout}>Logout</NavDropdown.Item> */}
                         <NavDropdown.Item disabled>Signed in as: {username}</NavDropdown.Item>
                     </NavDropdown>
                     </Nav>
@@ -140,7 +134,7 @@ export default function Header({project,
                             <Col>
                                 <div style={{display: 'flex', flexDirection: 'column', padding: '0em', width: '100%'}}>
                                     <p style={{margin: '0em', fontSize: '1.5em', fontWeight: 'bolder'}}>
-                                    {progress.annotated} / {progress.total}
+                                        {progress.annotated} / {progress.total}
                                     </p>
                                     <p
                                         style={{fontSize: '0.75em', fontWeight: 'bold'}}

@@ -32,26 +32,6 @@ router.get('/', async (req, res) => {
 })
 
 
-// Get number of annotated documents
-router.get('/progress/:projectId', async (req, res) => {
-    try{
-        logger.info('Getting project text annotation progress', {route: `/api/text/progress/${req.params.projectId}`});
-        const textsAnnotated = await Text.find({ project_id: req.params.projectId, annotated: true}).count();
-        const textsTotal = await Text.find({project_id: req.params.projectId}).count();
-
-        logger.info('annotation progress', {text_annotated: textsAnnotated})
-        
-        res.json({
-            "annotated": textsAnnotated,
-            "total": textsTotal
-        })
-    }catch(err){
-        res.json({ message: err })
-        logger.error('Failed to get project text annotation progress', {route: `/api/text/progress/${req.params.projectId}`});
-    }
-})
-
-
 // Get number of total pages for paginator
 router.get('/filter/pages/:projectId', async (req, res) => {
     try{

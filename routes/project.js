@@ -355,10 +355,10 @@ router.delete('/:projectId', async (req, res) => {
 })
 
 
-// Get count of unique tokens within project
-router.get('/counts/token/:projectId', async (req, res) => {
+// Get count of tokens and annotated text for a single project
+router.get('/counts/:projectId', async (req, res) => {
     try{
-        logger.info('Get project token counts', {route: `/api/project/counts/token/${req.params.projectId}`});
+        logger.info('Get project token counts', {route: `/api/project/counts/${req.params.projectId}`});
         const textRes = await Text.find({ project_id: req.params.projectId })
                                         .populate('tokens.token')
                                         .lean();
@@ -368,13 +368,30 @@ router.get('/counts/token/:projectId', async (req, res) => {
         // Unlike on project creation, the other meta-tags need to be checked such as removed, noise, etc.
         const allTokens = textRes.map(text => text.tokens.map(token => token.token)).flat();
         const candidateTokens = allTokens.filter(token => (Object.values(token.meta_tags).filter(tagBool => tagBool).length === 0 && !token.replacement)).map(token => token.value)
-        
         logger.info('vocab counts', {"vocab_size": uniqueTokens.size, "candidateTokens": candidateTokens.length})
-        res.json({'vocab_size': uniqueTokens.size, 'oov_tokens': candidateTokens.length});
+        
+        // Get annotated text counts
+        logger.info('Getting project text annotation progress', {route: `/api/project/counts/${req.params.projectId}`});
+        const textsAnnotated = textRes.filter(text => text.annotated).length;
+        const textsTotal = textRes.length;
+        logger.info('annotation progress', {text_annotated: textsAnnotated})
+        
+        
+        
+        res.json({
+            "token": {
+                'vocab_size': uniqueTokens.size,
+                'oov_tokens': candidateTokens.length
+            },
+            "text":{
+                "annotated": textsAnnotated,
+                "total": textsTotal
+            }
+        });
 
     }catch(err){
         res.json({ message: err })
-        logger.error('Failed to get project token counts', {route: `/api/project/counts/token/${req.params.projectId}`});
+        logger.error('Failed to get project token counts', {route: `/api/project/counts/${req.params.projectId}`});
     }
 })
 
