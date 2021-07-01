@@ -23,6 +23,8 @@ export default function ProjectFeed({token, setToken}) {
     const classes = useStyles();
     const history = useHistory();
 
+    const username = localStorage.getItem('username');
+
     const [projects, setProjects] = useState();
     const [projectsLoaded, setProjectsLoaded] = useState(false);
     const [selectedProject, setSelectedProject] = useState();
@@ -32,8 +34,11 @@ export default function ProjectFeed({token, setToken}) {
     const [showProjectDelete, setShowProjectDelete] = useState(false);
 
     const logout = () => {
+        setToken(null);
         localStorage.removeItem("token");
-        setToken(null)
+        localStorage.removeItem("username");
+        localStorage.removeItem("id");
+        localStorage.removeItem("replacements");
         history.push("/");
     }
 
@@ -78,16 +83,15 @@ export default function ProjectFeed({token, setToken}) {
             <Navbar.Toggle aria-controls="responsive-navbar-nav" />
             <Navbar.Collapse id="responsive-navbar-nav">
                 <Nav className="mr-auto">
+                    Welcome, { username }!
                 </Nav>
                 <Nav>
                 <NavDropdown title="Menu" alignRight>
                     <NavDropdown.Item onClick={() => setShowUpload(true)}>New Project</NavDropdown.Item>
                     <NavDropdown.Item onClick={() => history.push('/')}>Home</NavDropdown.Item>
                     <NavDropdown.Divider/>
+                    <NavDropdown.Item disabled>Signed in as: {username}</NavDropdown.Item>
                     <NavDropdown.Item onClick={logout}>Logout</NavDropdown.Item>
-                    <NavDropdown.Item disabled>
-                        Signed in as: Name
-                    </NavDropdown.Item>
                 </NavDropdown>
                 </Nav>
             </Navbar.Collapse>

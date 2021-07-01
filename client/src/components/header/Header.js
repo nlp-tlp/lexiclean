@@ -51,6 +51,8 @@ export default function Header({project,
     const history = useHistory();
     const classes = useStyles();
 
+    const username = localStorage.getItem('username');
+
     const [progress, setProgress] = useState();
     const [currentVocabSize, setCurrentVocabSize] = useState();
     const [currentOOVTokenCount, setCurrentOOVTokenCount] = useState();
@@ -109,11 +111,9 @@ export default function Header({project,
                         <NavDropdown.Item onClick={() => setShowModifySchema(true)}>Modify Schema</NavDropdown.Item>
                         <NavDropdown.Item onClick={() => setShowSettings(true)}>Settings</NavDropdown.Item>
                         <NavDropdown.Divider/>
+                        <NavDropdown.Item onClick={() => history.push('/feed')}>Return To Feed</NavDropdown.Item>
                         {/* <NavDropdown.Item onClick={logout}>Logout</NavDropdown.Item> */}
-                        <NavDropdown.Item onClick={() => history.push('/feed')}>Home</NavDropdown.Item>
-                        <NavDropdown.Item disabled>
-                            Signed in as: Name
-                        </NavDropdown.Item>
+                        <NavDropdown.Item disabled>Signed in as: {username}</NavDropdown.Item>
                     </NavDropdown>
                     </Nav>
                 </Navbar.Collapse>

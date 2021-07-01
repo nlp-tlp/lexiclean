@@ -19,7 +19,7 @@ const useStyles = createUseStyles({
 const schema = yup.object().shape({
     username: yup.string().required(),
     password: yup.string().required(),
-    email: yup.string().required()
+    email: yup.string().email().required()
   });
 
 export default function SignUp({ token, setToken }) {
@@ -36,9 +36,10 @@ export default function SignUp({ token, setToken }) {
                         .then(response => {
                             console.log(response);
                             if (response.status === 200){
-                              setToken(response.data.token)
-                              setFormSubmitted(true);
-                              history.push("/feed");
+                                localStorage.setItem('username', values.username);
+                                setToken(response.data.token)
+                                setFormSubmitted(true);
+                                history.push("/feed");
                             }
                         })
                         .catch(error => {
@@ -61,9 +62,7 @@ export default function SignUp({ token, setToken }) {
                 dismissible
             >
                 <Alert.Heading>Oops!</Alert.Heading>
-                <p>
-                    Username already exists.
-                </p>
+                <p>Username already exists.</p>
             </Alert>
         : null}
 
@@ -102,6 +101,7 @@ export default function SignUp({ token, setToken }) {
                                 value={values.username}
                                 onChange={handleChange}
                                 isValid={touched.username && !errors.username}
+                                isInvalid={touched.username && errors.username}
                             />
                             <Form.Control.Feedback type="invalid">
                                 {errors.username}
@@ -112,16 +112,21 @@ export default function SignUp({ token, setToken }) {
                             <Form.Group as={Col} md="12" controlId="validationFormik02">
                             <Form.Label>Email</Form.Label>
                             <Form.Control
-                                type="text"
+                                type="email"
                                 placeholder="Enter Email Address"
                                 name="email"
                                 value={values.email}
                                 onChange={handleChange}
                                 isValid={touched.email && !errors.email}
+                                isInvalid={touched.email && errors.email}
                             />
+                            <Form.Text className="text-muted">
+                                We'll never share your email with anyone else.
+                            </Form.Text>
                             <Form.Control.Feedback type="invalid">
                                 {errors.email}
                             </Form.Control.Feedback>
+
                             </Form.Group>
                         </Form.Row>
                         <Form.Row>
@@ -134,6 +139,7 @@ export default function SignUp({ token, setToken }) {
                                 value={values.password}
                                 onChange={handleChange}
                                 isValid={touched.password && !errors.password}
+                                isInvalid={touched.password && errors.password}
                             />
                             <Form.Control.Feedback type="invalid">
                                 {errors.password}
