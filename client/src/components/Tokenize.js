@@ -46,7 +46,7 @@ export default function Tokenize({ project, textIntermediate, setTextIntermediat
 
     const updateText = async (textString, isSingle) => {
         if (isSingle){
-            const response = await axios.patch(`/api/text/tokenize/${textIntermediate._id}`, { 'new_string': textString, 'project_id': project._id});
+            const response = await axios.patch('/api/text/tokenize/', { text_id: textIntermediate._id, new_string: textString, project_id: project._id});
             if (response.status === 200){
                 setTextIntermediate(response.data);
             }

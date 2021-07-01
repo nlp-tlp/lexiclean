@@ -232,126 +232,75 @@ router.patch('/annotations/update', async (req, res) => {
 
 
 // Tokenization - update single text
-// This requires special logic to determine which tokens changed
-router.patch('/tokenize/:textId', async (req, res) => {
+router.patch('/tokenize/', async (req, res) => {
+    // Add new tokens to text whilst conserving original, unchanged, tokens.
+    // Save tokenization artefact if possible, too!
     try{
         logger.info('Tokenizing one text', {route: `/api/text/tokenize/${req.params.textId}`});
-        const projectId = req.body.project_id;
-
-        const newString = req.body.new_string;
-        const textResponse = await Text.findOne({ _id: req.params.textId}).populate('tokens.token').lean();
-
-        // TODO: review whether it makes sense to map the replacements (if available)
-        const originalTokenMap = Object.assign(...textResponse.tokens.map((token, index) => ({[index]: token.token.replacement ? token.token.replacement : token.token.value})))
-        const originalString = Object.values(originalTokenMap).join(' ')
+        const text = await Text.findOne({ _id: req.body.text_id}).populate('tokens.token').lean();
         
-        console.log(newString === originalString ? 'NO CHANGE IN STRING' : 'CHANGE DETECTED IN STRINGS')
-        console.log(originalTokenMap)
-        
+        // Build current text from tokens and tokenize new string
+        const oString = text.tokens.map(token => token.token.value).flat();
+        const nString = req.body.new_string.split(' ');
 
-        // Detect modified tokens - new string should have LESS tokens than the original.
-        let tokenCandidates = originalString.split(' ');
-        const diffs = tokenCandidates.map((token, index) => {
-            const substringMatch = newString.split(' ').filter(newToken => newToken.includes(token))[0];
-            if (substringMatch && substringMatch !== token){
-                // Remove matched token from candidates (tokens can only be used once..)
-                tokenCandidates = tokenCandidates.filter(candidateToken => candidateToken !== token);
-                return(
-                    {
-                        "newToken": substringMatch,
-                        "originalIndex": null,
-                        "oldToken": {
-                            "index": index,
-                            "value": token
-                        }
-                    }
-                )
-            } else {
-                return(
-                    {
-                        "newToken": token,
-                        "originalIndex": index,
-                        "oldToken": {}
-                    }
-                )
-            }
-        }).filter(ele => ele);   // filter used to remove nulls
+        // Get indexes of unchanged tokens in oString
+        const oTokensUnchgdIdxs = oString.flatMap((t, i) => (nString.includes(t) ? i : []))
 
-        console.log('diffs', diffs)
+        // Get indexes of changed tokens in nString
+        const nTokensChgd = nString.flatMap((t, i) => (!oString.includes(t) ? t : []))
+        const nTokensChgdIdxs = nString.flatMap((t, i) => (!oString.includes(t) ? i : []))
 
-        // Remove tokens that have been tokenized propery and add the new token into the correct spot
-        const map = new Map(diffs.map(({newToken, originalIndex, oldToken}) => [newToken, { newToken, originalIndex, oldToken: [] }])); 
-        for (let {newToken, originalIndex, oldToken} of diffs) map.get(newToken).oldToken.push(...[oldToken].flat());
-        const diffsFormatted = [...map.values()]
-        console.log('diffsFormatted -> ', diffsFormatted)
-        
-        
-        // This works, but may fail if there are multiple changes to the SAME token? TODO: review.
-        const tokensToAdd = diffsFormatted.map(diff => ({"index": newString.split(' ').indexOf(diff.newToken), "value": diff.newToken, "originalIndex": diff.originalIndex}))
-        console.log('tokensToAdd -> ', tokensToAdd)
-        
-        
-        // add new tokens to tokens array
-        // first need to create new tokens in Token collection (this includes loading maps - TODO! etc.)
-        const tokenList = tokensToAdd.map(token => {
-            // const metaTags = Object.assign(...Object.keys(mapSets).filter(key => key !== 'rp').map(key => ({[key]: mapSets[key].has(token)})));
-            // const hasReplacement = mapSets.rp.has(token);
+        // Create new tokens
+        const enMap = await Map.findOne({ type: "en"}).lean();
+        const enMapSet = new Set(enMap.tokens);
 
-            if (token.originalIndex){
-                // Tokens that are not modified are simply copied 
-                const origTokenResponse = textResponse.tokens.filter(tokenOrig => tokenOrig.index === token.originalIndex)[0].token;
-                return({
-                    value: origTokenResponse.value,
-                    meta_tags: origTokenResponse.meta_tags,
-                    suggested_replacement: origTokenResponse.suggested_replacement,
-                    project_id: origTokenResponse.project_id
-                }
-                )
-            } else {
-                return({
-                        value: token.value,
-                        meta_tags: {en: false},      // TODO: figure out how to capture the correct meta-tags for this. (DEFAULTING TO UA - user can reassign)
-                        // Replacement is pre-filled if only replacement is found in map (user can remove in UI if necessary)
-                        replacement: null,
-                        suggested_replacement: null,
-                        project_id: projectId
-                        })
-            }
+        // Here all historical info will be stripped from new tokens regardless of whether new combinations are in IV form
+        const newTokenList = nTokensChgd.map(token => {
+            return({
+                    value: token,
+                    meta_tags: { en: enMapSet.has(token) },
+                    replacement: null,
+                    suggested_replacement: null,
+                    project_id: req.body.project_id
+                    })
+            });
+        // Insert tokens into Token collection
+        const tokenListRes = await Token.insertMany(newTokenList);
 
-            })
+        // Build token array, assign indices and update text
+        // // These are original tokens that remain unchanged, filtered by their index
+        const oStringTokens = text.tokens.map(token => token.token).filter((e, i) => {return oTokensUnchgdIdxs.indexOf(i) !== -1});
+        const oStringTokensPayload = {'tokens': oTokensUnchgdIdxs.map((originalIndex, sliceIndex) => ({'index': originalIndex, 'token': oStringTokens[sliceIndex]._id}))};
         
-        console.log('token list -> ', tokenList);
+        // // Add new tokens to payload
+        const nStringTokensPayload = {'tokens': nTokensChgdIdxs.map((originalIndex, sliceIndex) => ({'index': originalIndex, 'token': tokenListRes[sliceIndex]._id}))}
 
-        const tokenListResponse = await Token.insertMany(tokenList);
-        console.log('tokenListResponse -> ', tokenListResponse);
+        // Combine both payloads into single object
+        let tokensPayload = {'tokens': [...oStringTokensPayload['tokens'], ...nStringTokensPayload['tokens']]};
 
-        
-        console.log('Updating text');
-        // NOTE: (TODO)  - weights do not get updated when tokenization is performed. This is because tokens may be OOV for tf-id.       
-        
-        const textUpdatePayload = {'tokens': tokenListResponse.map((token, index) => ({'index': index, 'token': token._id}))}
-        console.log('textUpdatePayload ->', textUpdatePayload)
+        // Sort combined payload by original index
+        tokensPayload['tokens'] = tokensPayload['tokens'].sort((a,b) => a.index - b.index);
+        // update indexes based on current ordering
+        tokensPayload['tokens'] = tokensPayload.tokens.map((token, newIndex) => ({...token, index: newIndex}))
 
-        // Update by writing over tokens
-        const textResponseAfterAddition = await Text.findByIdAndUpdate({ _id: req.params.textId}, textUpdatePayload, {new: true}).populate('tokens.token').lean();
-        console.log('textResponseAfterAddition -> ', textResponseAfterAddition)
+        // Update text tokens
+        const updatedTextRes = await Text.findByIdAndUpdate({ _id: req.body.text_id}, tokensPayload, { new: true }).populate('tokens.token').lean();
 
         // convert text into same format as the paginator (this is expected by front-end components)
-        const outputTokens = textResponseAfterAddition.tokens.map(token => ({...token.token, index: token.index, token: token.token._id}))
-        console.log('output tokens->', outputTokens);
-        
-        const outputText = {...textResponseAfterAddition, tokens: outputTokens}
-        console.log(outputText)
+        const outputTokens = updatedTextRes.tokens.map(token => ({...token.token, index: token.index, token: token.token._id}))
+        const outputText = {...updatedTextRes, tokens: outputTokens}
 
+        // Remove old tokens in token collection (those removed from text)
+        const oStringTokensRemoveIds = text.tokens.map(token => token.token).filter((e, i) => {return oTokensUnchgdIdxs.indexOf(i) == -1}).map(token =>token._id);
+        await Token.deleteMany({ _id: oStringTokensRemoveIds});
         res.json(outputText)
-
-        // TODO: Still need to capture the changes in the token_tokenized field...
-
+        
     }catch(err){
         res.json({ message: err })
         logger.error('Failed to tokenize text', {route: `/api/text/tokenize/${req.params.textId}`});
     }
-})
 
+
+})
 
 module.exports = router;
