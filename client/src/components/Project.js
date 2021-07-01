@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom';
 import { createUseStyles } from 'react-jss';
 import axios from 'axios';
-import { Spinner, Toast, Navbar } from 'react-bootstrap';
+import { Spinner, Navbar } from 'react-bootstrap';
 
 import AnnotationTable from './AnnotationTable'
 import Header from './header/Header'
@@ -22,7 +22,6 @@ const useStyles = createUseStyles({
         minHeight: '100%',
     }
 })
-
 
 const PAGE_LIMIT = 10;
 
@@ -49,7 +48,6 @@ export default function Project() {
     const [pageLimit, setPageLimit] = useState(localStorage.getItem('pageLimit') ? localStorage.getItem('pageLimit') : PAGE_LIMIT)
     const [pageChanged, setPageChanged] = useState(); // uses page number to update state...
 
-    // Toast
     const [toastInfo, setToastInfo] = useState();
     const [showToast, setShowToast] = useState(false);
 
@@ -75,7 +73,6 @@ export default function Project() {
     useEffect(() => {
         localStorage.setItem('replacements', JSON.stringify(replacementDict))
     }, [replacementDict])
-
 
     const headerProps = {
         project,
@@ -107,7 +104,6 @@ export default function Project() {
         pageNumber,
         setSavePending
     }
-
 
     return (
         <>

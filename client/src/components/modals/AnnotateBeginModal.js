@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef, useEffect } from 'react'
 import { useHistory } from 'react-router-dom';
 import { Modal, Button } from 'react-bootstrap';
 
@@ -8,6 +8,13 @@ export default function AnnotateBeginModal({ showAnnotate, setShowAnnotate, sele
         history.push(`/project/${selectedProject._id}/page/1`)
         setShowAnnotate(false);
     }
+
+    const inputRef = useRef(null);
+
+    useEffect(() => {
+        inputRef.current.focus();
+    }, [inputRef]);
+
     return (
         <Modal
             show={showAnnotate}
@@ -23,7 +30,7 @@ export default function AnnotateBeginModal({ showAnnotate, setShowAnnotate, sele
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={() => setShowAnnotate(false)}>Cancel</Button>
-                <Button variant="dark" onClick={() => confirmationAction()}>Yes</Button>
+                <Button variant="dark" ref={inputRef} onClick={() => confirmationAction()}>Yes</Button>
             </Modal.Footer>
         </Modal>
     )

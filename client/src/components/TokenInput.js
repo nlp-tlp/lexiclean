@@ -78,18 +78,6 @@ export default function TokenInput({showContextMenu,
                                 }) {
     const classes = useStyles();
 
-    const addOne = () => {
-        addReplacement(true);
-    }
-
-    const addAll = () => {
-        addReplacement(false);
-    }
-
-    const ignore = () => {
-        cancelChange();
-    }
-
     const addReplacementPopover = <Popover
                                     id={`popover`}
                                     onKeyDown={(event) => console.log(event)}
@@ -101,9 +89,9 @@ export default function TokenInput({showContextMenu,
                                             <p className={classes.suggestedText}>{currentToken}</p>
                                         </div>
                                         <div className={classes.actionContainer}>
-                                            <div className={classes.actionBtn} onClick={() => addOne()}><p className={classes.actionText}><MdBookmark/>Apply</p></div>
-                                            <div className={classes.actionBtn} onClick={() => addAll()}><p className={classes.actionText}><MdBrush/>Apply all</p></div>
-                                            <div className={classes.actionBtn} onClick={() => ignore()}><p className={classes.actionText}><MdDelete/>Ignore</p></div>
+                                            <div className={classes.actionBtn} onClick={() => addReplacement(true)}><p className={classes.actionText}><MdBookmark/>Apply</p></div>
+                                            <div className={classes.actionBtn} onClick={() => addReplacement(false)}><p className={classes.actionText}><MdBrush/>Apply all</p></div>
+                                            <div className={classes.actionBtn} onClick={() => cancelChange()}><p className={classes.actionText}><MdDelete/>Ignore</p></div>
                                         </div>
                                     </div>
                                 </Popover>

@@ -13,7 +13,7 @@ const useStyles = createUseStyles({
         width: '75%',
         margin: 'auto',
         marginTop: '2em',
-        maxWidth: '50vw'
+        maxWidth: '75vw'
     },
     projectListItemContainer: {
         display: 'flex',
@@ -23,12 +23,12 @@ const useStyles = createUseStyles({
         width: '25vw'
     },
     projectName: {
-        fontSize: '32px',
+        fontSize: '2em',
         fontWeight: 'bold',
         margin: 'auto'
     },
     projectDescription: {
-        fontSize: '16px',
+        fontSize: '1em',
         margin: 'auto',
         verticalAlign: 'middle'
     },
@@ -64,11 +64,12 @@ const useStyles = createUseStyles({
         textAlign: 'center'
     },
     metricTextTitle: {
-        fontSize: '14px'
+        fontSize: '0.7em',
+        fontWeight: 'bold'
     },
     metricTextNumber: {
         fontWeight: 'bolder',
-        fontSize: '18px',
+        fontSize: '1.25em',
         margin: '0'
     },
     actionContainer: {

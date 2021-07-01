@@ -14,13 +14,13 @@ export default function ContextMenu({ menu_id,
                                     }) {
 
     const Apply = (field) => {
-        console.log('apply one', field)
+        // console.log('apply one', field)
         const isSingle = true;
         addMetaTag(field, !tokenInfo[field], isSingle)
     }
 
     const ApplyAll = (field) => {
-        console.log('apply all', field)
+        // console.log('apply all', field)
         const isSingle = false;
         addMetaTag(field, !tokenInfo[field], isSingle)
     }

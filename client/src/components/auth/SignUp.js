@@ -146,7 +146,7 @@ export default function SignUp({ token, setToken }) {
                             </Form.Control.Feedback>
                             </Form.Group>
                         </Form.Row>
-                        <Button type="submit">Sign Up</Button>
+                        <Button type="submit" variant="dark">Sign Up</Button>
                         </Form>
                     )}
                     </Formik>

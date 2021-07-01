@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Form, Col, Table, OverlayTrigger, Popover } from 'react-bootstrap';
+import { Button, Form, Col, Table, OverlayTrigger, Popover, Alert } from 'react-bootstrap';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import axios from 'axios';
@@ -54,6 +54,8 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
         reader.onload = () => {
             // console.log(fileMeta)
             const fileExtension = fileMeta.name.split('.').slice(-1)[0];
+
+            // TODO: Check whether file is valid for the action being performed
 
             if (fileExtension === 'txt'){
                 // Split lines and remove any documents that are empty
@@ -196,6 +198,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
             </div>
             )}
 
+
     return (
     <Formik
       validationSchema={schema}
@@ -275,7 +278,6 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
             </Form.Row>
         </Form.Group>
 
-
         { infoOverlay(infoContent['meta_tags']) }
         <Table striped bordered hover size="sm" style={{fontSize: '14px'}}>
           <thead>
@@ -288,7 +290,9 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
           </thead>
           <tbody>
             <tr>
-              <td><input type="text" style={{width: '8em'}} value={tempMetaTag} onChange={e => setTempMetaTag(e.target.value)}></input></td>
+              <td>
+                <input type="text" style={{width: '8em'}} value={tempMetaTag} onChange={e => setTempMetaTag(e.target.value)}/>
+                </td>
               <td>
                 <Form.File
                     id="formControlTempMetaTag"
