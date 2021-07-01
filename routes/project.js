@@ -24,24 +24,32 @@ router.get('/', async (req, res) => {
 })
 
 // Fetch projects for project feed
-// Review - this is slow (returns lists of all unique text ids... this is slow for large projects in the feed)
 router.post('/feed', async(req, res) => {
     logger.info('Fetching project feed', {route: '/api/project/feed'})
     try{
-        // TODO: Add current token count to project feed response - currently being difficult
         const decoded = jwt.verify(req.body.jwt_token, process.env.TOKEN_SECRET);
         if (decoded.user_id){
-            const projects = await Project.find({ user: decoded.user_id }).populate('texts').lean();
-            const feedInfo = projects.map(project => ({created_on: project.created_on,
-                description: project.description,
-                last_modified: project.last_modified,
-                name: project.name,
-                starting_token_count: project.starting_token_count,
-                // current_token_count: project.texts.map(text => text.tokens.map(token => token.token.replacement ? token.token.replacement : token.token.value )).flat(),
-                _id: project._id,
-                text_count: project.texts.length,
-                annotated_texts: project.texts.filter(text => text.annotated).length
-            }))
+            const projects = await Project.find({ user: decoded.user_id }).populate({path: 'texts', populate: [{path: 'tokens.token'}]}).lean();
+            const feedInfo = projects.map(project => {
+
+                const annotatedTexts = project.texts.filter(text => text.annotated).length;
+                const uniqueTokens = new Set(project.texts.map(text => text.tokens.map(token => token.token.replacement ? token.token.replacement : token.token.value )).flat()).size;
+                const current_oov_tokens = project.texts.map(text => text.tokens.map(token => token.token)).flat().filter(token => (Object.values(token.meta_tags).filter(tagBool => tagBool).length === 0 && !token.replacement)).map(token => token.value).length;
+
+                return({
+                    created_on: project.created_on,
+                    description: project.description,
+                    last_modified: project.last_modified,
+                    name: project.name,
+                    metrics: project.metrics,
+                    starting_token_count: project.starting_token_count,
+                    text_count: project.texts.length,
+                    annotated_texts: annotatedTexts,
+                    vocab_reduction: ((project.metrics.starting_vocab_size - uniqueTokens)/project.metrics.starting_vocab_size) * 100,
+                    oov_corrections: current_oov_tokens,
+                    _id: project._id
+                })
+            })
             res.json(feedInfo)
         } else {
             res.json({message: 'token invalid'})

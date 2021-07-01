@@ -12,7 +12,8 @@ const useStyles = createUseStyles({
     container: {
         width: '75%',
         margin: 'auto',
-        marginTop: '2em'
+        marginTop: '2em',
+        maxWidth: '50vw'
     },
     projectListItemContainer: {
         display: 'flex',
@@ -139,7 +140,7 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
                                         <div className={classes.metricTextContainer}>
                                             <div>
                                                 <p className={classes.metricTextNumber}>{project.annotated_texts}/{project.text_count}</p>
-                                                <p className={classes.metricTextTitle}>Docs</p>
+                                                <p className={classes.metricTextTitle}>Texts<br/>Annotated</p>
                                             </div>
                                         </div>
                                     </div>
@@ -149,8 +150,8 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
                                         </div>
                                         <div className={classes.metricTextContainer}>
                                             <div>
-                                                <p className={classes.metricTextNumber}>{project.annotated_texts}/{project.text_count}</p>
-                                                <p className={classes.metricTextTitle}>Reduction</p>
+                                                <p className={classes.metricTextNumber}>{ Math.round(project.vocab_reduction) }%</p>
+                                                <p className={classes.metricTextTitle}>Vocabulary<br/>Reduction</p>
                                             </div>
                                         </div>
                                     </div>
@@ -160,8 +161,8 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
                                         </div>
                                         <div className={classes.metricTextContainer}>
                                             <div>
-                                                <p className={classes.metricTextNumber}>{project.annotated_texts}/{project.text_count}</p>
-                                                <p className={classes.metricTextTitle}>Corrected</p>
+                                                <p className={classes.metricTextNumber}>{project.oov_corrections}/{project.metrics.starting_oov_token_count}</p>
+                                                <p className={classes.metricTextTitle}>OOV<br/>Corrections</p>
                                             </div>
                                         </div>
                                     </div>
