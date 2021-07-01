@@ -45,7 +45,7 @@ export default function ModifySchemaModal({ showModifySchema,
             const response = await axios.get(`/api/map/${project._id}`)
             if (response.status === 200){
                 setMaps(response.data)
-                console.log('map response ->', response.data);
+                //console.log('map response ->', response.data);
                 setMapsLoaded(true);
             }
           }

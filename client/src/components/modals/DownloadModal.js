@@ -15,7 +15,7 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
           if (!mapsLoaded){
             const response = await axios.get(`/api/map/${project._id}`)
             if (response.status === 200){
-              console.log(response.data);
+            //   console.log(response.data);
               setMaps(response.data.map_keys.filter(key => !DEFAULT_MAPS.includes(key)));
               setMapsLoaded(true);
             }
@@ -31,7 +31,7 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
         const resultRes = await axios.get(`/api/project/download/result/${project._id}`);
 
         if (resultRes.status === 200){
-            console.log('Results fetched successfully')
+            // console.log('Results fetched successfully')
 
             // Prepare for file download
             const fileName = `${project.name}_results`;
@@ -48,13 +48,13 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
     }
 
     const downloadMaps = async (project, mapName) => {
-        console.log(`Downloading ${mapName} mapping`);
+        // console.log(`Downloading ${mapName} mapping`);
 
         const response = await axios.post(`/api/map/download/${project._id}`, {mapName: mapName});
 
         if (response.status === 200){
-            console.log('map was succesfully formatted');
-            console.log(response.data);
+            //console.log('map was succesfully formatted');
+            //console.log(response.data);
 
             if (mapName === 'rp'){
                 // Only replacements are output as JSON

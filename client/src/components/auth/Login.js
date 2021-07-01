@@ -34,7 +34,6 @@ export default function Login({ token, setToken }) {
         
         await axios.post('/api/auth/login', { username: values.username, password: values.password })
         .then(response => {
-            console.log(response);
             if (response.status === 200){
                 localStorage.setItem('username', values.username);
                 setToken(response.data.token);
@@ -43,7 +42,6 @@ export default function Login({ token, setToken }) {
         })
         .catch(error => {
             if (error.response.status === 409){
-                console.log(error);
                 setAlertText(error.response.data.error);
                 setShowAlert(true);
             }

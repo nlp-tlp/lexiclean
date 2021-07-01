@@ -15,7 +15,6 @@ const useStyles = createUseStyles({
     }
 })
 
-
 const schema = yup.object().shape({
     username: yup.string().required(),
     password: yup.string().required(),
@@ -29,12 +28,9 @@ export default function SignUp({ token, setToken }) {
     const [showAlert, setShowAlert] = useState(false);
     
     const signupUser = async (values, handleReset) => {
-          console.log('form payload', values)
           if (formSubmitted === false){
-            // console.log('submitting...');
             await axios.post('/api/auth/signup', values)
                         .then(response => {
-                            console.log(response);
                             if (response.status === 200){
                                 localStorage.setItem('username', values.username);
                                 setToken(response.data.token)
@@ -44,7 +40,6 @@ export default function SignUp({ token, setToken }) {
                         })
                         .catch(error => {
                             if (error.response.status === 409){
-                                console.log(error)
                                 setFormSubmitted(false);
                                 setShowAlert(true);
                                 handleReset();
@@ -93,57 +88,56 @@ export default function SignUp({ token, setToken }) {
                         <Form noValidate onSubmit={handleSubmit}>
                         <Form.Row>
                             <Form.Group as={Col} md="12" controlId="validationFormik01">
-                            <Form.Label>Username</Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Enter Username"
-                                name="username"
-                                value={values.username}
-                                onChange={handleChange}
-                                isValid={touched.username && !errors.username}
-                                isInvalid={touched.username && errors.username}
-                            />
-                            <Form.Control.Feedback type="invalid">
-                                {errors.username}
-                            </Form.Control.Feedback>
+                                <Form.Label>Username</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Enter Username"
+                                    name="username"
+                                    value={values.username}
+                                    onChange={handleChange}
+                                    isValid={touched.username && !errors.username}
+                                    isInvalid={touched.username && errors.username}
+                                />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.username}
+                                </Form.Control.Feedback>
                             </Form.Group>
                         </Form.Row>
                         <Form.Row>
                             <Form.Group as={Col} md="12" controlId="validationFormik02">
-                            <Form.Label>Email</Form.Label>
-                            <Form.Control
-                                type="email"
-                                placeholder="Enter Email Address"
-                                name="email"
-                                value={values.email}
-                                onChange={handleChange}
-                                isValid={touched.email && !errors.email}
-                                isInvalid={touched.email && errors.email}
-                            />
-                            <Form.Text className="text-muted">
-                                We'll never share your email with anyone else.
-                            </Form.Text>
-                            <Form.Control.Feedback type="invalid">
-                                {errors.email}
-                            </Form.Control.Feedback>
-
+                                <Form.Label>Email</Form.Label>
+                                <Form.Control
+                                    type="email"
+                                    placeholder="Enter Email Address"
+                                    name="email"
+                                    value={values.email}
+                                    onChange={handleChange}
+                                    isValid={touched.email && !errors.email}
+                                    isInvalid={touched.email && errors.email}
+                                />
+                                <Form.Text className="text-muted">
+                                    We'll never share your email with anyone else.
+                                </Form.Text>
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.email}
+                                </Form.Control.Feedback>
                             </Form.Group>
                         </Form.Row>
                         <Form.Row>
                             <Form.Group as={Col} md="12" controlId="validationFormik03">
-                            <Form.Label>Password</Form.Label>
-                            <Form.Control
-                                type="password"
-                                placeholder="Enter Password"
-                                name="password"
-                                value={values.password}
-                                onChange={handleChange}
-                                isValid={touched.password && !errors.password}
-                                isInvalid={touched.password && errors.password}
-                            />
-                            <Form.Control.Feedback type="invalid">
-                                {errors.password}
-                            </Form.Control.Feedback>
+                                <Form.Label>Password</Form.Label>
+                                <Form.Control
+                                    type="password"
+                                    placeholder="Enter Password"
+                                    name="password"
+                                    value={values.password}
+                                    onChange={handleChange}
+                                    isValid={touched.password && !errors.password}
+                                    isInvalid={touched.password && errors.password}
+                                />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.password}
+                                </Form.Control.Feedback>
                             </Form.Group>
                         </Form.Row>
                         <Button type="submit" variant="dark">Sign Up</Button>

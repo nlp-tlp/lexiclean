@@ -80,7 +80,7 @@ export default function TokenInput({showContextMenu,
 
     const addReplacementPopover = <Popover
                                     id={`popover`}
-                                    onKeyDown={(event) => console.log(event)}
+                                    // onKeyDown={(event) => console.log(event)}
                                     >
                                     <div className={classes.popoverContainer}>
                                         <div className={classes.textContainer}>

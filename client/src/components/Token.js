@@ -117,7 +117,7 @@ export default function Token({tokenInfo,
     }, [changeTrigger])
 
     const addReplacement = async (isSingle) => {
-        console.log(textId);
+        //console.log(textId);
         const response = await axios.patch('/api/token/replace/add/single/', { token_id: tokenId, text_id: textId, replacement: currentToken });
         // setShowPopover(false); // use here if the front end wants to appear to be quick rather than waiting for slow responses when rendering large pages
         if (isSingle && response.status === 200){
@@ -126,7 +126,7 @@ export default function Token({tokenInfo,
         } else if(!isSingle && response.status === 200) {
             const response = await axios.patch(`/api/token/suggest/add/many/${projectId}`, { original_token: originalToken, replacement: currentToken });
             if (response.status === 200){
-                console.log('replace response -> ', response.data);
+                //console.log('replace response -> ', response.data);
                 if (tokenId === localStorage.getItem('id')){
                     setReplacementDict(prevState => ({...prevState, [originalToken]: currentToken}))
                 }
@@ -162,7 +162,7 @@ export default function Token({tokenInfo,
         // 'accept all' for suggested replacements is a WIP as its challenging to trigger side effect
         const response = await axios.patch('/api/token/suggest/add/single/', { token_id: tokenId, text_id: textId, suggested_replacement: currentToken });
         if (response.status === 200){ // isSingle && 
-            console.log('succesfully added one suggested replacement');
+            //console.log('succesfully added one suggested replacement');
             setSuggestedToken(null);
             setReplacedToken(currentToken);
             setCurrentToken(currentToken);
@@ -186,7 +186,7 @@ export default function Token({tokenInfo,
     const removeSuggestedReplacement = async () => {
         const response = await axios.delete(`/api/token/suggest/remove/single/${tokenId}`);
         if (response.status === 200){
-            console.log('succesfully removed suggested replacement.');
+            //console.log('succesfully removed suggested replacement.');
             setShowAddSuggestionPopover(false)
             setSuggestedToken(null);
             setCurrentToken(originalToken);

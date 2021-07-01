@@ -13,7 +13,7 @@ export default function DeleteProjectModal({showProjectDelete, setShowProjectDel
         setIsDeleting(true);
         const response = await axios.delete(`/api/project/${selectedProject._id}`);
         if (response.status === 200){
-            console.log('Project deleted successfully');
+            // console.log('Project deleted successfully');
             setIsDeleting(false);
             setShowProjectDelete(false);
         }

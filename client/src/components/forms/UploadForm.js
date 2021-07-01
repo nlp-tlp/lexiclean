@@ -78,7 +78,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
 
 
             } else if (fileExtension === 'csv'){
-                console.log('reading .csv')
+                // console.log('reading .csv')
                 // console.log(reader.result);
 
                 // Process CSV by splitting on \n and then splitting on commas
@@ -86,12 +86,12 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
                 // Rows will the be used to build 
                 // TODO: investigate if this process needs to be made async...
                 const rowsObject = reader.result.split('\n').filter(line => line !== "").map(line => ({[line.split(',')[0].trim()]: line.split(',')[1].trim()}));
-                console.log(rowsObject);
+                // console.log(rowsObject);
 
                 // Combine row objects into { str2: str1} objects
                 const csvData = Object.assign({}, ...rowsObject);
                 
-                console.log(csvData);
+                // console.log(csvData);
                 const newFileData = {"meta": fileMeta, "data": csvData};
                 setFileData(prevState => ({...prevState, [fileKey]: newFileData}));
             }
@@ -106,7 +106,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
         // console.log('adding ', tempData, 'to meta tags')
         if (Object.keys(tempData).includes(tempMetaTag)){
           tempData[tempMetaTag]['colour'] = tempColour
-          console.log(tempData);
+          // console.log(tempData);
           setMetaTags(prevState => ({...prevState, ...tempData}));
         } else {
           setMetaTags(prevState => ({...prevState, [tempMetaTag]: {meta: null, data: [], colour: tempColour}}))
@@ -146,7 +146,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
             maps: maps,
           }
 
-          console.log('Form payload ->', formPayload)
+          // console.log('Form payload ->', formPayload)
 
           if (formSubmitted === false){
             setIsSubmitting(true);
@@ -296,7 +296,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
               <td>
                 <Form.File
                     id="formControlTempMetaTag"
-                    onChange={(e) => {console.log(e.target.files); setTempData({[tempMetaTag]: {"meta": e.target.files[0], "data": readFile(tempMetaTag, e.target.files[0])}})}}
+                    onChange={(e) => setTempData({[tempMetaTag]: {"meta": e.target.files[0], "data": readFile(tempMetaTag, e.target.files[0])}})}
                 />
               </td>
               <td>

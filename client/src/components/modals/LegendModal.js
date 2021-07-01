@@ -38,11 +38,11 @@ export default function LegendModal({showLegend, setShowLegend, project}) {
         const fetchProjectMaps = async () => {
           if (!coloursLoaded){
             // Fetch maps
-            console.log('fetching maps...');
+            //console.log('fetching maps...');
             const response = await axios.get(`/api/map/${project._id}`)
             if (response.status === 200){
               setBgColourMap(response.data.colour_map);
-              console.log('colour map in legend ->', response.data.colour_map);
+              //console.log('colour map in legend ->', response.data.colour_map);
               setColoursLoaded(true);
             }
           }

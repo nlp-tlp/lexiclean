@@ -4,17 +4,14 @@ import { Modal, Button } from 'react-bootstrap';
 
 export default function AnnotateBeginModal({ showAnnotate, setShowAnnotate, selectedProject }) {
     const history = useHistory();
+    const inputRef = useRef(null);
+    useEffect(() => {
+        inputRef.current.focus();
+    }, [inputRef]);
     const confirmationAction = () => {
         history.push(`/project/${selectedProject._id}/page/1`)
         setShowAnnotate(false);
     }
-
-    const inputRef = useRef(null);
-
-    useEffect(() => {
-        inputRef.current.focus();
-    }, [inputRef]);
-
     return (
         <Modal
             show={showAnnotate}

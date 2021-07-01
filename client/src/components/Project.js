@@ -54,7 +54,7 @@ export default function Project() {
 
     useEffect(() => {
         if (toastInfo){
-            console.log('toast!')
+            //console.log('toast!')
             setShowToast(true);
         }
     }, [toastInfo])
@@ -63,7 +63,7 @@ export default function Project() {
         const fetchProject = async () => {
             const response = await axios.get(`/api/project/${projectId}`);
             if (response.status === 200){
-                console.log('project details', response.data);
+                //console.log('project details', response.data);
                 setProject(response.data);
                 setProjectLoaded(true);
             }

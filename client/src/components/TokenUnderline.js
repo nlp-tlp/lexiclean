@@ -121,7 +121,7 @@ export default function TokenUnderline({ changeTrigger,
                                     </Popover>
 
     const addSuggestionPopover = <Popover id={`add-suggestion-popover`}
-                                    onKeyDown={(event) => console.log(event)}
+                                    // onKeyDown={(event) => console.log(event)}
                                     >
                                     <div className={classes.popoverContainer}>
                                         <div className={classes.textContainer}>
