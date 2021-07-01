@@ -98,6 +98,7 @@ export default function ProjectFeed({token, setToken}) {
         </Navbar>
 
         <div className={classes.container}>
+            <h1 style={{marginLeft: 'auto', marginRight: 'auto', fontWeight: 'bold'}}>Project Feed</h1>
             {
                 !projectsLoaded ? 
                 <div
