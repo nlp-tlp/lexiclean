@@ -1,27 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useContextMenu } from "react-contexify";
-import { createUseStyles } from 'react-jss';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
 import ContextMenu from './utils/ContextMenu';
 import TokenInput from './TokenInput';
 import TokenUnderline from './TokenUnderline';
-
-const useStyles = createUseStyles({
-    tokenCircle: {
-        width: '6px',
-        height: '6px',
-        backgroundColor: '#8F8EBF',
-        marginLeft: '0.25em',
-        borderRadius: '50%',
-        marginTop: '2px',
-        marginBottom: '0.5em',
-        '&:hover': {
-            opacity: '0.8'
-        }
-    }
-})
 
 export default function Token({tokenInfo,
                                 textIndex,
@@ -39,12 +23,9 @@ export default function Token({tokenInfo,
                                 setChangeTrigger,
                                 setToastInfo,
                                 activeMaps,
-                                setSavePending
+                                setSavePending,
+                                schemaTrigger
                             }) {
-    const classes = useStyles();
-
-    // console.log('token info -> ', tokenInfo); // using for tokenize dev... issues atm with resulting data structures...
-
     const { projectId } = useParams();
     
     // Token
@@ -80,20 +61,23 @@ export default function Token({tokenInfo,
 
     useEffect(() => {
         // Updates token colour based on state of token information and subsequent classification
-        // console.log('tokeninfo1', tokenInfo1)
-        // console.log('updating colour!')
+        // console.log(bgColourMap)
         const bgColourKey = Object.keys(tokenInfo1.meta_tags).filter(tag => tokenInfo1.meta_tags[tag])
-        // console.log(tokenInfo1.value, bgColourKey)
-        if (bgColourKey.length > 0){
+        const tokenBgColourKeySet = new Set(bgColourKey);
+        const bgColourMapKeySet = new Set(Object.keys(bgColourMap));
+        const keyIntersect = new Set([...bgColourMapKeySet].filter(x => tokenBgColourKeySet.has(x)))
+        if (keyIntersect.size > 0){
             // Has at least one meta tag (first tag currently dictates colour - TODO: fix with preferential treatment)
-            // console.log(tokenInfo1)
-            setTokenClf(bgColourKey[0])
-            setBgColour(bgColourMap[bgColourKey[0]])
+            
+            // Get token clf from first value from set intersection
+            const clf = keyIntersect.values().next().value
+            setTokenClf(clf)
+            setBgColour(bgColourMap[clf])
         } else {
             setTokenClf('ua');
             setBgColour(bgColourMap['ua'])
         }
-    }, [tokenClf, metaTagUpdated, replacedToken, suggestedToken, tokenInfo1, metaTagSuggestionMap])
+    }, [tokenClf, metaTagUpdated, replacedToken, suggestedToken, tokenInfo1, metaTagSuggestionMap, schemaTrigger])
     
     useEffect(() => {
         // Set input field width
@@ -127,7 +111,6 @@ export default function Token({tokenInfo,
     useEffect(() => {
         // Handles when tokens have bulk replacements added
         if (!edited && !replacedToken && Object.keys(replacementDict).includes(originalToken)){ //  && !suggestedToken &&
-            console.log('Change occured - Updating tokens to reflect changes')
             setSuggestedToken(replacementDict[originalToken]);
             setCurrentToken(replacementDict[originalToken]);
         }
@@ -146,9 +129,7 @@ export default function Token({tokenInfo,
                 if (tokenId === localStorage.getItem('id')){
                     setReplacementDict(prevState => ({...prevState, [originalToken]: currentToken}))
                 }
-
                 setToastInfo({type: "replacement", content: {original: originalToken, replacement: currentToken, count: response.data.matches + 1}});
-
                 setChangeTrigger(!changeTrigger);
                 setShowPopover(false);
                 setSavePending(true);
@@ -168,7 +149,6 @@ export default function Token({tokenInfo,
     }
 
     const cancelChange = () => {
-        // Cancel of dictionary add action
         if (suggestedToken){
             setCurrentToken(suggestedToken);
         } else {
@@ -216,18 +196,12 @@ export default function Token({tokenInfo,
     // --- Meta Tag ---
     useEffect(() => {
         // Updates token meta-tags when suggestion map changes
-        // console.log('side effect for metatag suggestion map')
-        // console.log(metaTagSuggestionMap)
-
         // Run tokens over meta tag suggestion map
         Object.keys(metaTagSuggestionMap)   // access meta tag keys (en, rp, etc.)
                 .filter(metaTag => Object.keys(metaTagSuggestionMap[metaTag]).length > 0) // Check whether key has any values e.g. 'ds': {rods: true, steels: true} etc.
                 .map(metaTag => {
                     // Check whether current token is in suggestions
                     if (Object.keys(metaTagSuggestionMap[metaTag]).includes(currentToken)){
-                        // console.log('token', currentToken,'matched to', metaTag)
-                        console.log('checking metatags')
-
                         // Update metatag for matched token (need to access the objects value)
                         const metaTagUpdate = {...tokenInfo1.meta_tags, [metaTag]: Object.values(metaTagSuggestionMap[metaTag])[0]}
                         setTokenInfo1(prevState => ({...prevState, meta_tags: metaTagUpdate}))
@@ -252,7 +226,6 @@ export default function Token({tokenInfo,
             // meta-tag to cascaded across all tokens that have the same value
             const response = await axios.patch(`/api/token/meta/add/many/${projectId}`, { "originalToken": originalToken, "field": field, "value": value });
             if (response.status === 200){
-                console.log('response for multiple token meta tag update', response.data)
                 const metaTagUpdate = {...tokenInfo1.meta_tags, [field]: value}
                 setTokenInfo1(prevState => ({...prevState, meta_tags: metaTagUpdate}))
                 setToastInfo({type: "meta", content: {original: originalToken, metaTag: field, metaTagValue: value, count: response.data.matches}});
@@ -260,18 +233,15 @@ export default function Token({tokenInfo,
 
             // Add meta tag to suggestion map
             const subMetaTagMapUpdated = {...metaTagSuggestionMap[field], [currentToken]: value}
-            // console.log('sub meta map updated', subMetaTagMapUpdated)
             setMetaTagSuggestionMap(prevState => ({...prevState, [field]: subMetaTagMapUpdated}))
             setMetaTagUpdated(true)
         }
     }
 
     const removeMetaTag = async (field) => {
-        // Removes meta-tag from token (set to false)
         setMetaTagUpdated(false);
         const response = await axios.patch(`/api/token/meta/remove/one/${tokenId}`, { "field": field });
         if (response.status === 200){
-            // console.log('succesfully removed meta-tag from token', response.data);
             const metaTagUpdate = {...tokenInfo1.meta_tag, [field]: false}
             setTokenInfo1(prevState => ({...prevState, meta_tags: metaTagUpdate}))
             setMetaTagUpdated(true);

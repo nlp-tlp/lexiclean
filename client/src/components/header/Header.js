@@ -61,10 +61,6 @@ export default function Header({project,
         const fetchProgressInfo = async () => {
             // console.log('fetching progress data')
             if (project._id) {
-                // const response = await axios.get(`/api/text/progress/${project._id}`)
-                // if (response.status === 200){
-                //     setProgress(response.data);
-                // }
                 const response = await axios.get(`/api/project/counts/${project._id}`);
                 if (response.status === 200){
                     setProgress(response.data.text);

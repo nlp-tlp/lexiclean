@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Modal, Button, ButtonGroup, ToggleButton, Col, Table, OverlayTrigger, Popover } from 'react-bootstrap';
 import { createUseStyles } from 'react-jss';
 import axios from 'axios';
-import { MdAddCircle, MdRemoveCircle, MdBrush } from 'react-icons/md';
+import { MdAddCircle, MdBrush } from 'react-icons/md';
 import { CompactPicker } from 'react-color';
 
 const useStyles = createUseStyles({
@@ -27,7 +27,9 @@ const DEFAULT_MAPS = ['rp', 'ua', 'st', 'en'];
 
 export default function ModifySchemaModal({ showModifySchema,
                                             setShowModifySchema,
-                                            project
+                                            project,
+                                            schemaTrigger,
+                                            setSchemaTrigger
                                         }) {
     const classes = useStyles();
 
@@ -53,12 +55,14 @@ export default function ModifySchemaModal({ showModifySchema,
 
 
     const addMetaTag = async () => {
-        const response = await axios.post(`/api/map/`, { project_id: project._id , type: tempMetaTag, colour: tempColour});
+        const response = await axios.post('/api/map/', { project_id: project._id , type: tempMetaTag, colour: tempColour});
         if (response.status === 200){
             const updatedContents = {...maps.contents, [tempMetaTag]: response.data};
             setMaps(prevState => ({...prevState, contents: updatedContents}));
             setTempMetaTag('');
             setTempColour(DEFAULT_COLOUR);
+            // Update page
+            setSchemaTrigger(!schemaTrigger);
         }
 
     };
@@ -69,6 +73,8 @@ export default function ModifySchemaModal({ showModifySchema,
         if (response.status === 200){
             const updatedContents = {...maps.contents, [key]: {...maps.contents[key], active: status}}
             setMaps(prevState => ({...prevState, contents: updatedContents}))
+            // Update page
+            setSchemaTrigger(!schemaTrigger);
         }
     };
 
@@ -99,13 +105,12 @@ export default function ModifySchemaModal({ showModifySchema,
             </Modal.Header>
 
             <Modal.Body>
-                <h5>
-                    Add additional meta-tags
-                </h5>
+                <h5 style={{marginBottom: '0.5em', fontWeight: 'bold'}}>New Meta Tags</h5>
+                <p>Here additional meta tags can be added</p>
                 {
                     maps ? 
                 <Table striped bordered hover>
-                    <thead>
+                    <thead style={{textAlign: 'center'}}>
                         <tr>
                         <th>Name</th>
                         <th>Colour</th>
@@ -113,7 +118,7 @@ export default function ModifySchemaModal({ showModifySchema,
                         <th>Add</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody style={{textAlign: 'center'}}>
                         <tr>
                         <td>
                             <input
@@ -146,55 +151,54 @@ export default function ModifySchemaModal({ showModifySchema,
                 : null
                 }
 
-                <h5>
-                    Modify existing meta-tags
-                </h5>
+                <h5 style={{marginBottom: '0.5em', fontWeight:'bold'}}>Modify Existing Meta Tags</h5>
+                <p>Here existing meta tags can have their active state changed</p>
                 {
                     maps ? 
-                <Table striped bordered hover>
-                    <thead>
-                        <tr>
-                        <th>Name</th>
-                        <th>Colour</th>
-                        <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {   Object.keys(maps.contents).length > 0?
-                            Object.keys(maps.contents).filter(key => !DEFAULT_MAPS.includes(key)).map(key => (<tr>
-                            <td>{key}</td>
-                            <td>
-                            <Button style={{borderColor: maps.contents[key].colour, backgroundColor: maps.contents[key].colour, padding: '0.2em'}}>
-                                <MdBrush style={{color: 'white'}}/>
-                            </Button>
-                            </td>
-                            <td style={{fontWeight: 'bolder'}}>
-                                <ButtonGroup toggle>
-                                    <ToggleButton
-                                        key='toggle-active'
-                                        type='radio'
-                                        name='toggle-active'
-                                        checked={maps.contents[key].active}
-                                        onChange={() => activateMap(key, true)}
-                                    >
-                                        Active
-                                    </ToggleButton>
-                                    <ToggleButton
-                                        key='toggle-active'
-                                        type='radio'
-                                        name='toggle-active'
-                                        checked={!maps.contents[key].active}
-                                        onChange={() => activateMap(key, false)}
-                                    >
-                                        Inactive
-                                    </ToggleButton>
-                                </ButtonGroup>
-                            </td>
-                        </tr>))
-                        : null
-                        }
-                    </tbody>
-                </Table>
+                    <Table striped bordered hover>
+                        <thead>
+                            <tr style={{textAlign: 'center'}}>
+                            <th>Name</th>
+                            <th>Colour</th>
+                            <th>Active State</th>
+                            </tr>
+                        </thead>
+                        <tbody style={{textAlign: 'center'}}>
+                            {   Object.keys(maps.contents).length > 0?
+                                Object.keys(maps.contents).filter(key => !DEFAULT_MAPS.includes(key)).map(key => (<tr>
+                                <td>{key}</td>
+                                <td>
+                                <Button disabled style={{borderColor: maps.contents[key].colour, backgroundColor: maps.contents[key].colour, padding: '0.2em'}}>
+                                    <MdBrush style={{color: 'white'}}/>
+                                </Button>
+                                </td>
+                                <td style={{fontWeight: 'bolder'}}>
+                                    <ButtonGroup toggle>
+                                        <ToggleButton
+                                            key='toggle-active'
+                                            type='radio'
+                                            name='toggle-active'
+                                            checked={maps.contents[key].active}
+                                            onChange={() => activateMap(key, true)}
+                                        >
+                                            Active
+                                        </ToggleButton>
+                                        <ToggleButton
+                                            key='toggle-active'
+                                            type='radio'
+                                            name='toggle-active'
+                                            checked={!maps.contents[key].active}
+                                            onChange={() => activateMap(key, false)}
+                                        >
+                                            Inactive
+                                        </ToggleButton>
+                                    </ButtonGroup>
+                                </td>
+                            </tr>))
+                            : null
+                            }
+                        </tbody>
+                    </Table>
                 : null
                 }
             </Modal.Body>

@@ -162,7 +162,7 @@ export default function ProjectList({projects, setSelectedProject, setShowAnnota
                                         </div>
                                         <div className={classes.metricTextContainer}>
                                             <div>
-                                                <p className={classes.metricTextNumber}>{project.oov_corrections}/{project.metrics.starting_oov_token_count}</p>
+                                                <p className={classes.metricTextNumber}>{project.metrics.starting_oov_token_count - project.oov_corrections}/{project.metrics.starting_oov_token_count}</p>
                                                 <p className={classes.metricTextTitle}>OOV<br/>Corrections</p>
                                             </div>
                                         </div>

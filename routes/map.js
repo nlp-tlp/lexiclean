@@ -117,15 +117,14 @@ router.get('/:projectId', async (req, res) => {
     // Here additional classes and colours are defined. TODO: integrate into front-end so the user is aware of these decisions.
     logger.info('Fetching project maps', {route: `/api/map/${req.params.projectId}`});
     try{
-        const response = await Project.find({_id: req.params.projectId}).populate('maps');
-        const maps = response[0].maps;
-        // console.log('map response', maps);
+        const response = await Project.findOne({_id: req.params.projectId}).populate('maps');
+        const maps = response.maps;
 
         // Restructure maps from arary of maps to object of maps with keys based on map type
         const mapsRestructured = Object.assign(...maps.map(map => ({[map.type]: map})));
         
         const mapKeys = [...Object.keys(mapsRestructured), "ua", "st", "en"]  // ua - unassigned, st - suggested token, en - english word
-        let colourMap = Object.assign(...maps.map(map => ({[map.type]: map.colour})));
+        let colourMap = Object.assign(...maps.filter(map => map.active).map(map => ({[map.type]: map.colour})));    // Filters for active maps
         colourMap = {...colourMap, "ua": "#F2A477", "st": "#6BB0BF", "en": "#D9D9D9"}
         res.json({"contents": mapsRestructured, "map_keys": mapKeys, "colour_map": colourMap});
     }catch(err){

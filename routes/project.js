@@ -31,11 +31,10 @@ router.post('/feed', async(req, res) => {
         if (decoded.user_id){
             const projects = await Project.find({ user: decoded.user_id }).populate({path: 'texts', populate: [{path: 'tokens.token'}]}).lean();
             const feedInfo = projects.map(project => {
-
+                const allTokens = project.texts.map(text => text.tokens.map(token => token.token)).flat();
                 const annotatedTexts = project.texts.filter(text => text.annotated).length;
-                const uniqueTokens = new Set(project.texts.map(text => text.tokens.map(token => token.token.replacement ? token.token.replacement : token.token.value )).flat()).size;
-                const current_oov_tokens = project.texts.map(text => text.tokens.map(token => token.token)).flat().filter(token => (Object.values(token.meta_tags).filter(tagBool => tagBool).length === 0 && !token.replacement)).map(token => token.value).length;
-
+                const uniqueTokens = new Set(allTokens.map(token => token.replacement ? token.replacement : token.value).flat()).size;
+                const currentOOVTokens = allTokens.filter(token => (Object.values(token.meta_tags).filter(tagBool => tagBool).length === 0 && !token.replacement)).map(token => token.value).length;
                 return({
                     created_on: project.created_on,
                     description: project.description,
@@ -46,7 +45,7 @@ router.post('/feed', async(req, res) => {
                     text_count: project.texts.length,
                     annotated_texts: annotatedTexts,
                     vocab_reduction: ((project.metrics.starting_vocab_size - uniqueTokens)/project.metrics.starting_vocab_size) * 100,
-                    oov_corrections: current_oov_tokens,
+                    oov_corrections: currentOOVTokens,
                     _id: project._id
                 })
             })
@@ -375,8 +374,6 @@ router.get('/counts/:projectId', async (req, res) => {
         const textsAnnotated = textRes.filter(text => text.annotated).length;
         const textsTotal = textRes.length;
         logger.info('annotation progress', {text_annotated: textsAnnotated})
-        
-        
         
         res.json({
             "token": {

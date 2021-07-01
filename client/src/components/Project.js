@@ -35,6 +35,7 @@ export default function Project() {
     const [currentTexts, setCurrentTexts] = useState();
     const [saveTrigger, setSaveTrigger] = useState(false);
     const [savePending, setSavePending] = useState(false);
+    const [schemaTrigger, setSchemaTrigger] = useState(false);
 
     const [showDownload, setShowDownload] = useState(false);
     const [showProgress, setShowProgress] = useState(false);
@@ -102,7 +103,16 @@ export default function Project() {
         saveTrigger,
         setSaveTrigger,
         pageNumber,
-        setSavePending
+        setSavePending,
+        schemaTrigger
+    }
+
+    const modifySchemaProps = {
+        showModifySchema,
+        setShowModifySchema,
+        project,
+        schemaTrigger,
+        setSchemaTrigger
     }
 
     return (
@@ -112,7 +122,7 @@ export default function Project() {
         { showDownload ? <DownloadModal showDownload={showDownload} setShowDownload={setShowDownload} project={project}/> : null }
         { showProgress ? <ProgressModal showProgress={showProgress} setShowProgress={setShowProgress}/> : null }
         { showSettings ? <SettingsModal showSettings={showSettings} setShowSettings={setShowSettings} pageLimit={pageLimit} setPageLimit={setPageLimit} /> : null }
-        { showModifySchema ? <ModifySchemaModal showModifySchema={showModifySchema} setShowModifySchema={setShowModifySchema} project={project}/> : null}
+        { showModifySchema ? <ModifySchemaModal {...modifySchemaProps} /> : null}
         
         { toastInfo ? <ContextToast showToast={showToast} setShowToast={setShowToast} toastInfo={toastInfo}/> : null }
 

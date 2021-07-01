@@ -57,7 +57,8 @@ export default function AnnotationTable({project,
                                           setCurrentTexts,
                                           saveTrigger,
                                           pageNumber,
-                                          setSavePending
+                                          setSavePending,
+                                          schemaTrigger
                                         }) {
   const classes = useStyles();
 
@@ -113,7 +114,7 @@ export default function AnnotationTable({project,
         }
       }
     fetchData();
-  }, [page, pageLimit, saveTrigger, pageNumber]) // , tokenize// TODO review when implemented correctly.
+  }, [page, pageLimit, saveTrigger, pageNumber, schemaTrigger]) // , tokenize// TODO review when implemented correctly.
 
 
   useEffect(() => {
@@ -121,38 +122,26 @@ export default function AnnotationTable({project,
       if (!mapsLoaded && project){
         const response = await axios.get(`/api/map/${project._id}`)
         if (response.status === 200){
-          console.log(response.data);
           setMetaTagSuggestionMap(Object.fromEntries(response.data.map_keys.map(key => ([[key], {}]))))
           setBgColourMap(response.data.colour_map);
           setActiveMaps(Object.keys(response.data.contents).filter(key => response.data.contents[key].active));
           setMapsLoaded(true);
-          console.log('active maps', Object.keys(response.data.contents).filter(key => response.data.contents[key].active))
-
+        }
+      }
+      else {
+        // Triggers when schema is dynamically updated
+        const response = await axios.get(`/api/map/${project._id}`);
+        if (response.status === 200){
+          // console.log('schema update: map res ->', response.data.colour_map)
+          setBgColourMap(response.data.colour_map);
+          setActiveMaps(Object.keys(response.data.contents).filter(key => response.data.contents[key].active));
+          setMapsLoaded(true);
         }
       }
     }
     fetchProjectMaps();
-  }, [mapsLoaded])
+  }, [mapsLoaded, schemaTrigger])
 
-
-  // useEffect(() => {
-  //   // Cascades meta-tags across tokens
-  //   const updateMetaTags = async () => {
-  //     if(mapsLoaded){
-  //       if (Object.keys(metaTagSuggestionMap).filter(metaTag => metaTagSuggestionMap[metaTag].length > 0).length > 0){
-  //         // console.log('updating meta-tags with ->', metaTagSuggestionMap);
-          
-  //         const response = await axios.patch(`/api/token/add-many-meta-tags/${project._id}`, {meta_tag_dict: metaTagSuggestionMap});
-  //         if (response.status === 200){
-  //           // console.log('updated meta tag response', response)
-  //           // console.log('Updated token meta-tags')
-  //           setMetaTagSuggestionMap(META_TAG_MAP_INIT); // TODO: FIX THIS - IT IS LOADING THE WRONG INIT STRUCTURE
-  //         }
-  //       }
-  //     }
-  //   }
-  //   updateMetaTags();
-  // }, [page]) // saved
 
   useEffect(() => {
     const updateTextAnnotationStates = async () => {
@@ -205,7 +194,8 @@ export default function AnnotationTable({project,
                     setToastInfo,
                     saveTrigger,
                     activeMaps,
-                    setSavePending
+                    setSavePending,
+                    schemaTrigger
                }
     
             return(

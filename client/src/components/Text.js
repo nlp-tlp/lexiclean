@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { createUseStyles } from 'react-jss';
 import Token from './Token'
-
 import Tokenize from './Tokenize';
 
 const useStyles = createUseStyles({
@@ -9,7 +8,6 @@ const useStyles = createUseStyles({
         display: 'flex',
         flexDirection:'row',
         flexWrap: 'wrap',
-        // maxHeight: '1em'
     }
 })
 
@@ -29,14 +27,12 @@ export default function Text({project,
                               setChangeTrigger,
                               setToastInfo,
                               activeMaps,
-                              setSavePending
+                              setSavePending,
+                              schemaTrigger
                             }) {
     const classes = useStyles();
     const textIndex = text._id ? text._id : null;
-
     const [textIntermediate, setTextIntermediate] = useState(text);
-
-    // console.log('text info ->', text);
 
     return (
         <div
@@ -69,7 +65,8 @@ export default function Text({project,
                             setChangeTrigger,
                             setToastInfo,
                             activeMaps,
-                            setSavePending
+                            setSavePending,
+                            schemaTrigger
                         }
                     return(<Token {...tokenProps} />)})
                 : <p>Loading...</p>

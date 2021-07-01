@@ -280,15 +280,15 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
 
         { infoOverlay(infoContent['meta_tags']) }
         <Table striped bordered hover size="sm" style={{fontSize: '14px'}}>
-          <thead>
-            <tr style={{textAlign: 'center'}}>
+          <thead style={{textAlign: 'center'}}>
+            <tr>
               <th>Tag Name</th>
               <th>Gazetteer</th>
               <th>Colour</th>
               <th>Add</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style={{textAlign: 'center'}}>
             <tr>
               <td>
                 <input type="text" style={{width: '8em'}} value={tempMetaTag} onChange={e => setTempMetaTag(e.target.value)}/>
