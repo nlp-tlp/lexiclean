@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Button, Form, Col, Table, OverlayTrigger, Popover } from 'react-bootstrap';
 import { Formik } from 'formik';
 import * as yup from 'yup';
@@ -12,12 +12,22 @@ import useToken from '../auth/useToken'
 
 const DEFAULT_COLOUR = "#9B9B9B"
 const REPLACE_COLOUR = "#99BF9C"
-
-
 const infoContent = {
-  "raw_text": {"title": "Raw Text Documents", "content": "Raw text documents are those that will be annotated for lexical normalisation."},
-  "replacements": {"title": "Replacements", "content": "Replacements should be in the form of a 1:1 (IV:OOV) mapping."},
-  "meta_tags": {"title": "Meta Tags", "content": "Meta tags are used to give tokens higher level classifications.\nHere meta tag classes can be defined and a gazetteer uploaded (if available)."}
+  "raw_text": {
+    "title": "Raw Text Documents",
+    "content": "Raw text documents are those that will be annotated for lexical normalisation.",
+    "format":"hello world\n"
+  },
+  "replacements": {
+    "title": "Replacements",
+    "content": "Replacements should be in the form of a 1:1 (IV:OOV) mapping.",
+    "format": ""
+  },
+  "meta_tags": {
+    "title": "Meta Tags",
+    "content": "Meta tags are used to give tokens higher level classifications.\nHere meta tag classes can be defined and a gazetteer uploaded (if available).",
+    "format": ""
+  }
 }
 
 const schema = yup.object().shape({
@@ -26,7 +36,6 @@ const schema = yup.object().shape({
   });
   
 export default function UploadForm({ setShowUpload, setIsSubmitting }) {
-  
     const { token, setToken } = useToken();
 
     const [fileData, setFileData] = useState({'textFile': {'meta': null, 'data': null}, 'rpFile': {'meta': null, 'data': null}})
@@ -43,16 +52,16 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
         let reader = new FileReader();
         reader.readAsText(fileMeta);
         reader.onload = () => {
-            console.log(fileMeta)
+            // console.log(fileMeta)
             const fileExtension = fileMeta.name.split('.').slice(-1)[0];
 
             if (fileExtension === 'txt'){
                 // Split lines and remove any documents that are empty
                 const newFileData = {"meta": fileMeta, "data": reader.result.split('\n').filter(line => line !== "")}
-                console.log('file data for', fileKey, newFileData);
+                // console.log('file data for', fileKey, newFileData);
                 setFileData(prevState => ({...prevState, [fileKey]: newFileData}))
                 if (fileKey === 'textFile'){
-                  console.log('input data', newFileData);
+                  // console.log('input data', newFileData);
                   setDataFileLoaded(true);
                 }
 
@@ -89,10 +98,10 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
 
 
     const addMetaTag = () => {
-      console.log('adding meta tag')
-      console.log(tempMetaTag)
+      // console.log('adding meta tag')
+      // console.log(tempMetaTag)
       if (tempMetaTag !== '' && tempData){
-        console.log('adding ', tempData, 'to meta tags')
+        // console.log('adding ', tempData, 'to meta tags')
         if (Object.keys(tempData).includes(tempMetaTag)){
           tempData[tempMetaTag]['colour'] = tempColour
           console.log(tempData);
@@ -110,29 +119,22 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
     }
 
     const removeMetaTag = (tagName) => {
-      console.log(`removing ${tagName} tag`);
+      // console.log(`removing ${tagName} tag`);
       setMetaTags(prevState => Object.fromEntries(Object.entries(prevState).filter(([key, value]) => key !== tagName)));
-
-      console.log(metaTags);
+      // console.log(metaTags);
     }
 
     const createProject = async (values) => {
         if (fileData['textFile'].data.length > 0){
           // Only require raw texts, users might not have any other artifacts.
-          console.log('raw texts loaded')
-
           const maps = Object.keys(metaTags).map(tagKey => ({"type": tagKey, "colour": metaTags[tagKey].colour, "tokens": metaTags[tagKey].data, "active": true}))
-          console.log('maps', maps);
 
-
-          if (fileData["rpFile"] && Object.keys(fileData["rpFile"].data).length > 0){
+          if (fileData["rpFile"] && fileData["rpFile"].data && Object.keys(fileData["rpFile"].data).length > 0){
             // add replacements to maps if they exist
             maps.push({"type": "rp", "colour": REPLACE_COLOUR, "replacements": fileData["rpFile"].data, "active": true})
           } else {
             maps.push({"type": "rp", "colour": REPLACE_COLOUR, "replacements": {}, "active": true})
           }
-
-          console.log('maps', maps);
 
           const formPayload = {
             token: token,
@@ -145,12 +147,9 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
           console.log('form payload', formPayload)
 
           if (formSubmitted === false){
-            console.log('submitting...');
             setIsSubmitting(true);
             const response = await axios.post('/api/project/create', formPayload);
-
             if (response.status === 200){
-                console.log('response of create project', response);
                 setFormSubmitted(true);
                 setShowUpload(false);
             }
@@ -159,28 +158,29 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
     }
 
 
-    const popover = (
-      <Popover id="popover-colour">
-        <Popover.Title>
-          Select Colour
-          </Popover.Title>
-        <Popover.Content>
-          <CompactPicker
-            color={tempColour}
-            onChange={color => setTempColour(color.hex)}
-            onChangeComplete={color => setTempColour(color.hex)}
-          />
-        </Popover.Content>
-      </Popover>
-    )
+    const popover = (<Popover id="popover-colour">
+                      <Popover.Title>
+                        Select Colour
+                        </Popover.Title>
+                      <Popover.Content>
+                        <CompactPicker
+                          color={tempColour}
+                          onChange={color => setTempColour(color.hex)}
+                          onChangeComplete={color => setTempColour(color.hex)}
+                        />
+                      </Popover.Content>
+                    </Popover>)
 
-    const infoPopover = (content) => {
+    const infoPopover = (content, format) => {
     return(<Popover id="popover-info">
       <Popover.Title>
         Information
       </Popover.Title>
       <Popover.Content>
         {content}
+        <p>
+          {format}
+        </p>
       </Popover.Content>
     </Popover>
     )}
@@ -192,7 +192,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
         <OverlayTrigger
           trigger="click"
           placement="right"
-          overlay={infoPopover(info.content)}
+          overlay={infoPopover(info.content, info.format)}
           >
           <IoInformationCircleSharp />
         </OverlayTrigger>
@@ -229,6 +229,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
                 value={values.projectName}
                 onChange={handleChange}
                 isValid={touched.projectName && !errors.projectName}
+                isInvalid={touched.projectName && errors.projectName}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.projectName}
@@ -245,6 +246,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
                 value={values.projectDescription}
                 onChange={handleChange}
                 isValid={touched.projectDescription && !errors.projectDescription}
+                isInvalid={touched.projectDescription && errors.projectDescription}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.projectDescription}
@@ -260,7 +262,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
                         id="exampleFormControlFile1"
                         onChange={(e) => setFileData(prevState => ({...prevState, "textFile": {"meta": e.target.files[0], "data": readFile("textFile", e.target.files[0])}}))}
                     />
-                    <Form.Text id="passwordHelpBlock" muted>
+                    <Form.Text id="rawtextHelpBlock" muted>
                         File format (.txt)
                     </Form.Text>
                 </Col>
@@ -270,7 +272,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
                         id="exampleFormControlFile3"
                         onChange={(e) => setFileData(prevState => ({...prevState, "rpFile": {"meta": e.target.files[0], "data": readFile("rpFile", e.target.files[0])}}))}
                         />
-                    <Form.Text id="passwordHelpBlock" muted>
+                    <Form.Text id="replacementHelpBlock" muted>
                         File format (.csv or .json) 
                     </Form.Text>
                 </Col>
