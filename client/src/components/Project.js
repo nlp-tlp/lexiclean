@@ -6,6 +6,7 @@ import { Spinner, Toast, Navbar } from 'react-bootstrap';
 
 import AnnotationTable from './AnnotationTable'
 import Header from './header/Header'
+import ContextToast from './utils/ContextToast';
 
 import DownloadModal from './modals/DownloadModal'
 import ProgressModal from './modals/ProgressModal'
@@ -117,60 +118,16 @@ export default function Project() {
         { showSettings ? <SettingsModal showSettings={showSettings} setShowSettings={setShowSettings} pageLimit={pageLimit} setPageLimit={setPageLimit} /> : null }
         { showModifySchema ? <ModifySchemaModal showModifySchema={showModifySchema} setShowModifySchema={setShowModifySchema} project={project}/> : null}
         
-        {
-            toastInfo ?
-            <>
-            <Toast
-                show={showToast}
-                onClose={() => setShowToast(false)}
-                style={{
-                    position: 'fixed',
-                    top: 90,
-                    right: 20,
-                    width: 200,
-                    zIndex: 1000
-                }}
-                delay={3000}
-                autohide
-            >
-                <Toast.Header>
-                    <strong className="mr-auto">
-                        {toastInfo.type === 'replacement' ? 'Replacement' : 'Meta Tag' }</strong>
-                    <small>just now</small>
-                </Toast.Header>
-                <Toast.Body>
-                    {
-                        toastInfo.type === 'replacement' ?
-                        <>
-                        updated <strong>{ toastInfo.content.original }</strong> to <strong>{ toastInfo.content.replacement}</strong> 
-                        {' '}
-                        <strong>{ toastInfo.content.count }</strong> times
-                        </>
-                        :
-                        <>
-                        applied <strong>{ toastInfo.content.metaTag }</strong> : <strong>{ toastInfo.content.metaTagValue ? 'true' : 'false' }</strong>
-                        {' '}
-                        to <strong>{ toastInfo.content.original }</strong> <strong>{ toastInfo.content.count }</strong> times
-                        </>
-                    }
-                </Toast.Body>
-            </Toast>
-            </>
-            : null
-            }
-
+        { toastInfo ? <ContextToast showToast={showToast} setShowToast={setShowToast} toastInfo={toastInfo}/> : null }
 
         <div className={classes.container} tabIndex="0">
-            <Header
-                {...headerProps}
-            />
-            { !projectLoaded 
+            <Header {...headerProps} />
+            { 
+                !projectLoaded 
                 ?
-                <Spinner animation="border" />
+                <Spinner animation="border"/>
                 :
-                <AnnotationTable
-                    {...annotationTableProps}
-                />
+                <AnnotationTable {...annotationTableProps} />
             }
         </div>
 
