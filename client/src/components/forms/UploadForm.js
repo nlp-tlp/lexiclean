@@ -16,17 +16,17 @@ const infoContent = {
   "raw_text": {
     "title": "Raw Text Documents",
     "content": "Raw text documents are those that will be annotated for lexical normalisation.",
-    "format":"hello world\n"
+    "format":".txt\nhelo wor\nhello worl\n..."
   },
   "replacements": {
     "title": "Replacements",
     "content": "Replacements should be in the form of a 1:1 (IV:OOV) mapping.",
-    "format": ""
+    "format": '.csv\nhelo,hello\nwor,world\n...\n\n.json\n{"helo":"hello", "wor":"world", ...}'
   },
   "meta_tags": {
     "title": "Meta Tags",
-    "content": "Meta tags are used to give tokens higher level classifications.\nHere meta tag classes can be defined and a gazetteer uploaded (if available).",
-    "format": ""
+    "content": "Meta tags are used to give tokens contextual classifications.\nHere meta tag classes can be specified and a gazetteer uploaded (if available in .txt file format).",
+    "format": ".txt\nc/o\no/h\nu/s\n"
   }
 }
 
@@ -144,7 +144,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
             maps: maps,
           }
 
-          console.log('form payload', formPayload)
+          console.log('Form payload ->', formPayload)
 
           if (formSubmitted === false){
             setIsSubmitting(true);
@@ -177,28 +177,24 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
         Information
       </Popover.Title>
       <Popover.Content>
-        {content}
-        <p>
-          {format}
-        </p>
+        <p>{content}</p>
+        <code style={{whiteSpace: 'pre-wrap'}}>{format}</code>
       </Popover.Content>
     </Popover>
     )}
 
     const infoOverlay = (info) => {
-      return(
-      <div style={{'marginBottom': '0.5em'}}>
-          {info.title}
-        <OverlayTrigger
-          trigger="click"
-          placement="right"
-          overlay={infoPopover(info.content, info.format)}
-          >
-          <IoInformationCircleSharp />
-        </OverlayTrigger>
-      </div>
-      )
-    } 
+      return(<div style={{ display: 'flex'}}>
+              <p> { info.title }</p>
+              <OverlayTrigger
+                trigger="click"
+                placement="right"
+                overlay={infoPopover(info.content, info.format)}
+              >
+                <IoInformationCircleSharp style={{marginLeft: '2px', color: 'grey'}} />
+              </OverlayTrigger>
+            </div>
+            )}
 
     return (
     <Formik
@@ -332,7 +328,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
             }
           </tbody>
         </Table>
-        <small>Note: Please use underscores instead of white space in tag names</small>
+        <small style={{color: 'grey'}}>Note: Please use underscores instead of white space in tag names. Gazetteers must be in .txt file format.</small>
         <div style={{display: 'flex', justifyContent: 'space-evenly', marginTop: '4em'}}>
           <Button variant="secondary" onClick={() => setShowUpload(false)}>Cancel</Button>
           <Button type="submit" variant="dark">Create Project</Button>
