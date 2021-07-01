@@ -8,7 +8,7 @@ import TokenInput from './TokenInput';
 import TokenUnderline from './TokenUnderline';
 
 export default function Token({tokenInfo,
-                                textIndex,
+                                textId,
                                 replacementDict,
                                 setReplacementDict,
                                 metaTagSuggestionMap,
@@ -27,7 +27,7 @@ export default function Token({tokenInfo,
                                 schemaTrigger
                             }) {
     const { projectId } = useParams();
-    
+
     // Token
     const [tokenInfo1, setTokenInfo1] = useState(tokenInfo);
     const { index, value } = tokenInfo1;
@@ -47,7 +47,7 @@ export default function Token({tokenInfo,
     const [metaTagUpdated, setMetaTagUpdated] = useState(false);    // Used for bg color sideeffect when removing/adding meta-tags
 
     // Menu
-    const MENU_ID = `menu-${textIndex}-${tokenIndex}`;
+    const MENU_ID = `menu-${textId}-${tokenIndex}`;
     const { show: showContextMenu } = useContextMenu({ id: MENU_ID });
     
     // User interaction
@@ -117,7 +117,8 @@ export default function Token({tokenInfo,
     }, [changeTrigger])
 
     const addReplacement = async (isSingle) => {
-        const response = await axios.patch(`/api/token/replace/add/single/${tokenId}`, { replacement: currentToken });
+        console.log(textId);
+        const response = await axios.patch('/api/token/replace/add/single/', { token_id: tokenId, text_id: textId, replacement: currentToken });
         // setShowPopover(false); // use here if the front end wants to appear to be quick rather than waiting for slow responses when rendering large pages
         if (isSingle && response.status === 200){
             setChangeTrigger(!changeTrigger);
@@ -159,7 +160,7 @@ export default function Token({tokenInfo,
 
     const addSuggestedReplacement = async (isSingle) => {
         // 'accept all' for suggested replacements is a WIP as its challenging to trigger side effect
-        const response = await axios.patch(`/api/token/suggest/add/single/${tokenId}`, { suggested_replacement: currentToken });
+        const response = await axios.patch('/api/token/suggest/add/single/', { token_id: tokenId, text_id: textId, suggested_replacement: currentToken });
         if (response.status === 200){ // isSingle && 
             console.log('succesfully added one suggested replacement');
             setSuggestedToken(null);

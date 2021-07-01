@@ -76,7 +76,7 @@ export default function ProjectFeed({token, setToken}) {
             : null
         }
 
-        <Navbar collapseOnSelect expand="md" bg="light" variant="light">
+        <Navbar collapseOnSelect expand="md" bg="light" variant="light" sticky="top">
             <Navbar.Brand href="/">
                 <MdBubbleChart style={{fontSize: '40px'}}/>
             </Navbar.Brand>

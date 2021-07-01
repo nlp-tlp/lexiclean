@@ -31,16 +31,16 @@ export default function Text({project,
                               schemaTrigger
                             }) {
     const classes = useStyles();
-    const textIndex = text._id ? text._id : null;
+    const textId = text._id ? text._id : null;
     const [textIntermediate, setTextIntermediate] = useState(text);
 
     return (
         <div
             id="text-container"
             className={classes.container}
-            key={textIndex}
+            key={textId}
         >
-            {   tokenize === textIndex && project ?
+            {   tokenize === textId && project ?
                 <Tokenize
                     project={project}
                     textIntermediate={textIntermediate}
@@ -50,7 +50,7 @@ export default function Text({project,
                 textIntermediate ? textIntermediate.tokens.map((tokenInfo) => {
                     const tokenProps = {
                             tokenInfo,
-                            textIndex,
+                            textId,
                             replacementDict,
                             setReplacementDict,
                             metaTagSuggestionMap,

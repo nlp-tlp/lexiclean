@@ -4,18 +4,21 @@ const logger = require('../logger');
 const Token = require('../models/Token');
 const Text = require('../models/Text');
 
-// Add Replacement on single token
-router.patch('/replace/add/single/:tokenId', async (req, res) => {
+// Add replacement on single token (sets text annotated state to true)
+router.patch('/replace/add/single/', async (req, res) => {
+
     try{
-        logger.info('Adding replacement to a single token', {route: `/api/token/replace/add/single/${req.params.tokenId}`, body: req.body})
+        logger.info('Adding replacement to a single token', {route: '/api/token/replace/add/single/', body: req.body})
         const updatedReponse = await Token.updateOne(
-                                                    { _id: req.params.tokenId },
+                                                    { _id: req.body.token_id },
                                                     {
                                                         replacement: req.body.replacement,
                                                         last_modified: new Date(Date.now())
                                                     },
                                                     { upsert: true }
                                                     )
+        await Text.updateOne({ _id: req.body.text_id}, {annotated: true, last_modified: new Date(Date.now())}, {upsert: true});
+
         res.json(updatedReponse);
     }catch(err){
         res.json({ message: err })
@@ -33,19 +36,20 @@ router.delete('/replace/remove/single/:tokenId', async (req, res) => {
     }
 })
 
-// Convert suggested replacement to replacement on one token
-router.patch('/suggest/add/single/:tokenId', async (req, res) => {
+// Convert suggested replacement to replacement on one token (also sets text annotated to true)
+router.patch('/suggest/add/single/', async (req, res) => {
     try{
-        logger.info('Converting single suggested token into replacement', {route: `/api/token/suggest/add/single/${req.params.tokenId}`})
+        logger.info('Converting single suggested token into replacement', {route: '/api/token/suggest/add/single/', body: req.body})
         const updatedReponse = await Token.updateOne(
-                                                        { _id: req.params.tokenId },
-                                                        {
-                                                            replacement: req.body.suggested_replacement,
-                                                            suggested_replacement: null,
-                                                            last_modified: new Date(Date.now())
-                                                        },
-                                                        { upsert: true }
+                                                    { _id: req.body.token_id },
+                                                    {
+                                                        replacement: req.body.suggested_replacement,
+                                                        suggested_replacement: null,
+                                                        last_modified: new Date(Date.now())
+                                                    },
+                                                    { upsert: true }
                                                     )
+        await Text.updateOne({ _id: req.body.text_id}, {annotated: true, last_modified: new Date(Date.now())}, {upsert: true});
         res.json(updatedReponse);
     }catch(err){
         res.json({ message: err })
