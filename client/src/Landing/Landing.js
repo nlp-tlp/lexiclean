@@ -85,7 +85,7 @@ export default function Landing({ token, logout }) {
                     <Nav.Link>
                         <IoLogoYoutube
                             className={classes.youtubeLogo}
-                            onClick={() => window.open("https://youtube.com", "_blank")}
+                            onClick={() => window.open("https://youtu.be/P7_ooKrQPDU", "_blank")}
                         />
                     </Nav.Link>
                     <Nav.Link onClick={token ? logout : () => history.push('/login')}>
