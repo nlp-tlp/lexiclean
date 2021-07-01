@@ -135,7 +135,7 @@ export default function Landing({ token, logout }) {
                             <div className={classes.detailText}>
                                 <IoExpand className={classes.detailIcon}/>
                                 <h3>Flexible</h3>
-                                <p>Supports 1:1, 1:N and N:1 token normalisation</p>
+                                <p>Supports token normalisation formats 1:1 and 1:N directly, and N:1 indirectly</p>
                             </div>
                         </div>
                     </Col>
@@ -146,7 +146,7 @@ export default function Landing({ token, logout }) {
                             <div className={classes.detailText}>
                                 <IoExpand className={classes.detailIcon}/>
                                 <h3>Intuitive</h3>
-                                <p>Maintains a simple and intuitive interface for ease of use</p>
+                                <p>Maintains a simple and intuitive interface for ease of use and consistency</p>
                             </div>
                         </div>
                     </Col>
@@ -154,8 +154,8 @@ export default function Landing({ token, logout }) {
                         <div className={classes.detailBox}>
                             <div className={classes.detailText}>
                                 <IoTrophy className={classes.detailIcon}/>
-                                <h3>Consistent</h3>
-                                <p>Ensure intra-annotator consistency through an intuitive interface</p>
+                                <h3>Dynamic</h3>
+                                <p>Permits organic schema development during annotation</p>
                             </div>
                         </div>
                     </Col>
