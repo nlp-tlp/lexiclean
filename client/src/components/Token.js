@@ -216,7 +216,7 @@ export default function Token({tokenInfo,
         setMetaTagUpdated(false);
         
         if (isSingle){
-            const response = await axios.patch(`/api/token/meta/add/single/${tokenId}`, {field: field, value: value});
+            const response = await axios.patch('/api/token/meta/add/single/', {token_id: tokenId, text_id: textId, field: field, value: value});
             if (response.status === 200){
                 const metaTagUpdate = {...tokenInfo1.meta_tags, [field]: value}
                 setTokenInfo1(prevState => ({...prevState, meta_tags: metaTagUpdate}))
@@ -225,7 +225,7 @@ export default function Token({tokenInfo,
             }
         } else {
             // meta-tag to cascaded across all tokens that have the same value
-            const response = await axios.patch(`/api/token/meta/add/many/${projectId}`, { "originalToken": originalToken, "field": field, "value": value });
+            const response = await axios.patch(`/api/token/meta/add/many/${projectId}`, { original_token: originalToken, field: field, value: value });
             if (response.status === 200){
                 const metaTagUpdate = {...tokenInfo1.meta_tags, [field]: value}
                 setTokenInfo1(prevState => ({...prevState, meta_tags: metaTagUpdate}))

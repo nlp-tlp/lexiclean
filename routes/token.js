@@ -220,7 +220,7 @@ router.patch('/suggest/accept/:projectId', async (req, res) => {
 })
 
 
-// [TEST] Convert single suggested replacement type to replacement for all tokens matched
+// [requires TEST] Convert single suggested replacement type to replacement for all tokens matched
 router.patch('/suggest/accept/single/:projectId', async (req, res) => {
     try{
         logger.info('Accepting single suggested replacement for all matched tokens', {route: `/api/token/suggest/accept/single/${req.params.projectId}`})
@@ -253,14 +253,13 @@ router.patch('/suggest/accept/single/:projectId', async (req, res) => {
 // --- Meta Tags ---
 
 // Patch meta-tag on one token
-router.patch('/meta/add/single/:tokenId', async (req, res) => {
+router.patch('/meta/add/single/', async (req, res) => {
     // Takes in field, value pair where the field is the axuiliary information key
-    //console.log('Patching meta-tag on single token');
     try{
-        const tokenResponse = await Token.findById({ _id: req.params.tokenId }).lean();
+        const tokenResponse = await Token.findById({ _id: req.body.token_id }).lean();
         const updatedMetaTags = {...tokenResponse.meta_tags, [req.body.field]: req.body.value};
         const updatedReponse = await Token.findByIdAndUpdate(
-                                                        { _id: req.params.tokenId },
+                                                        { _id: req.body.token_id },
                                                         {
                                                             meta_tags: updatedMetaTags,
                                                             last_modified: new Date(Date.now())
@@ -268,6 +267,9 @@ router.patch('/meta/add/single/:tokenId', async (req, res) => {
                                                         { upsert: true }
                                                         )
                                                     .lean();
+
+        await Text.updateOne({ _id: req.body.text_id}, {annotated: true, last_modified: new Date(Date.now())}, {upsert: true});
+                                        
         res.json(updatedReponse);
     }catch(err){
         res.json({ message: err })
@@ -281,7 +283,7 @@ router.patch('/meta/add/many/:projectId', async (req, res) => {
     // Updates all values in data set that match with meta-tag boolean
     //console.log('Patching meta-tags on all tokens')
     try{
-        const originalTokenValue = req.body.originalToken;
+        const originalTokenValue = req.body.original_token;
         const metaTag = req.body.field;
         const metaTagValue = req.body.value;
 
@@ -299,7 +301,14 @@ router.patch('/meta/add/many/:projectId', async (req, res) => {
             }
         }))
         
-        const updateResponse = await Token.bulkWrite(updateTokens);
+        await Token.bulkWrite(updateTokens);
+        
+        // Update text annotation states
+
+        
+
+
+        
         res.json({'matches': tokenResponse.length})
     }catch(err){
         res.json({ message: err })
