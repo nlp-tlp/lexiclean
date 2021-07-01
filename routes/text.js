@@ -242,13 +242,23 @@ router.patch('/tokenize/', async (req, res) => {
         // Build current text from tokens and tokenize new string
         const oString = text.tokens.map(token => token.token.value).flat();
         const nString = req.body.new_string.split(' ');
-
-        // Get indexes of unchanged tokens in oString
-        const oTokensUnchgdIdxs = oString.flatMap((t, i) => (nString.includes(t) ? i : []))
+        console.log(oString, '-(o,n)->', nString);
 
         // Get indexes of changed tokens in nString
         const nTokensChgd = nString.flatMap((t, i) => (!oString.includes(t) ? t : []))
+        console.log('nTokensChgd', nTokensChgd)
         const nTokensChgdIdxs = nString.flatMap((t, i) => (!oString.includes(t) ? i : []))
+        console.log('nTokensChgdIdxs', nTokensChgdIdxs)
+
+       
+        // Get indexes of unchanged tokens in oString
+        let oTokensUnchgdIdxs = oString.flatMap((t, i) => (nString.includes(t) ? i : []))
+        console.log('oTokensUnchgdIdxs', oTokensUnchgdIdxs)
+
+        // Remove indexes that are detected in the same position in nTokens due to same string matches
+        // oTokensUnchgdIdxs = oTokensUnchgdIdxs.filter(i => !nTokensChgdIdxs.includes(i));
+        // console.log('hello', oTokensUnchgdIdxs);
+
 
         // Create new tokens
         const enMap = await Map.findOne({ type: "en"}).lean();
@@ -272,16 +282,26 @@ router.patch('/tokenize/', async (req, res) => {
         const oStringTokens = text.tokens.map(token => token.token).filter((e, i) => {return oTokensUnchgdIdxs.indexOf(i) !== -1});
         const oStringTokensPayload = {'tokens': oTokensUnchgdIdxs.map((originalIndex, sliceIndex) => ({'index': originalIndex, 'token': oStringTokens[sliceIndex]._id}))};
         
+        console.log('original string payload', oStringTokensPayload)
+        
         // // Add new tokens to payload
         const nStringTokensPayload = {'tokens': nTokensChgdIdxs.map((originalIndex, sliceIndex) => ({'index': originalIndex, 'token': tokenListRes[sliceIndex]._id}))}
+
+        console.log('nwe tokens payload', nStringTokensPayload)
 
         // Combine both payloads into single object
         let tokensPayload = {'tokens': [...oStringTokensPayload['tokens'], ...nStringTokensPayload['tokens']]};
 
+        console.log('combined payload', tokensPayload)
+
         // Sort combined payload by original index
         tokensPayload['tokens'] = tokensPayload['tokens'].sort((a,b) => a.index - b.index);
+        console.log('combined payload sorted', tokensPayload)
+        
         // update indexes based on current ordering
         tokensPayload['tokens'] = tokensPayload.tokens.map((token, newIndex) => ({...token, index: newIndex}))
+
+        console.log('combined payload reindexed', tokensPayload)
 
         // Update text tokens
         const updatedTextRes = await Text.findByIdAndUpdate({ _id: req.body.text_id}, tokensPayload, { new: true }).populate('tokens.token').lean();

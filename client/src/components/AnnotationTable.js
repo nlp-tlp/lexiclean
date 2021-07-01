@@ -164,9 +164,7 @@ export default function AnnotationTable({project,
 
   return (
     <>
-      <div
-        className={classes.container}
-      >
+      <div className={classes.container}>
         {
           (!loaded || !mapsLoaded) ?
             <div style={{margin: 'auto', marginTop: '5em'}}>

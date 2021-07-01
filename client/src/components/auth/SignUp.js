@@ -95,6 +95,7 @@ export default function SignUp({ token, setToken }) {
                                     name="username"
                                     value={values.username}
                                     onChange={handleChange}
+                                    autoComplete = 'off'
                                     isValid={touched.username && !errors.username}
                                     isInvalid={touched.username && errors.username}
                                 />
@@ -112,6 +113,7 @@ export default function SignUp({ token, setToken }) {
                                     name="email"
                                     value={values.email}
                                     onChange={handleChange}
+                                    autoComplete = 'off'
                                     isValid={touched.email && !errors.email}
                                     isInvalid={touched.email && errors.email}
                                 />
@@ -132,6 +134,7 @@ export default function SignUp({ token, setToken }) {
                                     name="password"
                                     value={values.password}
                                     onChange={handleChange}
+                                    autoComplete = 'off'
                                     isValid={touched.password && !errors.password}
                                     isInvalid={touched.password && errors.password}
                                 />

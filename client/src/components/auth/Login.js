@@ -95,6 +95,7 @@ export default function Login({ token, setToken }) {
                                     name="username"
                                     value={values.username}
                                     onChange={handleChange}
+                                    autoComplete = 'off'
                                     isValid={touched.username && !errors.username}
                                     isInvalid={touched.username && errors.username}
                                 />
@@ -112,6 +113,7 @@ export default function Login({ token, setToken }) {
                                     name="password"
                                     value={values.password}
                                     onChange={handleChange}
+                                    autoComplete = 'off'
                                     isValid={touched.password && !errors.password}
                                     isInvalid={touched.password && errors.password}
                                 />

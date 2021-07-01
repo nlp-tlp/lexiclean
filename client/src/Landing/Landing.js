@@ -1,5 +1,6 @@
 import React from 'react'
 import { createUseStyles } from 'react-jss';
+import { BiSmile } from 'react-icons/bi'
 import { IoSpeedometer, IoEnter, IoExpand, IoTrophy, IoLogoGithub, IoLogoYoutube } from 'react-icons/io5';
 import { useHistory } from 'react-router-dom';
 import { MdBubbleChart } from 'react-icons/md';
@@ -94,7 +95,7 @@ export default function Landing({ token, logout }) {
                 </Navbar.Collapse>
             </Navbar>
 
-            <Container className="text-center">
+            <Container className="text-center" style={{marginBottom: '5em'}}>
                 <Row className="justify-content-center" style={{marginTop: '10vh'}}>
                         <div style={{display: 'flex', alignItems: 'center'}}>
                             <MdBubbleChart style={{fontSize: '80px'}}/>
@@ -144,9 +145,9 @@ export default function Landing({ token, logout }) {
                     <Col xs={4}>
                         <div className={classes.detailBox}>
                             <div className={classes.detailText}>
-                                <IoExpand className={classes.detailIcon}/>
+                                <BiSmile className={classes.detailIcon}/>
                                 <h3>Intuitive</h3>
-                                <p>Maintains a simple and intuitive interface for ease of use and consistency</p>
+                                <p>Maintains a simple and easy-to-use interface for improved consistency</p>
                             </div>
                         </div>
                     </Col>

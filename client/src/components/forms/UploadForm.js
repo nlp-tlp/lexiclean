@@ -227,6 +227,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
                 name="projectName"
                 value={values.projectName}
                 onChange={handleChange}
+                autoComplete = 'off'
                 isValid={touched.projectName && !errors.projectName}
                 isInvalid={touched.projectName && errors.projectName}
               />
@@ -244,6 +245,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
                 name="projectDescription"
                 value={values.projectDescription}
                 onChange={handleChange}
+                autoComplete = 'off'
                 isValid={touched.projectDescription && !errors.projectDescription}
                 isInvalid={touched.projectDescription && errors.projectDescription}
               />

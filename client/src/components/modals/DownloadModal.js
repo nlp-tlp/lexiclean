@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Modal, Button, Table } from 'react-bootstrap';
+import { Modal, Button, Table, Form } from 'react-bootstrap';
 import { MdFileDownload, MdLibraryBooks } from 'react-icons/md';
 import axios from 'axios';
 
@@ -84,13 +84,15 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
                 link.click();
                 document.body.removeChild(link);
             }
-
         }
-
-
-        
     }
     
+    const resultTypeCheckBox = (
+        <div style={{display: 'flex', justifyContent:'space-around'}}>
+            <Form.Check inline type="checkbox" label="Seq2Seq" style={{fontSize: '14px'}} checked={true} />
+            <Form.Check inline type="checkbox" label="Token Clf" style={{fontSize: '14px'}}/>
+        </div>
+        )
     return (
         <Modal
             show={showDownload}
@@ -108,7 +110,7 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
                     <tbody>
                         <tr style={{backgroundColor: 'rgba(0,0,0,0.05)'}}>
                         <td>Normalisations</td>
-                        <td>Extended W-NUT JSON format</td>
+                        <td>Extended W-NUT JSON format { resultTypeCheckBox }</td>
                         <td>
                             <MdFileDownload style={{fontSize: '22px', margin: 'auto', color: 'black'}} onClick={() => downloadResults(project)}/> 
                         </td>
