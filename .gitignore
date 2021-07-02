@@ -24,11 +24,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-
-/data
+.vscode
 .env
-/analysis
-/exp
-/demo
-
 logger/logs.json
