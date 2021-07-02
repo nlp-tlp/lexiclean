@@ -126,7 +126,7 @@ router.post('/create', async (req, res) => {
                                                                .replace(/[~",?;!:\(\)\[\]_\{\}\*]/g, ' ') // doesn't include period (.) or single quote (')
                                                                .replace(/\s+/g,' ')
                                                                .replace(/\.$/, '')
-                                                               .trim()); 
+                                                               .trim());
         // remove texts that are empty after normalisation
         let filteredTexts = normalisedTexts.filter(text => text.length > 0).map(text => text);
 

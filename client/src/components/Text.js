@@ -34,8 +34,6 @@ export default function Text({project,
     const textId = text._id ? text._id : null;
     const [textIntermediate, setTextIntermediate] = useState(text);
 
-    console.log(textIntermediate)
-
     return (
         <div
             id="text-container"

@@ -92,7 +92,6 @@ export default function AnnotationTable({project,
     // Fetch pagination metadata
     const fetchPaginationInfo = async () => {
       if (!paginatorLoaded || pageLimit){
-          console.log('page limit', pageLimit)
           const response = await axios.post('/api/text/filter', { project_id: project._id, get_pages: true }, { params: { limit: pageLimit }})
           if (response.status === 200){
             setTotalPages(response.data.totalPages);

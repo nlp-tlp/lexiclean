@@ -50,7 +50,6 @@ router.post('/filter', async (req, res) => {
             logger.info('Fetching results from paginator', { route: '/api/text/filter' });
             const skip = parseInt((req.query.page - 1) * req.query.limit)
             const limit = parseInt(req.query.limit)
-            // Paginate Aggregation
             const textAggregation = await Text.aggregate([
                 {
                     $match: { 
@@ -59,7 +58,7 @@ router.post('/filter', async (req, res) => {
                 },
                 {
                     $lookup: {
-                        from: 'tokens', // need to use MongoDB collection name - NOT mongoose model name
+                        from: 'tokens',
                         localField: 'tokens.token',
                         foreignField: '_id',
                         as: 'tokens_detail'
@@ -97,14 +96,12 @@ router.post('/filter', async (req, res) => {
                 {
                     $sort: { 'rank': 1 }
                 },
-                // Paginate over documents
                 {
                     $skip: skip // equiv to page
                 },
                 {
                     $limit: limit // same as limit
                 }
-    
             ])
             .allowDiskUse(true)
             .exec();
@@ -242,41 +239,37 @@ router.patch('/annotations/update', async (req, res) => {
 })
 
 
-// Tokenization - update single text
-router.patch('/tokenize/', async (req, res) => {
-    // Add new tokens to text whilst conserving original, unchanged, tokens.
-    // Save tokenization artefact if possible, too!
+
+
+router.patch('/tokenize', async (req, res) => {
+
     try{
-        logger.info('Tokenizing one text', {route: `/api/text/tokenize/${req.params.textId}`});
-        const text = await Text.findOne({ _id: req.body.text_id}).populate('tokens.token').lean();
+        logger.info('Tokenizing one text', {route: `/api/text/exp/tokenize/`});
+
+        console.log(req.body);
         
-        // Build current text from tokens and tokenize new string
-        const oString = text.tokens.map(token => token.token.value).flat();
-        const nString = req.body.new_string.split(' ');
-        console.log(oString, '-(o,n)->', nString);
+        const text = await Text.findOne({ _id: req.body.text_id}).populate('tokens.token').lean();
+        console.log(text);
 
-        // Get indexes of changed tokens in nString
-        const nTokensChgd = nString.flatMap((t, i) => (!oString.includes(t) ? t : []))
-        console.log('nTokensChgd', nTokensChgd)
-        const nTokensChgdIdxs = nString.flatMap((t, i) => (!oString.includes(t) ? i : []))
-        console.log('nTokensChgdIdxs', nTokensChgdIdxs)
+        const tokenIndexesTK = req.body.indexes_tk;
+        
+        // Combine tokens to  (tc)change and get their positions
+        const tokenIndexesTC = req.body.index_groups_tc.map(group => group[0])
+        console.log(tokenIndexesTC)
+        let tokenValuesTC = req.body.index_groups_tc.map(group => group.map(value => text.tokens.filter(token => token.index === value).map(token => token.token.value)[0]))
+        tokenValuesTC = tokenValuesTC.map(valueGroup => valueGroup.join(""));
+        console.log(tokenValuesTC)
 
-       
-        // Get indexes of unchanged tokens in oString
-        let oTokensUnchgdIdxs = oString.flatMap((t, i) => (nString.includes(t) ? i : []))
-        console.log('oTokensUnchgdIdxs', oTokensUnchgdIdxs)
-
-        // Remove indexes that are detected in the same position in nTokens due to same string matches
-        // oTokensUnchgdIdxs = oTokensUnchgdIdxs.filter(i => !nTokensChgdIdxs.includes(i));
-        // console.log('hello', oTokensUnchgdIdxs);
 
 
         // Create new tokens
         const enMap = await Map.findOne({ type: "en"}).lean();
         const enMapSet = new Set(enMap.tokens);
 
+
         // Here all historical info will be stripped from new tokens regardless of whether new combinations are in IV form
-        const newTokenList = nTokensChgd.map(token => {
+
+        const newTokenList = tokenValuesTC.map(token => {
             return({
                     value: token,
                     meta_tags: { en: enMapSet.has(token) },
@@ -285,23 +278,28 @@ router.patch('/tokenize/', async (req, res) => {
                     project_id: req.body.project_id
                     })
             });
+
+        console.log('newTokenList', newTokenList);
+
         // Insert tokens into Token collection
         const tokenListRes = await Token.insertMany(newTokenList);
 
+        console.log(tokenListRes)
+
         // Build token array, assign indices and update text
         // // These are original tokens that remain unchanged, filtered by their index
-        const oStringTokens = text.tokens.map(token => token.token).filter((e, i) => {return oTokensUnchgdIdxs.indexOf(i) !== -1});
-        const oStringTokensPayload = {'tokens': oTokensUnchgdIdxs.map((originalIndex, sliceIndex) => ({'index': originalIndex, 'token': oStringTokens[sliceIndex]._id}))};
+        const oTokens = text.tokens.map(token => token.token).filter((e, i) => {return tokenIndexesTK.indexOf(i) !== -1});
+        const oTokensPayload = {'tokens': tokenIndexesTK.map((originalIndex, sliceIndex) => ({'index': originalIndex, 'token': oTokens[sliceIndex]._id}))};
         
-        console.log('original string payload', oStringTokensPayload)
+        console.log('original tokens payload', oTokensPayload)
         
         // // Add new tokens to payload
-        const nStringTokensPayload = {'tokens': nTokensChgdIdxs.map((originalIndex, sliceIndex) => ({'index': originalIndex, 'token': tokenListRes[sliceIndex]._id}))}
+        const nTokensPayload = {'tokens': tokenIndexesTC.map((originalIndex, sliceIndex) => ({'index': originalIndex, 'token': tokenListRes[sliceIndex]._id}))}
 
-        console.log('nwe tokens payload', nStringTokensPayload)
+        console.log('nwe tokens payload', nTokensPayload)
 
         // Combine both payloads into single object
-        let tokensPayload = {'tokens': [...oStringTokensPayload['tokens'], ...nStringTokensPayload['tokens']]};
+        let tokensPayload = {'tokens': [...oTokensPayload['tokens'], ...nTokensPayload['tokens']]};
 
         console.log('combined payload', tokensPayload)
 
@@ -314,23 +312,76 @@ router.patch('/tokenize/', async (req, res) => {
 
         console.log('combined payload reindexed', tokensPayload)
 
-        // res.json('hello');
-
         // Update text tokens
         const updatedTextRes = await Text.findByIdAndUpdate({ _id: req.body.text_id}, tokensPayload, { new: true }).populate('tokens.token').lean();
+
+        console.log(updatedTextRes)
+
+        // convert text into same format as the paginator (this is expected by front-end components)
+        const outputTokens = updatedTextRes.tokens.map(token => ({...token.token, index: token.index, token: token.token._id}))
+        console.log(outputTokens);
+
+        const outputText = {...updatedTextRes, tokens: outputTokens}
+        console.log(outputText)
+
+        res.json(outputText)
+
+        // Remove old tokens in token collection (those removed from text)
+        const oStringTokensRemoveIds = text.tokens.map(token => token.token).filter((e, i) => {return oTokensUnchgdIdxs.indexOf(i) == -1}).map(token =>token._id);
+        await Token.deleteMany({ _id: {$in: oStringTokensRemoveIds}});
+
+
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+
+// [REVIEW] Undo text tokenization - single text
+router.patch('/tokenize/undo', async (req, res) => {
+
+    try{
+
+        const textId = await Text.findById({ _id: req.body.text_id}).lean();
+
+        // Remove old tokens
+        const oldTokenIds = textId.tokens.map(token => token._id);
+        await Token.deleteMany({ _id: {$in: oldTokenIds}});
+
+
+        // Create new tokens
+        const enMap = await Map.findOne({ type: "en"}).lean();
+        const enMapSet = new Set(enMap.tokens);
+
+        // Here all historical info will be stripped from new tokens regardless of whether new combinations are in IV form
+        const newTokenList = textId.original.split(' ').map(token => {
+            return({
+                    value: token,
+                    meta_tags: { en: enMapSet.has(token) },
+                    replacement: null,
+                    suggested_replacement: null,
+                    project_id: textId.project_id
+                    })
+            });
+        
+        // Insert tokens into Token collection
+        const tokenListRes = await Token.insertMany(newTokenList);
+
+
+        const tokensPayload = {'tokens': tokenListRes.map((token, index) => ({'index': index, 'token': token._id}))};
+
+
+        const updatedTextRes = await Text.findByIdAndUpdate({ _id: req.body.text_id}, tokensPayload, { new: true }).populate('tokens.token').lean();
+
 
         // convert text into same format as the paginator (this is expected by front-end components)
         const outputTokens = updatedTextRes.tokens.map(token => ({...token.token, index: token.index, token: token.token._id}))
         const outputText = {...updatedTextRes, tokens: outputTokens}
 
-        // Remove old tokens in token collection (those removed from text)
-        const oStringTokensRemoveIds = text.tokens.map(token => token.token).filter((e, i) => {return oTokensUnchgdIdxs.indexOf(i) == -1}).map(token =>token._id);
-        await Token.deleteMany({ _id: {$in: oStringTokensRemoveIds}});
-        res.json(outputText)
-        
+        res.json(outputText);
+
     }catch(err){
         res.json({ message: err })
-        logger.error('Failed to tokenize text', {route: `/api/text/tokenize/${req.params.textId}`});
     }
 })
 

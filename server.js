@@ -35,3 +35,14 @@ mongoose.connect(
 // Create listener
 const port = 3001;
 app.listen(port, () => console.log(`Server started on port ${port}`));
+
+// Cleanup
+// function exitHandler(options, exitCode) {
+//     if (options.cleanup) console.log('clean');
+//     if (exitCode || exitCode === 0) console.log(exitCode);
+//     if (options.exit) process.exit();
+// }
+
+// process.on('exit', exitHandler.bind(null, { cleanup: true }));
+// process.on('SIGINT', exitHandler.bind(null, { exit: true }));
+// process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
