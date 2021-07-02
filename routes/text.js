@@ -11,8 +11,7 @@ const Map = require('../models/Map');
 router.get('/:textId', async (req, res) => {
     try{
         logger.info('Get single text', {route: `/api/text/${req.params.textId}`})
-        const response = await Text.findOne({ _id: req.params.textId})
-                                    .populate('tokens.token');
+        const response = await Text.findOne({ _id: req.params.textId}).populate('tokens.token').lean();
         res.json(response);
     }catch(err){
         res.json({ message: err })
@@ -20,11 +19,10 @@ router.get('/:textId', async (req, res) => {
     }
 })
 
-// get all texts
+// Get all texts
 router.get('/', async (req, res) => {
     try{
-        const response = await Text.find()
-                                    .populate('tokens.token');
+        const response = await Text.find().populate('tokens.token').lean();
         res.json(response);
     }catch(err){
         res.json({ message: err })
@@ -32,76 +30,89 @@ router.get('/', async (req, res) => {
 })
 
 
-// Get number of total pages for paginator
-router.get('/filter/pages/:projectId', async (req, res) => {
-    try{
-        logger.info('Getting number of pages for paginator', {route: `/api/text/filter/pages/${req.params.projectId}`});
-        const textsCount = await Text.find({ project_id : req.params.projectId}).count();
-        const pages = Math.ceil(textsCount/req.query.limit);
-        res.json({"totalPages": pages})
-    }catch(err){
-        res.json({ message: err })
-        logger.error('Failed to get number of pages for paginator', {route: `/api/text/filter/pages/${req.params.projectId}`});
-    }
-})
-
-
-// PAGINATE DATA FILTERED BY PROJECT ID
-// If any issues arise with results - refer to: https://github.com/aravindnc/mongoose-aggregate-paginate-v2/issues/18
-router.get('/filter/:projectId', async (req, res) => {
-    //console.log('Paginating through texts');
+// Text paginatior
+router.post('/filter', async (req, res) => {
     try {
-        const skip = parseInt((req.query.page - 1) * req.query.limit)
-        const limit = parseInt(req.query.limit)
-        // Paginate Aggregation
-        const textAggregation = await Text.aggregate([
-            {
-                $match: { 
-                    project_id: mongoose.Types.ObjectId(req.params.projectId), 
-                }
-            },
-            {
-                $lookup: {
-                    from: 'tokens', // need to use MongoDB collection name - NOT mongoose model name
-                    localField: 'tokens.token',
-                    foreignField: '_id',
-                    as: 'tokens_detail'
-                }
-            },
-            {
-                $project: {
-                    annotated: "$annotated",
-                    // weight: "$weight",
-                    rank: "$rank",
-                    tokens: {
-                        $map : {
-                            input: { $zip: { inputs: [ "$tokens", "$tokens_detail"]}},
-                            as: "el",
-                            in: {
-                                $mergeObjects: [{"$arrayElemAt": [ "$$el", 0 ]}, {"$arrayElemAt": [ "$$el", 1 ] }]
-                            }
-                        }
-                    }
-                }
-            },
-            {
-                $sort: { 'rank': 1 } // 'weight': -1
-            },
-            // Paginate over documents
-            {
-                $skip: skip // equiv to page
-            },
-            {
-                $limit: limit // same as limit
-            }
 
-        ])
-        .allowDiskUse(true)
-        .exec();
-        res.json(textAggregation);
+        if (req.body.get_pages){
+            // Returns total pages instead of page of results
+            try{
+                logger.info('Getting number of pages for paginator', { route: '/api/text/filter' });
+                const textsCount = await Text.find({ project_id : req.params.projectId}).count();
+                const pages = Math.ceil(textsCount/req.query.limit);
+                res.json({"totalPages": pages})
+            }catch(err){
+                res.json({ message: err })
+                logger.error('Failed to get number of pages for paginator', {route: `/api/text/filter/pages/${req.params.projectId}`});
+            }
+        } else {
+            // Standard paginator with aggregation
+            logger.info('Fetching results from paginator', { route: '/api/text/filter' });
+            const skip = parseInt((req.query.page - 1) * req.query.limit)
+            const limit = parseInt(req.query.limit)
+            // Paginate Aggregation
+            const textAggregation = await Text.aggregate([
+                {
+                    $match: { 
+                        project_id: mongoose.Types.ObjectId(req.body.project_id), 
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'tokens', // need to use MongoDB collection name - NOT mongoose model name
+                        localField: 'tokens.token',
+                        foreignField: '_id',
+                        as: 'tokens_detail'
+                    }
+                },
+                {
+                    $project: {
+                        annotated: "$annotated",
+                        rank: "$rank",
+                        tokens: {
+                          $map: {
+                            input: "$tokens",
+                            as: "one",
+                            in: {
+                              $mergeObjects: [
+                                "$$one",
+                                {
+                                  $arrayElemAt: [
+                                    {
+                                      $filter: {
+                                        input: "$tokens_detail",
+                                        as:"two",
+                                        cond: { $eq: ["$$two._id", "$$one.token"]}
+                                    }
+                                    },
+                                    0
+                                    ]
+                                }
+                                ]
+                            }
+                          }
+                        }
+                      }
+                },
+                {
+                    $sort: { 'rank': 1 }
+                },
+                // Paginate over documents
+                {
+                    $skip: skip // equiv to page
+                },
+                {
+                    $limit: limit // same as limit
+                }
+    
+            ])
+            .allowDiskUse(true)
+            .exec();
+            res.json(textAggregation);
+        }
     }catch(err){
         res.json({ message: err })
-        logger.error('Failed to get text pagination results', {route: `/api/text/filter/${req.params.projectId}`});
+        logger.error('Failed to get text pagination results', {route: `/api/text/filter/${req.body.project_id}`});
     }
 })
 
@@ -303,6 +314,8 @@ router.patch('/tokenize/', async (req, res) => {
 
         console.log('combined payload reindexed', tokensPayload)
 
+        // res.json('hello');
+
         // Update text tokens
         const updatedTextRes = await Text.findByIdAndUpdate({ _id: req.body.text_id}, tokensPayload, { new: true }).populate('tokens.token').lean();
 
@@ -312,15 +325,13 @@ router.patch('/tokenize/', async (req, res) => {
 
         // Remove old tokens in token collection (those removed from text)
         const oStringTokensRemoveIds = text.tokens.map(token => token.token).filter((e, i) => {return oTokensUnchgdIdxs.indexOf(i) == -1}).map(token =>token._id);
-        await Token.deleteMany({ _id: oStringTokensRemoveIds});
+        await Token.deleteMany({ _id: {$in: oStringTokensRemoveIds}});
         res.json(outputText)
         
     }catch(err){
         res.json({ message: err })
         logger.error('Failed to tokenize text', {route: `/api/text/tokenize/${req.params.textId}`});
     }
-
-
 })
 
 module.exports = router;

@@ -92,8 +92,8 @@ export default function AnnotationTable({project,
     // Fetch pagination metadata
     const fetchPaginationInfo = async () => {
       if (!paginatorLoaded || pageLimit){
-          // note large page is used as it will index to a page without any active data...
-          const response = await axios.get(`/api/text/filter/pages/${project._id}`, { params: {limit: pageLimit }})
+          console.log('page limit', pageLimit)
+          const response = await axios.post('/api/text/filter', { project_id: project._id, get_pages: true }, { params: { limit: pageLimit }})
           if (response.status === 200){
             setTotalPages(response.data.totalPages);
             setPaginatorLoaded(true);
@@ -107,7 +107,7 @@ export default function AnnotationTable({project,
     const fetchData = async () => {
         setLoaded(false);
         setPage(pageNumber);
-        const response = await axios.get(`/api/text/filter/${project._id}`, { params: { page: page, limit: pageLimit }})
+        const response = await axios.post('/api/text/filter', { project_id: project._id}, { params: { page: page, limit: pageLimit }});
         if (response.status === 200){
           setCurrentTexts(response.data);
           setLoaded(true);
