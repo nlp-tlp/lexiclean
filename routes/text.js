@@ -240,35 +240,21 @@ router.patch('/annotations/update', async (req, res) => {
 
 
 
-
+// Tokenize single text
 router.patch('/tokenize', async (req, res) => {
-
     try{
         logger.info('Tokenizing one text', {route: `/api/text/exp/tokenize/`});
-
-        console.log(req.body);
-        
         const text = await Text.findOne({ _id: req.body.text_id}).populate('tokens.token').lean();
-        console.log(text);
-
-        const tokenIndexesTK = req.body.indexes_tk;
-        
+        const tokenIndexesTK = req.body.indexes_tk;        
         // Combine tokens to  (tc)change and get their positions
         const tokenIndexesTC = req.body.index_groups_tc.map(group => group[0])
-        console.log(tokenIndexesTC)
         let tokenValuesTC = req.body.index_groups_tc.map(group => group.map(value => text.tokens.filter(token => token.index === value).map(token => token.token.value)[0]))
         tokenValuesTC = tokenValuesTC.map(valueGroup => valueGroup.join(""));
-        console.log(tokenValuesTC)
-
-
 
         // Create new tokens
         const enMap = await Map.findOne({ type: "en"}).lean();
         const enMapSet = new Set(enMap.tokens);
-
-
         // Here all historical info will be stripped from new tokens regardless of whether new combinations are in IV form
-
         const newTokenList = tokenValuesTC.map(token => {
             return({
                     value: token,
@@ -278,57 +264,52 @@ router.patch('/tokenize', async (req, res) => {
                     project_id: req.body.project_id
                     })
             });
-
-        console.log('newTokenList', newTokenList);
+        // console.log('newTokenList', newTokenList);
 
         // Insert tokens into Token collection
         const tokenListRes = await Token.insertMany(newTokenList);
-
-        console.log(tokenListRes)
+        // console.log(tokenListRes)
 
         // Build token array, assign indices and update text
         // // These are original tokens that remain unchanged, filtered by their index
         const oTokens = text.tokens.map(token => token.token).filter((e, i) => {return tokenIndexesTK.indexOf(i) !== -1});
         const oTokensPayload = {'tokens': tokenIndexesTK.map((originalIndex, sliceIndex) => ({'index': originalIndex, 'token': oTokens[sliceIndex]._id}))};
-        
-        console.log('original tokens payload', oTokensPayload)
+        // console.log('original tokens payload', oTokensPayload)
         
         // // Add new tokens to payload
         const nTokensPayload = {'tokens': tokenIndexesTC.map((originalIndex, sliceIndex) => ({'index': originalIndex, 'token': tokenListRes[sliceIndex]._id}))}
-
-        console.log('nwe tokens payload', nTokensPayload)
+        // console.log('nwe tokens payload', nTokensPayload)
 
         // Combine both payloads into single object
         let tokensPayload = {'tokens': [...oTokensPayload['tokens'], ...nTokensPayload['tokens']]};
-
-        console.log('combined payload', tokensPayload)
+        // console.log('combined payload', tokensPayload)
 
         // Sort combined payload by original index
         tokensPayload['tokens'] = tokensPayload['tokens'].sort((a,b) => a.index - b.index);
-        console.log('combined payload sorted', tokensPayload)
+        // console.log('combined payload sorted', tokensPayload)
         
         // update indexes based on current ordering
         tokensPayload['tokens'] = tokensPayload.tokens.map((token, newIndex) => ({...token, index: newIndex}))
-
-        console.log('combined payload reindexed', tokensPayload)
+        // console.log('combined payload reindexed', tokensPayload)
 
         // Update text tokens
         const updatedTextRes = await Text.findByIdAndUpdate({ _id: req.body.text_id}, tokensPayload, { new: true }).populate('tokens.token').lean();
-
-        console.log(updatedTextRes)
+        // console.log(updatedTextRes)
 
         // convert text into same format as the paginator (this is expected by front-end components)
         const outputTokens = updatedTextRes.tokens.map(token => ({...token.token, index: token.index, token: token.token._id}))
-        console.log(outputTokens);
-
+        // console.log(outputTokens);
         const outputText = {...updatedTextRes, tokens: outputTokens}
-        console.log(outputText)
+        // console.log(outputText)
 
         res.json(outputText)
 
         // Remove old tokens in token collection (those removed from text)
         const oStringTokensRemoveIds = text.tokens.map(token => token.token).filter((e, i) => {return oTokensUnchgdIdxs.indexOf(i) == -1}).map(token =>token._id);
         await Token.deleteMany({ _id: {$in: oStringTokensRemoveIds}});
+
+        
+
 
 
     }catch(err){
@@ -341,7 +322,6 @@ router.patch('/tokenize', async (req, res) => {
 router.patch('/tokenize/undo', async (req, res) => {
 
     try{
-
         const textId = await Text.findById({ _id: req.body.text_id}).lean();
 
         // Remove old tokens
