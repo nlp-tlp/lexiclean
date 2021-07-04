@@ -389,28 +389,95 @@ router.get('/counts/:projectId', utils.authenicateToken, async (req, res) => {
 })
 
 
-// [need to add username filtering here, so only creators can update] Download results
-router.get('/download/result/:projectId', utils.authenicateToken, async (req, res) => {
-    // console.log('Preparing annotation results')
+// Download results
+// Allows user to configure output for seq2seq or tokenclf
+// seq2seq has n:m input:ouput lengths whereas tokenclf has n:n where tokenized spots are filled with
+// white space
+router.get('/download/result', utils.authenicateToken, async (req, res) => {
     try{
-        logger.info('Downloading project results', {route: `/api/project/download/result/${req.params.projectId}`});
+        logger.info('Downloading project results', {route: '/api/project/download/result'});
 
-        const texts = await Text.find({ project_id : req.params.projectId }).populate('tokens.token').lean();
+        const texts = await Text.find({ project_id : req.body.project_id }).populate('tokens.token').lean();
         // Format results similar to WNUT 2015 (see: http://noisy-text.github.io/2015/norm-shared-task.html), with some modifications
         // {"tid": <text_id>, "input": [<token>, <token>, ...], "output": [<token>, <token>, ...], "class": [[<class_1>,<class_n>], [<class_1>,<class_n>], ...]}
-        const results = texts.map(text => (
-            {
-                "tid": text._id,
-                "input": text.original.split(' '), //text.tokens.map(token => token.token.value),
-                // Here tokens marked with 'replace' should be converted to an empty string
-                "output": text.tokens.map(tokenInfo => tokenInfo.token.removed ? '' : tokenInfo.token.replacement ? tokenInfo.token.replacement : tokenInfo.token.value),
-                "class": text.tokens.map(tokenInfo => tokenInfo.token.meta_tags)
-            }
-        ))
+        
+        if (req.body.type === 'seq2seq'){
+            const results = texts.map(text => (
+                {
+                    "tid": text._id,
+                    "input": text.original.split(' '), //text.tokens.map(token => token.token.value),
+                    // Here tokens marked with 'replace' should be converted to an empty string
+                    "output": text.tokens.map(tokenInfo => tokenInfo.token.removed ? '' : tokenInfo.token.replacement ? tokenInfo.token.replacement : tokenInfo.token.value),
+                    "class": text.tokens.map(tokenInfo => tokenInfo.token.meta_tags)
+                }
+            ))
+            res.json(results);
+        } else if (req.body.type === 'tokenclf'){
+            // Use tokenization history to format output as n:n
+
+            const results = texts.map(text => 
+                {
+                    const tokenizationHist = text.tokenization_hist;
+                    if (tokenizationHist.length > 0){
+                        // console.log(tokenizationHist)
+
+                        const oTextTokenLen = text.original.split(' ').length;
+                        const tokenizationHistObj = Object.assign(...tokenizationHist);
+                        let output = text.tokens.map((tokenInfo, index) => {
+                            return tokenInfo.token.replacement ? tokenInfo.token.replacement : tokenInfo.token.value;
+                        });
+
+                        let metaTags = text.tokens.map(tokenInfo => tokenInfo.token.meta_tags);
+
+                        // Add white space (and empty metaTags)
+                        Object.keys(tokenizationHistObj).slice().reverse().map(val => {
+                            const numWS = tokenizationHistObj[val].length - 1;
+                            // add white space
+                            const indexWS = tokenizationHistObj[val][1].index;
+                            const ws = Array(numWS).fill(' ');
+
+                            // add empty meta tag dicts
+                            const mtDicts = Array(numWS).fill({});
+                            if (indexWS > output.length - 1){ // minus 1 to account for 0 indexing
+                                // Extend array (ws at the end)
+                                output = [...output, ...ws];
+                                metaTags = [...metaTags, ...mtDicts];
+                            } else {
+                                // Otherwise insert
+                                output.splice(indexWS, 0, ...ws);
+                                metaTags.splice(indexWS, 0, ...mtDicts);
+                            }
+                        })
+
+                        return({
+                            "tid": text._id,
+                            "input": text.original.split(' '),
+                            "output": output,
+                            "class": metaTags//text.tokens.map(tokenInfo => tokenInfo.token.meta_tags)
+                        })
+                    }
+
+                    return({
+                        "tid": text._id,
+                        "input": text.original.split(' '),
+                        "output": text.tokens.map(tokenInfo => tokenInfo.token.replacement ? tokenInfo.token.replacement : tokenInfo.token.value),
+                        "class": text.tokens.map(tokenInfo => tokenInfo.token.meta_tags)
+                    })
+                }
+            )
+            res.json(results);
+
+
+
+        } else {
+            // Error invalid type...
+
+
+        }
         res.json(results)
     }catch(err){
-        res.json({ message: json })
-        logger.error('Failed to download project results', {route: `/api/project/download/result/${req.params.projectId}`});
+        res.json({ message: err })
+        logger.error('Failed to download project results', {route: '/api/project/download/result'});
     } 
 })
 

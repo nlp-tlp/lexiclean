@@ -97,7 +97,8 @@ export default function Tokenize({ project, textIntermediate, setTextIntermediat
     }
 
     const undoTokens = () => {
-        setTokenIndexes(new Set())
+        // Removes last selection from selected tokens
+        setTokenIndexes(prev => new Set([...prev].slice(0, -1)));
     }
 
 

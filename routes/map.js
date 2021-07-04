@@ -59,12 +59,12 @@ router.post('/static/', async (req, res) => {
 })
 
 // Download map
-router.post('/download/:projectId', async (req, res) => {
+router.post('/download', async (req, res) => {
     try{    
-        logger.info(`Downloading ${req.body.mapName} mapping`, {route: `/api/map/download/${req.params.projectId}`});
+        logger.info(`Downloading ${req.body.mapName} mapping`, {route: '/api/map/download'});
         
         // Get tokens
-        const tokens = await Token.find({ project_id: req.params.projectId }).lean();
+        const tokens = await Token.find({ project_id: req.body.project_id }).lean();
         // console.log(tokens);
 
         if (req.body.mapName === 'rp'){
@@ -102,12 +102,10 @@ router.post('/download/:projectId', async (req, res) => {
             // console.log(tokenValues);
             res.json({'values': tokenValues})
         }
-        
-
 
     }catch(err){
         res.json({ message: err })
-        logger.error(`Failed to download ${req.body.mapName} mapping`, {route: `/api/map/download/${req.params.projectId}`});
+        logger.error(`Failed to download ${req.body.mapName} mapping`, {route: '/api/map/download'});
     }
 })
 

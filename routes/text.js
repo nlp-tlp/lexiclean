@@ -298,15 +298,14 @@ router.patch('/tokenize', async (req, res) => {
         // Capture tokenization group mapping
         // {original_index : token_group} where token_group is the original token values
         const tokenizationMap = req.body.index_groups_tc.map(group => ({ [group[0]] : group.map(token_index => text.tokens.filter(token => token.index === token_index).map(token => ({'index': token.index, info: token.token}))[0])}))
-        console.log(tokenizationMap)
+        // console.log(tokenizationMap)
 
-        // Update text tokens
+        // Update text tokens array with new tokens
         await Text.findByIdAndUpdate({ _id: req.body.text_id}, tokensPayload, { new: true });
-        console.log('hello')
 
         // Update text tokenization history
         const updatedTextRes = await Text.findByIdAndUpdate({ _id: req.body.text_id}, { $push: {tokenization_hist: tokenizationMap }}, {upsert: true, new: true}).populate('tokens.token').lean(); 
-        console.log(updatedTextRes)
+        // console.log(updatedTextRes)
 
         // convert text into same format as the paginator (this is expected by front-end components)
         const outputTokens = updatedTextRes.tokens.map(token => ({...token.token, index: token.index, token: token.token._id}))
@@ -328,6 +327,8 @@ router.patch('/tokenize', async (req, res) => {
 
 
 // [REVIEW] Undo text tokenization - single text
+// WIP - requires using the tokenization history to walk back...
+// currently legacy code.
 router.patch('/tokenize/undo', async (req, res) => {
 
     try{

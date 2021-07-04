@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { Modal, Button, Table, Form } from 'react-bootstrap';
+import { Modal, Button, Table, Form, OverlayTrigger, Popover } from 'react-bootstrap';
 import { MdFileDownload, MdLibraryBooks } from 'react-icons/md';
+import { IoInformationCircleSharp } from 'react-icons/io5';
 import axios from 'axios';
 
 const DEFAULT_MAPS = ['ua', 'st', 'en'];
@@ -24,11 +25,37 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
         fetchProjectMaps();
       }, [mapsLoaded])
 
+    const infoPopover = (content, format) => {
+    return(<Popover id="popover-info">
+        <Popover.Title>
+        Information
+        </Popover.Title>
+        <Popover.Content>
+        <p>{content}</p>
+        <code style={{whiteSpace: 'pre-wrap'}}>{format}</code>
+        </Popover.Content>
+    </Popover>
+    )}
+
+    const infoOverlay = (info) => {
+    return(<div style={{ display: 'flex'}}>
+            <p> { info.title }</p>
+            <OverlayTrigger
+                trigger="click"
+                placement="right"
+                overlay={infoPopover(info.content, info.format)}
+            >
+                <IoInformationCircleSharp style={{marginLeft: '2px', color: 'grey'}} />
+            </OverlayTrigger>
+            </div>
+            )}
+
+
     
     const downloadResults = async (project) => {
     
         // Fetch results
-        const resultRes = await axios.get(`/api/project/download/result/${project._id}`, {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}});
+        const resultRes = await axios.get('/api/project/download/result', { project_id: project._id }, {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}});
 
         if (resultRes.status === 200){
             // Prepare for file download
@@ -48,7 +75,7 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
     const downloadMaps = async (project, mapName) => {
         // console.log(`Downloading ${mapName} mapping`);
 
-        const response = await axios.post(`/api/map/download/${project._id}`, {mapName: mapName});
+        const response = await axios.post('/api/map/download', {project_id: project._id, mapName: mapName});
 
         if (response.status === 200){
             if (mapName === 'rp'){
@@ -100,7 +127,7 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
             </Modal.Header>
 
             <Modal.Body>
-                <p>Normalisation and mappings for project <strong>{project.name}</strong></p>
+                <p>Normalisation and gazetteers for project <strong>{project.name}</strong></p>
                 <Table bordered hover>
                     <tbody>
                         <tr style={{backgroundColor: 'rgba(0,0,0,0.05)'}}>
