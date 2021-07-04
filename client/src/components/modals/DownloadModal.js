@@ -2,15 +2,34 @@ import React, { useState, useEffect } from 'react'
 import { Modal, Button, Table, Form, OverlayTrigger, Popover } from 'react-bootstrap';
 import { MdFileDownload, MdLibraryBooks } from 'react-icons/md';
 import { IoInformationCircleSharp } from 'react-icons/io5';
+import { createUseStyles } from 'react-jss';
 import axios from 'axios';
+
+const useStyles = createUseStyles({
+    previewLink: {
+        fontSize: '0.75em',
+        fontWeight: 'bold',
+        color: '#0645AD',
+        cursor: 'pointer',
+        '&:hover': {
+            opacity: '0.8'
+        }
+    }
+})
+
+
 
 const DEFAULT_MAPS = ['ua', 'st', 'en'];
 
 export default function DownloadModal({showDownload, setShowDownload, project}) {
+    const classes = useStyles();
 
     const [maps, setMaps] = useState();
     const [mapsLoaded, setMapsLoaded] = useState(false);
     const [resultType, setResultType] = useState('seq2seq');
+
+    const [showPreview, setShowPreview] = useState(false);
+    const [previewContent, setPreviewContent] = useState('')
 
     useEffect(() => {
         const fetchProjectMaps = async () => {
@@ -26,39 +45,13 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
         fetchProjectMaps();
       }, [mapsLoaded])
 
-    const infoPopover = (content, format) => {
-            return(<Popover id="popover-info">
-                <Popover.Title>
-                Information
-                </Popover.Title>
-                <Popover.Content>
-                <p>{content}</p>
-                <code style={{whiteSpace: 'pre-wrap'}}>{format}</code>
-                </Popover.Content>
-            </Popover>
-            )}
-
-    const infoOverlay = (info) => {
-    return(<div style={{ display: 'flex'}}>
-            <p> { info.title }</p>
-            <OverlayTrigger
-                trigger="click"
-                placement="right"
-                overlay={infoPopover(info.content, info.format)}
-            >
-                <IoInformationCircleSharp style={{marginLeft: '2px', color: 'grey'}} />
-            </OverlayTrigger>
-            </div>
-            )}
-
-
-    
+   
     const downloadResults = async (project) => {
-    
-
         // Fetch results
-        const resultRes = await axios.post('/api/project/download/result', { project_id: project._id, type: resultType }, {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}});
-
+        const resultRes = await axios.post('/api/project/download/result',
+                                            { project_id: project._id, type: resultType },
+                                            {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}}
+                                            );
         if (resultRes.status === 200){
             // Prepare for file download
             const fileName = `${project.name}_${resultType}_results`;
@@ -71,6 +64,34 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+    }
+
+    const previewResults = async (project) => {
+        const resultRes = await axios.post('/api/project/download/result',
+                                            { project_id: project._id, type: resultType, preview: true },
+                                            {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}}
+                                            );
+        if (resultRes.status === 200){
+            setShowPreview(true);
+            setPreviewContent(JSON.stringify(resultRes.data, null, 4));
+        }
+    }
+
+    const previewMap = async (project, mapName) => {
+
+        const response = await axios.post('/api/map/download', {project_id: project._id, mapName: mapName, preview: true});
+        if (response.status === 200){
+            setShowPreview(true);
+
+            if (mapName === 'rp'){
+                // Format JSON
+                setPreviewContent(JSON.stringify(response.data, null, 2));
+            } else {
+                // Format TXT
+                console.log(response.data);
+                setPreviewContent(response.data.values.join("\n"));
+            }
         }
     }
 
@@ -133,20 +154,40 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
                 <Table bordered hover>
                     <tbody>
                         <tr style={{backgroundColor: 'rgba(0,0,0,0.05)'}}>
-                        <td>Normalisations</td>
+                        <td>Normalisations
+                            <p
+                                className={classes.previewLink}
+                                onClick={() => previewResults(project)}
+                            >
+                                preview
+                            </p>
+                        </td>
                         <td>Extended W-NUT JSON format { resultTypeCheckBox }</td>
                         <td>
-                            <MdFileDownload style={{fontSize: '22px', margin: 'auto', color: 'black'}} onClick={() => downloadResults(project)}/> 
+                            <MdFileDownload
+                                style={{fontSize: '22px', margin: 'auto', color: 'black'}}
+                                onClick={() => downloadResults(project)}
+                            />
                         </td>
                         </tr>
                         {
                             maps ?
                                 maps.map((mapName, index) => (
                                 <tr key={index}>
-                                    <td>{mapName === 'rp' ? 'replacements' : mapName}</td>
+                                    <td>
+                                        {mapName === 'rp' ? 'replacements' : mapName}
+                                        <p
+                                            className={classes.previewLink}
+                                            onClick={() => previewMap(project, mapName)}
+                                        >
+                                            preview
+                                        </p>
+                                    </td>
                                     <td>{mapName === 'rp' ? 'Mapping in JSON format' : 'Mapping in TXT format'}</td>
                                     <td>
-                                        <MdFileDownload style={{fontSize: '22px', margin: 'auto', color: 'black'}} onClick={() => downloadMaps(project, mapName)}/> 
+                                        <MdFileDownload
+                                            style={{fontSize: '22px', margin: 'auto', color: 'black'}} onClick={() => downloadMaps(project, mapName)}
+                                        /> 
                                     </td>
                                 </tr>
                                 ))
@@ -154,10 +195,18 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
                         }
                     </tbody>
                 </Table>
+
+                <p style={{fontSize: '1em', fontWeight: 'bold'}}>Preview</p>
+                <div style={{backgroundColor: 'rgba(0,0,0,0.025)', padding: '0.5em', overflowY: 'scroll', maxHeight: '30vh'}}>
+                    <pre>
+                        { previewContent }
+                    </pre>
+                </div>
+
             </Modal.Body>
 
             <Modal.Footer>
-                <Button variant="secondary" onClick={() => setShowDownload(false)}>Cancel</Button>
+                <Button variant="secondary" onClick={() => setShowDownload(false)}>Close</Button>
             </Modal.Footer>
         </Modal>
     )

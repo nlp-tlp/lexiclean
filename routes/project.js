@@ -389,17 +389,16 @@ router.get('/counts/:projectId', utils.authenicateToken, async (req, res) => {
 })
 
 
-// Download results
-// Allows user to configure output for seq2seq or tokenclf
-// seq2seq has n:m input:ouput lengths whereas tokenclf has n:n where tokenized spots are filled with
-// white space
+// Download results as seq2seq or tokenclf
+// Format results similar to WNUT 2015 (see: http://noisy-text.github.io/2015/norm-shared-task.html), with some modifications
 router.post('/download/result', utils.authenicateToken, async (req, res) => {
     try{
         logger.info('Downloading project results', {route: '/api/project/download/result'});
+        let texts = await Text.find({ project_id : req.body.project_id }).populate('tokens.token').lean();
 
-        const texts = await Text.find({ project_id : req.body.project_id }).populate('tokens.token').lean();
-        // Format results similar to WNUT 2015 (see: http://noisy-text.github.io/2015/norm-shared-task.html), with some modifications
-        // {"tid": <text_id>, "input": [<token>, <token>, ...], "output": [<token>, <token>, ...], "class": [[<class_1>,<class_n>], [<class_1>,<class_n>], ...]}
+        if (req.body.preview){
+            texts = texts.slice(0, 10);
+        }
         
         if (req.body.type === 'seq2seq'){
             const results = texts.map(text => (

@@ -76,7 +76,7 @@ router.post('/download', async (req, res) => {
             console.log(replacementPairs[1])
 
             // Filter out duplicate replacements
-            const uniqueReplacementPairs = replacementPairs.filter((thing, index, self) => 
+            let uniqueReplacementPairs = replacementPairs.filter((thing, index, self) => 
                 index === self.findIndex((t) => (
                     t.token === thing.token && t.replacement === thing.replacement
                 ))
@@ -84,21 +84,26 @@ router.post('/download', async (req, res) => {
             
             console.log('Unique replacement pairs -> ', uniqueReplacementPairs);
 
+            if (req.body.preview){
+                uniqueReplacementPairs = uniqueReplacementPairs.length > 10 ? uniqueReplacementPairs.slice(0, 10) : uniqueReplacementPairs;
+            }
+
             // Convert to token:replacement for
             const replacements = uniqueReplacementPairs.map(pair => ({[pair.token] : pair.replacement})).reduce(((r, c) => Object.assign(r, c)), {});
-
             // console.log(replacements)
-
             res.json(replacements)
-
-
         } else {
             // Filter tokens for those annotated with map
             const tokensMapped = tokens.filter(token => token.meta_tags[req.body.mapName])
             // console.log(tokensMapped);
     
             // Filter for unique values only.
-            const tokenValues = [... new Set(tokensMapped.map(token => token.replacement ? token.replacement : token.value))];
+            let tokenValues = [... new Set(tokensMapped.map(token => token.replacement ? token.replacement : token.value))];
+
+            if (req.body.preview){
+                tokenValues = tokenValues.length > 10 ? tokenValues.slice(0, 10) : tokenValues;
+            }
+
             // console.log(tokenValues);
             res.json({'values': tokenValues})
         }
