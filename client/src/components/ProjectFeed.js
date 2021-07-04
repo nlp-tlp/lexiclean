@@ -45,11 +45,20 @@ export default function ProjectFeed({token, setToken}) {
     useEffect(() => {
         // Fetches project on page load and when upload modal is interacted with.
         const fetchProjects = async () => {
-            const response = await axios.post('/api/project/feed', { jwt_token: JSON.parse(localStorage.getItem('token')) });
-            if (response.status === 200){
-                setProjects(response.data);
-                setProjectsLoaded(true);
-            }
+            await axios.post('/api/project/feed', {}, {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}})
+            .then(response => {
+                if (response.status === 200){
+                    setProjects(response.data);
+                    setProjectsLoaded(true);
+                }
+            })
+            .catch(error => {
+                if (error.response.status === 401 || 403){
+                    console.log('unauthorized')
+                    history.push('/unauthorized');
+                    // logout();
+                }
+            });
         }
         fetchProjects();
     }, [projectsLoaded, showUpload, showProjectDelete])

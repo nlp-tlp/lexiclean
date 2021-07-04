@@ -61,7 +61,7 @@ export default function Header({project,
         const fetchProgressInfo = async () => {
             // console.log('fetching progress data')
             if (project._id) {
-                const response = await axios.get(`/api/project/counts/${project._id}`);
+                const response = await axios.get(`/api/project/counts/${project._id}`, {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}});
                 if (response.status === 200){
                     setProgress(response.data.text);
                     setCurrentVocabSize(response.data.token.vocab_size);

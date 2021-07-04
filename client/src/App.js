@@ -17,7 +17,14 @@ import ProjectFeed from './components/ProjectFeed'
 
 function App() {
   const { token, setToken } = useToken();
-  const logout = () => {localStorage.removeItem("token"); setToken(null);}
+
+  const logout = () => {
+    setToken(null);
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    localStorage.removeItem("id");
+    localStorage.removeItem("replacements");
+  }
 
   return (
     <Router>

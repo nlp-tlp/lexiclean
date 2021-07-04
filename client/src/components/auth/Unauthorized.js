@@ -13,12 +13,20 @@ export default function Unauthorized() {
                 <Card.Title>
                     Unable to Access Page (Unauthorised)
                 </Card.Title>
-                <Button
-                    variant="dark"
-                    onClick={() => history.push("/login")}
-                >
-                    Log In
-                </Button>
+                <div style={{width: '50%', display: 'flex', justifyContent: 'space-around'}}>
+                    <Button
+                        variant="secondary"
+                        onClick={() => history.push('/signup')}
+                    >
+                        Sign Up
+                    </Button>
+                    <Button
+                        variant="dark"
+                        onClick={() => history.push("/login")}
+                    >
+                        Log In
+                    </Button>
+                </div>
                 <div style={{marginTop: "1em"}}>
                     <a href="/" className="text-muted">
                         Return to landing page

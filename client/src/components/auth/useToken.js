@@ -3,24 +3,29 @@ import axios from 'axios';
 
 export default function useToken() {
 
-    const getToken = () => {
+    const getToken = async () => {
         const tokenString = localStorage.getItem('token');
         const userToken = JSON.parse(tokenString);
-        return userToken;
         // Check if token valid
-      //   const response = await axios.post('/api/auth/token/validate', {token: userToken});
+        // const response = await axios.post('/api/auth/token/validate', {token: userToken});
+  
+        return userToken;
 
-      //   if (response.status === 200){
-      //     // console.log(response.data);
-      //     if (response.data.valid){
-      //       return userToken;
-      //     } else {
-      //       return undefined;
-      //     }
-      //   }
+        // if (response.status === 200){
+        //   // console.log(response.data);
+        //   if (response.data.valid){
+        //     console.log('token is valid');
+        //     console.log(response.data.valid)
+        //     return userToken;
+        //   } else {
+        //     console.log('token is invalid');
+        //     return null;
+        //   }
+        // }
+
+        // return userToken;
+
       }
-
-      // console.log('get token', getToken());
 
     const [token, setToken] = useState(getToken());
 
@@ -30,7 +35,7 @@ export default function useToken() {
       }
 
     return {
-        setToken: saveToken,
-        token
+      token,
+      setToken: saveToken
     }
 }

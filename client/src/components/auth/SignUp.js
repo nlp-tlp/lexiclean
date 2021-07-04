@@ -17,7 +17,7 @@ const useStyles = createUseStyles({
 
 const schema = yup.object().shape({
     username: yup.string().required(),
-    password: yup.string().required(),
+    password: yup.string().required().min(5, 'Password must be at least 5 characters long'),
     email: yup.string().email().required()
   });
 

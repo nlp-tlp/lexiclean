@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import { Modal, Button, Spinner } from 'react-bootstrap';
 import axios from 'axios';
+import { useHistory } from 'react-router-dom';
 
 export default function DeleteProjectModal({showProjectDelete, setShowProjectDelete, selectedProject}) {
+    const history = useHistory();
     const [valueMatched, setValueMatched] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const checkValueMatch = (value) => {
@@ -11,12 +13,19 @@ export default function DeleteProjectModal({showProjectDelete, setShowProjectDel
 
     const deleteProject =  async () => {
         setIsDeleting(true);
-        const response = await axios.delete(`/api/project/${selectedProject._id}`);
-        if (response.status === 200){
-            // console.log('Project deleted successfully');
-            setIsDeleting(false);
-            setShowProjectDelete(false);
-        }
+        await axios.delete('/api/project/', { headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}, data: {project_id: selectedProject._id}})
+                .then(response => {
+                        if (response.status === 200){
+                        setIsDeleting(false);
+                        setShowProjectDelete(false);
+                        }
+                    })
+                    .catch(error => {
+                        if (error.response.status === 401 || 403){
+                            console.log('unauthorized')
+                            history.push('/unauthorized');
+                        }
+                    });
     }
 
     return (

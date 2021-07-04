@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import { createUseStyles } from 'react-jss';
 import axios from 'axios';
 import { Spinner, Navbar } from 'react-bootstrap';
+import { useHistory } from 'react-router-dom';
+
 
 import AnnotationTable from './AnnotationTable'
 import Header from './header/Header'
@@ -26,6 +28,7 @@ const useStyles = createUseStyles({
 const PAGE_LIMIT = 10;
 
 export default function Project() {
+    const history = useHistory();
     const classes = useStyles();
     const { projectId } = useParams();
     let { pageNumber } = useParams();
@@ -61,12 +64,20 @@ export default function Project() {
 
     useEffect(() => {
         const fetchProject = async () => {
-            const response = await axios.get(`/api/project/${projectId}`);
-            if (response.status === 200){
-                //console.log('project details', response.data);
+            await axios.get(`/api/project/${projectId}`, {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}})
+            .then(response => {
+                if (response.status === 200){
                 setProject(response.data);
                 setProjectLoaded(true);
-            }
+                }
+            })
+            .catch(error => {
+                if (error.response.status === 401 || 403){
+                    console.log('unauthorized')
+                    history.push('/unauthorized');
+                }
+            });
+
         }
         fetchProject();
     }, [projectLoaded])

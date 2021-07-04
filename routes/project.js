@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const logger = require('../logger');
 const dotenv = require('dotenv');
+const utils = require('./utils')
 const jwt = require('jsonwebtoken');
 const Project = require('../models/Project');
 const Map = require('../models/Map');
@@ -11,11 +12,12 @@ const Token = require('../models/Token');
 // Get config variables
 dotenv.config();
 
-// Fetch projects
-router.get('/', async (req, res) => {
-    logger.info('Fetching all projects', {route: '/api/project/'})
+// Fetch all projects
+router.get('/', utils.authenicateToken, async (req, res) => {
     try{
-        const projects = await Project.find();
+        logger.info('Fetching all projects', {route: '/api/project/'})
+        const user_id = utils.tokenGetUserId(req.headers['authorization']);
+        const projects = await Project.find({ user: user_id });
         res.json(projects);
     }catch(err){
         res.json({ message: err })
@@ -23,13 +25,14 @@ router.get('/', async (req, res) => {
     }
 })
 
+
 // Fetch projects for project feed
-router.post('/feed', async(req, res) => {
+router.post('/feed', utils.authenicateToken, async(req, res) => {
     logger.info('Fetching project feed', {route: '/api/project/feed'})
     try{
-        const decoded = jwt.verify(req.body.jwt_token, process.env.TOKEN_SECRET);
-        if (decoded.user_id){
-            const projects = await Project.find({ user: decoded.user_id }).populate({path: 'texts', populate: [{path: 'tokens.token'}]}).lean();
+        const user_id = utils.tokenGetUserId(req.headers['authorization']);
+        if (user_id){
+            const projects = await Project.find({ user: user_id }).populate({path: 'texts', populate: [{path: 'tokens.token'}]}).lean();
             const feedInfo = projects.map(project => {
                 const allTokens = project.texts.map(text => text.tokens.map(token => token.token)).flat();
                 const annotatedTexts = project.texts.filter(text => text.annotated).length;
@@ -61,12 +64,13 @@ router.post('/feed', async(req, res) => {
 })
 
 
-// UPDATE PROJECT
-router.patch('/:projectId', async (req, res) => {
-    logger.info('Updating single project', {route: '/api/project/'})
+// Update single project
+router.patch('/', utils.authenicateToken, async (req, res) => {
     try{
+        logger.info('Updating single project', {route: '/api/project/'})
+        const user_id = utils.tokenGetUserId(req.headers['authorization']);
         const updatedProject = await Project.updateOne(
-            { _id: req.params.projectId },
+            { _id: req.body.project_id, user: user_id },
             { $set: { title: req.body.title }}
             );
         res.json(updatedProject);
@@ -77,10 +81,11 @@ router.patch('/:projectId', async (req, res) => {
 })
 
 // Fetch single project
-router.get('/:projectId', async (req, res) => {
+router.get('/:projectId', utils.authenicateToken, async (req, res) => {
     try{
         logger.info('Fetching single project', {route: `/api/project/${req.params.projectId}`})
-        const response = await Project.findOne({ _id: req.params.projectId})
+        const user_id = utils.tokenGetUserId(req.headers['authorization']);
+        const response = await Project.findOne({ _id: req.params.projectId, user: user_id}).lean();
         res.json(response);
     }catch(err){
         res.json({ message: err })
@@ -90,19 +95,11 @@ router.get('/:projectId', async (req, res) => {
 
 
 // Create project
-router.post('/create', async (req, res) => {
-    logger.info('Creating project', {route: '/api/project/create'});
+router.post('/create', utils.authenicateToken, async (req, res) => {
     try{
-        // Check if token is valid
-        let user_id;
-        jwt.verify(req.body.token, process.env.TOKEN_SECRET, function(err, decoded) {
-            if (err){
-                res.json({'message': 'invalid token - cannot create project'})
-            } else {
-                user_id = decoded.user_id;
-            }
-        })
-
+        logger.info('Creating project', {route: '/api/project/create'});
+        const user_id = utils.tokenGetUserId(req.headers['authorization'])
+        
         // Load static English map (shared for all projects)
         console.log('Loading English map')
         const enMap = await Map.findOne({ type: "en"}).lean();
@@ -327,21 +324,20 @@ router.post('/create', async (req, res) => {
 
 
 // Delete project
-router.delete('/:projectId', async (req, res) => {
-    // console.log('deleting project');
+router.delete('/', utils.authenicateToken, async (req, res) => {
     try{
-        logger.info('Deleting project', {route: `/api/project/${req.params.projectId}`});
+        logger.info('Deleting project', {route: '/api/project/'});
+        const user_id = utils.tokenGetUserId(req.headers['authorization'])
+        const projectResponse = await Project.findOne({ _id: req.body.project_id, user: user_id})
+                                             .populate('texts').lean();
 
-        const projectResponse = await Project.findOne({_id: req.params.projectId}).populate('texts')
-
-        // console.log(projectResponse)
         // Get ids of associated documents
         const textIds = projectResponse.texts.map(text => text._id);
         const tokenIds = projectResponse.texts.map(text => text.tokens.map(token => token.token)).flat();
         const mapIds = projectResponse.maps;
 
         // Delete documents in collections
-        const projectDelete = await Project.deleteOne({ _id: req.params.projectId })
+        const projectDelete = await Project.deleteOne({ _id: req.body.project_id })
         const textDelete = await Text.deleteMany({ _id: textIds})
         const tokenDelete = await Token.deleteMany({ _id: tokenIds})
         const mapDelete = await Map.deleteMany({ _id: mapIds})
@@ -349,13 +345,13 @@ router.delete('/:projectId', async (req, res) => {
 
     }catch(error){
         res.json({ message: err })
-        logger.error('Failed to delete project', {route: `/api/project/${req.params.projectId}`});
+        logger.error('Failed to delete project', {route: '/api/project/'});
     }
 })
 
 
 // Get count of tokens and annotated text for a single project
-router.get('/counts/:projectId', async (req, res) => {
+router.get('/counts/:projectId', utils.authenicateToken, async (req, res) => {
     try{
         logger.info('Get project token counts', {route: `/api/project/counts/${req.params.projectId}`});
         const textRes = await Text.find({ project_id: req.params.projectId })
@@ -393,8 +389,8 @@ router.get('/counts/:projectId', async (req, res) => {
 })
 
 
-// Download results
-router.get('/download/result/:projectId', async (req, res) => {
+// [need to add username filtering here, so only creators can update] Download results
+router.get('/download/result/:projectId', utils.authenicateToken, async (req, res) => {
     // console.log('Preparing annotation results')
     try{
         logger.info('Downloading project results', {route: `/api/project/download/result/${req.params.projectId}`});

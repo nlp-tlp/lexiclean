@@ -28,11 +28,9 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
     const downloadResults = async (project) => {
     
         // Fetch results
-        const resultRes = await axios.get(`/api/project/download/result/${project._id}`);
+        const resultRes = await axios.get(`/api/project/download/result/${project._id}`, {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}});
 
         if (resultRes.status === 200){
-            // console.log('Results fetched successfully')
-
             // Prepare for file download
             const fileName = `${project.name}_results`;
             const json = JSON.stringify(resultRes.data, null, 4);
@@ -53,9 +51,6 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
         const response = await axios.post(`/api/map/download/${project._id}`, {mapName: mapName});
 
         if (response.status === 200){
-            //console.log('map was succesfully formatted');
-            //console.log(response.data);
-
             if (mapName === 'rp'){
                 // Only replacements are output as JSON
                 
