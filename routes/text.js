@@ -243,9 +243,11 @@ router.patch('/annotations/update', async (req, res) => {
 // Tokenize single text
 router.patch('/tokenize', async (req, res) => {
     try{
-        logger.info('Tokenizing one text', {route: `/api/text/exp/tokenize/`});
+        logger.info('Tokenizing one text', {route: `/api/text/tokenize/`});
+
         const text = await Text.findOne({ _id: req.body.text_id}).populate('tokens.token').lean();
         const tokenIndexesTK = req.body.indexes_tk;        
+
         // Combine tokens to  (tc)change and get their positions
         const tokenIndexesTC = req.body.index_groups_tc.map(group => group[0])
         let tokenValuesTC = req.body.index_groups_tc.map(group => group.map(value => text.tokens.filter(token => token.index === value).map(token => token.token.value)[0]))
@@ -290,11 +292,21 @@ router.patch('/tokenize', async (req, res) => {
         
         // update indexes based on current ordering
         tokensPayload['tokens'] = tokensPayload.tokens.map((token, newIndex) => ({...token, index: newIndex}))
-        // console.log('combined payload reindexed', tokensPayload)
+        console.log('combined payload reindexed', tokensPayload)
+
+
+        // Capture tokenization group mapping
+        // {original_index : token_group} where token_group is the original token values
+        const tokenizationMap = req.body.index_groups_tc.map(group => ({ [group[0]] : group.map(token_index => text.tokens.filter(token => token.index === token_index).map(token => ({'index': token.index, info: token.token}))[0])}))
+        console.log(tokenizationMap)
 
         // Update text tokens
-        const updatedTextRes = await Text.findByIdAndUpdate({ _id: req.body.text_id}, tokensPayload, { new: true }).populate('tokens.token').lean();
-        // console.log(updatedTextRes)
+        await Text.findByIdAndUpdate({ _id: req.body.text_id}, tokensPayload, { new: true });
+        console.log('hello')
+
+        // Update text tokenization history
+        const updatedTextRes = await Text.findByIdAndUpdate({ _id: req.body.text_id}, { $push: {tokenization_hist: tokenizationMap }}, {upsert: true, new: true}).populate('tokens.token').lean(); 
+        console.log(updatedTextRes)
 
         // convert text into same format as the paginator (this is expected by front-end components)
         const outputTokens = updatedTextRes.tokens.map(token => ({...token.token, index: token.index, token: token.token._id}))
@@ -304,12 +316,9 @@ router.patch('/tokenize', async (req, res) => {
 
         res.json(outputText)
 
-        // Remove old tokens in token collection (those removed from text)
-        const oStringTokensRemoveIds = text.tokens.map(token => token.token).filter((e, i) => {return oTokensUnchgdIdxs.indexOf(i) == -1}).map(token =>token._id);
-        await Token.deleteMany({ _id: {$in: oStringTokensRemoveIds}});
-
-        
-
+        // Remove old tokens (that were tokenized) from token collection otherwise they mess with toasts and metrics in the UI
+        const tokenIdsToDelete = text.tokens.map(token => token).filter(token => req.body.index_groups_tc.flat().includes(token.index)).map(token => token.token._id);
+        await Token.deleteMany({ _id: {$in: tokenIdsToDelete}});
 
 
     }catch(err){
