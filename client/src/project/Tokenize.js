@@ -4,7 +4,7 @@ import { createUseStyles } from 'react-jss';
 import {ErrorBoundary} from 'react-error-boundary';
 import { Button, OverlayTrigger, Popover } from 'react-bootstrap';
 import { IoInformationCircleSharp } from 'react-icons/io5';
-import TokenizeGif from './images/tokenize.gif';
+import TokenizeGif from '../common/media/tokenize.gif';
 
 const useStyles = createUseStyles({
     tokenizeContainer: {

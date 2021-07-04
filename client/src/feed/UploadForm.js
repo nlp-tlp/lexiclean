@@ -8,7 +8,7 @@ import { MdAddCircle, MdRemoveCircle, MdBrush } from 'react-icons/md';
 import { IoInformationCircleSharp } from 'react-icons/io5';
 import { CompactPicker } from 'react-color';
 
-import useToken from '../auth/useToken'
+import useToken from '../common/auth/useToken'
 
 
 const DEFAULT_COLOUR = "#9B9B9B"

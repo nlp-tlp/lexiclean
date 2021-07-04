@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Modal, Spinner } from 'react-bootstrap';
 import { createUseStyles } from 'react-jss';
 
-import UploadForm from '../forms/UploadForm';
+import UploadForm from '../UploadForm';
 
 const useStyles = createUseStyles({
     model: {

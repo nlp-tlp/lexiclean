@@ -5,15 +5,15 @@ import {
   Route
 } from "react-router-dom";
 
-import Login from './components/auth/Login'
-import SignUp from './components/auth/SignUp'
-import ProtectedRoute from './components/auth/ProtectedRoute'
-import useToken from './components/auth/useToken'
-import Unauthorized from './components/auth/Unauthorized';
-import Landing from './Landing/Landing'
+import Login from './common/auth/Login'
+import SignUp from './common/auth/SignUp'
+import ProtectedRoute from './common/auth/ProtectedRoute'
+import useToken from './common/auth/useToken'
+import Unauthorized from './common/auth/Unauthorized';
+import Landing from './landing'
 
-import Project from './components/Project'
-import ProjectFeed from './components/ProjectFeed'
+import Project from './project'
+import ProjectFeed from './feed'
 
 function App() {
   const { token, setToken } = useToken();

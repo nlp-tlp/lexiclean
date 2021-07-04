@@ -3,8 +3,9 @@ import { createUseStyles } from 'react-jss';
 import { Spinner } from 'react-bootstrap';
 import axios from 'axios';
 import { CgMergeVertical, CgMoreVertical } from 'react-icons/cg';
+
 import Text from './Text';
-import Paginator from './utils/Paginator';
+import Paginator from '../common/utils/Paginator';
 
 
 const useStyles = createUseStyles({

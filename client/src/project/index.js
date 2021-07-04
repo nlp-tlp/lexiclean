@@ -7,8 +7,8 @@ import { useHistory } from 'react-router-dom';
 
 
 import AnnotationTable from './AnnotationTable';
-import Header from './header/Header';
-import ContextToast from './utils/ContextToast';
+import Header from '../common/components/header';
+import ContextToast from '../common/utils/ContextToast';
 
 import DownloadModal from './modals/DownloadModal'
 import ProgressModal from './modals/ProgressModal'

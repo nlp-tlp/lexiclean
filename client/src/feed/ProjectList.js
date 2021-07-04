@@ -4,7 +4,7 @@ import { MdDelete, MdEdit, MdFileDownload } from 'react-icons/md';
 import { RiNumbersFill } from 'react-icons/ri'
 import { createUseStyles } from 'react-jss';
 
-import DownloadModal from './modals/DownloadModal';
+import DownloadModal from '../project/modals/DownloadModal';
 
 
 const DELETE_COLOUR = '#D95F69';

@@ -7,7 +7,7 @@ import { useHistory } from 'react-router-dom'
 import { Formik } from 'formik';
 import * as yup from 'yup';
 
-import LoginImage from '../images/login.jpeg'
+import LoginImage from '../media/login.jpeg'
 
 const useStyles = createUseStyles({
     card: {

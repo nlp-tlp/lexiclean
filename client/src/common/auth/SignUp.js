@@ -5,7 +5,7 @@ import { Formik } from 'formik';
 import * as yup from 'yup';
 import axios from 'axios';
 import { Card, Form, Button, Col, Alert } from 'react-bootstrap';
-import SignUpImage from '../images/signup.jpeg'
+import SignUpImage from '../media/signup.jpeg'
 
 const useStyles = createUseStyles({
     card: {

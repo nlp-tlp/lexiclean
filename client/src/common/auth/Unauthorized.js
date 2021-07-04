@@ -1,7 +1,7 @@
 import React from 'react'
 import { Card, Button } from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
-import UnauthorizedImage from '../images/unauthorized.jpeg';
+import UnauthorizedImage from '../media/unauthorized.jpeg';
 
 export default function Unauthorized() {
     const history = useHistory();

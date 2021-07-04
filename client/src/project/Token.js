@@ -3,7 +3,7 @@ import { useContextMenu } from "react-contexify";
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
-import ContextMenu from './utils/ContextMenu';
+import ContextMenu from '../common/utils/ContextMenu';
 import TokenInput from './TokenInput';
 import TokenUnderline from './TokenUnderline';
 
