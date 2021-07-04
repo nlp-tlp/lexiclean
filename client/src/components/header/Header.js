@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom'
 import { createUseStyles } from 'react-jss';
 import { Container, Row, Col, Spinner, Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import { MdBubbleChart, MdSave } from 'react-icons/md'
-
+import { IoInformationCircleSharp } from 'react-icons/io5';
 
 const useStyles = createUseStyles({
     header: {
@@ -41,6 +41,7 @@ export default function Header({project,
                                 setShowOverview,
                                 setShowLegend,
                                 setShowModifySchema,
+                                setShowHelp,
                                 pageChanged,
                                 saveTrigger,
                                 setSaveTrigger,
@@ -96,15 +97,16 @@ export default function Header({project,
                         { project.name }
                     </Nav>
                     <Nav>
-                    <NavDropdown title="Menu" alignRight>
-                        <NavDropdown.Item onClick={() => setShowLegend(true)}>Legend</NavDropdown.Item>
-                        <NavDropdown.Item onClick={() => setShowDownload(true)}>Download Results</NavDropdown.Item>
-                        <NavDropdown.Item onClick={() => setShowModifySchema(true)}>Modify Schema</NavDropdown.Item>
-                        <NavDropdown.Item onClick={() => setShowSettings(true)}>Settings</NavDropdown.Item>
-                        <NavDropdown.Divider/>
-                        <NavDropdown.Item onClick={() => history.push('/feed')}>Return To Feed</NavDropdown.Item>
-                        <NavDropdown.Item disabled>Signed in as: {username}</NavDropdown.Item>
-                    </NavDropdown>
+                        <NavDropdown title="Menu" alignRight>
+                            <NavDropdown.Item onClick={() => setShowLegend(true)}>Legend</NavDropdown.Item>
+                            <NavDropdown.Item onClick={() => setShowDownload(true)}>Download Results</NavDropdown.Item>
+                            <NavDropdown.Item onClick={() => setShowModifySchema(true)}>Modify Schema</NavDropdown.Item>
+                            <NavDropdown.Item onClick={() => setShowSettings(true)}>Settings</NavDropdown.Item>
+                            <NavDropdown.Divider/>
+                            <NavDropdown.Item onClick={() => history.push('/feed')}>Return To Feed</NavDropdown.Item>
+                            <NavDropdown.Item disabled>Signed in as: {username}</NavDropdown.Item>
+                        </NavDropdown>
+                        <IoInformationCircleSharp style={{margin: 'auto', fontSize: '1.5em'}} onClick={() => setShowHelp(true)}/>
                     </Nav>
                 </Navbar.Collapse>
             </Navbar>
