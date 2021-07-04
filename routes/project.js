@@ -393,7 +393,7 @@ router.get('/counts/:projectId', utils.authenicateToken, async (req, res) => {
 // Allows user to configure output for seq2seq or tokenclf
 // seq2seq has n:m input:ouput lengths whereas tokenclf has n:n where tokenized spots are filled with
 // white space
-router.get('/download/result', utils.authenicateToken, async (req, res) => {
+router.post('/download/result', utils.authenicateToken, async (req, res) => {
     try{
         logger.info('Downloading project results', {route: '/api/project/download/result'});
 
@@ -414,28 +414,22 @@ router.get('/download/result', utils.authenicateToken, async (req, res) => {
             res.json(results);
         } else if (req.body.type === 'tokenclf'){
             // Use tokenization history to format output as n:n
-
             const results = texts.map(text => 
                 {
                     const tokenizationHist = text.tokenization_hist;
                     if (tokenizationHist.length > 0){
-                        // console.log(tokenizationHist)
-
                         const oTextTokenLen = text.original.split(' ').length;
                         const tokenizationHistObj = Object.assign(...tokenizationHist);
                         let output = text.tokens.map((tokenInfo, index) => {
                             return tokenInfo.token.replacement ? tokenInfo.token.replacement : tokenInfo.token.value;
                         });
-
                         let metaTags = text.tokens.map(tokenInfo => tokenInfo.token.meta_tags);
-
                         // Add white space (and empty metaTags)
                         Object.keys(tokenizationHistObj).slice().reverse().map(val => {
                             const numWS = tokenizationHistObj[val].length - 1;
                             // add white space
                             const indexWS = tokenizationHistObj[val][1].index;
                             const ws = Array(numWS).fill(' ');
-
                             // add empty meta tag dicts
                             const mtDicts = Array(numWS).fill({});
                             if (indexWS > output.length - 1){ // minus 1 to account for 0 indexing
@@ -448,12 +442,11 @@ router.get('/download/result', utils.authenicateToken, async (req, res) => {
                                 metaTags.splice(indexWS, 0, ...mtDicts);
                             }
                         })
-
                         return({
                             "tid": text._id,
                             "input": text.original.split(' '),
                             "output": output,
-                            "class": metaTags//text.tokens.map(tokenInfo => tokenInfo.token.meta_tags)
+                            "class": metaTags
                         })
                     }
 
@@ -466,13 +459,9 @@ router.get('/download/result', utils.authenicateToken, async (req, res) => {
                 }
             )
             res.json(results);
-
-
-
         } else {
             // Error invalid type...
-
-
+            res.sendStatus(500);
         }
         res.json(results)
     }catch(err){

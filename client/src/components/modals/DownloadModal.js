@@ -10,6 +10,7 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
 
     const [maps, setMaps] = useState();
     const [mapsLoaded, setMapsLoaded] = useState(false);
+    const [resultType, setResultType] = useState('seq2seq');
 
     useEffect(() => {
         const fetchProjectMaps = async () => {
@@ -26,16 +27,16 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
       }, [mapsLoaded])
 
     const infoPopover = (content, format) => {
-    return(<Popover id="popover-info">
-        <Popover.Title>
-        Information
-        </Popover.Title>
-        <Popover.Content>
-        <p>{content}</p>
-        <code style={{whiteSpace: 'pre-wrap'}}>{format}</code>
-        </Popover.Content>
-    </Popover>
-    )}
+            return(<Popover id="popover-info">
+                <Popover.Title>
+                Information
+                </Popover.Title>
+                <Popover.Content>
+                <p>{content}</p>
+                <code style={{whiteSpace: 'pre-wrap'}}>{format}</code>
+                </Popover.Content>
+            </Popover>
+            )}
 
     const infoOverlay = (info) => {
     return(<div style={{ display: 'flex'}}>
@@ -54,12 +55,13 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
     
     const downloadResults = async (project) => {
     
+
         // Fetch results
-        const resultRes = await axios.get('/api/project/download/result', { project_id: project._id }, {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}});
+        const resultRes = await axios.post('/api/project/download/result', { project_id: project._id, type: resultType }, {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}});
 
         if (resultRes.status === 200){
             // Prepare for file download
-            const fileName = `${project.name}_results`;
+            const fileName = `${project.name}_${resultType}_results`;
             const json = JSON.stringify(resultRes.data, null, 4);
             const blob = new Blob([json], {type: 'application/json'});
             const href = await URL.createObjectURL(blob);
@@ -111,8 +113,8 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
     
     const resultTypeCheckBox = (
         <div style={{display: 'flex', justifyContent:'space-around'}}>
-            <Form.Check inline type="checkbox" label="Seq2Seq" style={{fontSize: '14px'}} checked={true} />
-            <Form.Check inline type="checkbox" label="Token Clf" style={{fontSize: '14px'}}/>
+            <Form.Check inline type="checkbox" label="Seq2Seq" style={{fontSize: '14px'}} checked={resultType === 'seq2seq'} onChange={() => setResultType('seq2seq')}/>
+            <Form.Check inline type="checkbox" label="Token Clf" style={{fontSize: '14px'}} checked={resultType === 'tokenclf'} onChange={() => setResultType('tokenclf')}/>
         </div>
         )
     return (
