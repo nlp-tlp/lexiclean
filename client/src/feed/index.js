@@ -5,6 +5,7 @@ import { Spinner, Button, Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
 import { MdBubbleChart } from 'react-icons/md';
 
+import NavBar from '../common/components/navbar'
 import ProjectList from './ProjectList'
 import UploadModal from './modals/UploadModal'
 import DeleteProjectModal from './modals/DeleteProjectModal'
@@ -66,46 +67,25 @@ export default function ProjectFeed({token, setToken}) {
 
     return (
         <>
-        { showUpload ? <UploadModal showUpload={showUpload} setShowUpload={setShowUpload} /> : null }
+        { showUpload && <UploadModal showUpload={showUpload} setShowUpload={setShowUpload} /> }
 
-        { showProjectDelete ?
+        { showProjectDelete &&
             <DeleteProjectModal
                 showProjectDelete={showProjectDelete}
                 setShowProjectDelete={setShowProjectDelete}
                 selectedProject={selectedProject}
             />
-            : null
         }
 
-        { showAnnotate ? 
+        { showAnnotate && 
             <AnnotateBeginModal
                 showAnnotate={showAnnotate}
                 setShowAnnotate={setShowAnnotate}
                 selectedProject={selectedProject}
             />
-            : null
         }
 
-        <Navbar collapseOnSelect expand="md" bg="light" variant="light" sticky="top">
-            <Navbar.Brand href="/">
-                <MdBubbleChart style={{fontSize: '40px'}}/>
-            </Navbar.Brand>
-            <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-            <Navbar.Collapse id="responsive-navbar-nav">
-                <Nav className="mr-auto">
-                    Welcome, { username }!
-                </Nav>
-                <Nav>
-                <NavDropdown title="Menu" alignRight>
-                    <NavDropdown.Item onClick={() => setShowUpload(true)}>New Project</NavDropdown.Item>
-                    <NavDropdown.Item onClick={() => history.push('/')}>Home</NavDropdown.Item>
-                    <NavDropdown.Divider/>
-                    <NavDropdown.Item disabled>Signed in as: {username}</NavDropdown.Item>
-                    <NavDropdown.Item onClick={logout}>Logout</NavDropdown.Item>
-                </NavDropdown>
-                </Nav>
-            </Navbar.Collapse>
-        </Navbar>
+        <NavBar token={token} logout={logout} username={username} setShowUpload={setShowUpload}/>
 
         <div className={classes.container} id="container-feed">
             <h1 style={{marginLeft: 'auto', marginRight: 'auto', fontWeight: 'bold'}}>Project Feed</h1>

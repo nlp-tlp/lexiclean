@@ -6,6 +6,8 @@ import { Container, Row, Col, Spinner, Navbar, Nav, NavDropdown } from 'react-bo
 import { MdBubbleChart, MdSave } from 'react-icons/md'
 import { IoInformationCircleSharp } from 'react-icons/io5';
 
+import NavBar from '../common/components/navbar'
+
 const useStyles = createUseStyles({
     header: {
         maxWidth: '100%',
@@ -84,33 +86,20 @@ export default function Header({project,
         }
     }
 
+    const navbarProps = {
+        project,
+        setShowLegend,
+        setShowDownload,
+        setShowModifySchema,
+        setShowSettings,
+        setShowHelp
+    }
+
     return (
         <>
         <Container className={classes.header}>
-            <Navbar collapseOnSelect expand="lg" bg="light" variant="light" sticky="top">
-                <Navbar.Brand href="/">
-                    <MdBubbleChart style={{fontSize: '40px'}}/>
-                </Navbar.Brand>
-                <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-                <Navbar.Collapse id="responsive-navbar-nav">
-                    <Nav className="mr-auto" style={{fontSize: '28px', fontWeight: 'bold'}}>
-                        { project.name }
-                    </Nav>
-                    <Nav>
-                        <NavDropdown title="Menu" alignRight>
-                            <NavDropdown.Item onClick={() => setShowLegend(true)}>Legend</NavDropdown.Item>
-                            <NavDropdown.Item onClick={() => setShowDownload(true)}>Download Results</NavDropdown.Item>
-                            <NavDropdown.Item onClick={() => setShowModifySchema(true)}>Modify Schema</NavDropdown.Item>
-                            <NavDropdown.Item onClick={() => setShowSettings(true)}>Settings</NavDropdown.Item>
-                            <NavDropdown.Divider/>
-                            <NavDropdown.Item onClick={() => history.push('/feed')}>Return To Feed</NavDropdown.Item>
-                            <NavDropdown.Item disabled>Signed in as: {username}</NavDropdown.Item>
-                        </NavDropdown>
-                        <IoInformationCircleSharp style={{margin: 'auto', fontSize: '1.5em'}} onClick={() => setShowHelp(true)}/>
-                    </Nav>
-                </Navbar.Collapse>
-            </Navbar>
-
+            <NavBar {...navbarProps} />
+            
             <Row style={{backgroundColor: 'white', opacity: '0.9'}} >
                 <Col md="2" className="text-left">
                     {

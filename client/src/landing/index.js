@@ -6,6 +6,9 @@ import { useHistory } from 'react-router-dom';
 import { MdBubbleChart } from 'react-icons/md';
 import { Button, Navbar, Nav, Container, Row, Col } from 'react-bootstrap';
 
+import NavBar from '../common/components/navbar'
+
+
 const useStyles = createUseStyles({
     underText: {
         fontSize: '26px'
@@ -68,33 +71,7 @@ export default function Landing({ token, logout }) {
     
     return (
         <>
-            <Navbar collapseOnSelect expand="lg" bg="light" variant="light">
-                <Navbar.Brand href="/">
-                </Navbar.Brand>
-                <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-                <Navbar.Collapse id="responsive-navbar-nav">
-                    <Nav className="mr-auto">
-                    </Nav>
-                    <Nav>
-                    <Nav.Link>
-                        <IoLogoGithub
-                            className={classes.githubLogo}
-                            onClick={() => window.open("https://github.com/nlp-tlp/lexiclean", "_blank")}
-                        />
-                    </Nav.Link>
-                    <Nav.Link>
-                        <IoLogoYoutube
-                            className={classes.youtubeLogo}
-                            onClick={() => window.open("https://youtu.be/P7_ooKrQPDU", "_blank")}
-                        />
-                    </Nav.Link>
-                    <Nav.Link onClick={token ? logout : () => history.push('/login')}>
-                        { token ? "Logout": "Login" }
-                    </Nav.Link>
-                    </Nav>
-                </Navbar.Collapse>
-            </Navbar>
-
+            <NavBar token={token} logout={logout}/>
             <Container className="text-center" style={{marginBottom: '5em'}}>
                 <Row className="justify-content-center" style={{marginTop: '10vh'}}>
                         <div style={{display: 'flex', alignItems: 'center'}}>
