@@ -6,8 +6,8 @@ import { Spinner, Navbar } from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
 
 
-import AnnotationTable from './AnnotationTable'
-import Header from './header/Header'
+import AnnotationTable from './AnnotationTable';
+import Header from './header/Header';
 import ContextToast from './utils/ContextToast';
 
 import DownloadModal from './modals/DownloadModal'
@@ -16,6 +16,8 @@ import SettingsModal from './modals/SettingsModal'
 import OverviewModal from './modals/OverviewModal'
 import LegendModal from './modals/LegendModal'
 import ModifySchemaModal from './modals/ModifySchemaModal'
+import HelpModal from './modals/HelpModal';
+
 
 const useStyles = createUseStyles({
     container: {
@@ -46,6 +48,8 @@ export default function Project() {
     const [showOverview, setShowOverview] = useState(false);
     const [showLegend, setShowLegend] = useState(false);
     const [showModifySchema, setShowModifySchema] = useState(false);
+
+    const [showHelp, setShowHelp] = useState(false);
 
     const [project, setProject] = useState({});
     const [projectLoaded, setProjectLoaded] = useState(false);
@@ -95,6 +99,7 @@ export default function Project() {
         setShowOverview,
         setShowLegend,
         setShowModifySchema,
+        setShowHelp,
         pageChanged,
         saveTrigger,
         setSaveTrigger,
@@ -134,6 +139,7 @@ export default function Project() {
         { showProgress ? <ProgressModal showProgress={showProgress} setShowProgress={setShowProgress}/> : null }
         { showSettings ? <SettingsModal showSettings={showSettings} setShowSettings={setShowSettings} pageLimit={pageLimit} setPageLimit={setPageLimit} /> : null }
         { showModifySchema ? <ModifySchemaModal {...modifySchemaProps} /> : null}
+        { showHelp ? <HelpModal showHelp={showHelp} setShowHelp={setShowHelp}/> : null}
         
         { toastInfo ? <ContextToast showToast={showToast} setShowToast={setShowToast} toastInfo={toastInfo}/> : null }
 

@@ -96,9 +96,9 @@ export default function Tokenize({ project, textIntermediate, setTextIntermediat
         }
     }
 
-    const undoTokens = () => {
+    const clearTokens = () => {
         // Removes last selection from selected tokens
-        setTokenIndexes(prev => new Set([...prev].slice(0, -1)));
+        setTokenIndexes(new Set());
     }
 
 
@@ -175,11 +175,11 @@ export default function Tokenize({ project, textIntermediate, setTextIntermediat
                     {/* <button>Apply All</button> */}
                     <Button
                         className={classes.actionButton}
-                        onClick={undoTokens}
+                        onClick={clearTokens}
                         disabled={tokenIndexes.size === 0}
                         size="sm"
                     >
-                        Undo
+                        Clear
                     </Button>
 
                     <OverlayTrigger

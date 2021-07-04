@@ -15,7 +15,8 @@ const useStyles = createUseStyles({
         display: 'flex',
         flexDirection: 'column',
         height: '80vh',
-        minHeight: '100%'
+        minHeight: '100%',
+        marginBottom: '5em'
     }
 })
 
@@ -106,7 +107,7 @@ export default function ProjectFeed({token, setToken}) {
             </Navbar.Collapse>
         </Navbar>
 
-        <div className={classes.container}>
+        <div className={classes.container} id="container-feed">
             <h1 style={{marginLeft: 'auto', marginRight: 'auto', fontWeight: 'bold'}}>Project Feed</h1>
             {
                 !projectsLoaded ? 

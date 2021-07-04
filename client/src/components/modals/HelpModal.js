@@ -16,8 +16,6 @@ export default function HelpModal({ showHelp, setShowHelp }) {
         <Modal
             show={showHelp}
             onHide={() => setShowHelp(false)}
-            backdrop="static"
-            keyboard={false}
             dialogClassName={classes.modal}
         >
             <Modal.Header closeButton>
