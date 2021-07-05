@@ -116,23 +116,38 @@ router.post('/create', utils.authenicateToken, async (req, res) => {
         console.log('Building texts and tokens');
         
         // Pre-processing
-        // removes white space between tokens as this will break the validation of the Token model.
-        const normalisedTexts = req.body.texts.map(text => text.toLowerCase()
-                                                               .replace('\t', ' ')
-                                                               .replace(/[~",?;!:\(\)\[\]_\{\}\*]/g, ' ') // doesn't include period (.) or single quote (')
-                                                               .replace(/\s+/g,' ')
-                                                               .replace(/\.$/, '')
-                                                               .trim());
+        let normalisedTexts = req.body.texts;
 
+        console.log(normalisedTexts)
+        
+        // Mandatory processing
+        normalisedTexts = normalisedTexts.map(text => text.replace('\t', ' '));
+        console.log('remove tabs', normalisedTexts)
+        
+        if (req.body.lower_case){
+            normalisedTexts = normalisedTexts.map(text => text.toLowerCase());
+            console.log('remove lowercase', normalisedTexts)
+        }
+        if (req.body.chars_remove){
+            const escapedChars = ['[', ']', '{', '}', '(', ')', '*', '+', '?', '|', '^', '$', '.', '\\'];
+            const regexCharsEscaped = req.body.chars_remove.split('').map(char => escapedChars.includes(char) ? `\\${char}` : char);
+            const regex = new RegExp('[' + regexCharsEscaped + ']', 'g')
+            normalisedTexts = normalisedTexts.map(text => text.replace(regex, ' '));
+        }
+
+        // Remove multiple white space and trim
+        normalisedTexts = normalisedTexts.map(text => text.replace(/\s+/g,' ').trim());
+        console.log('remove multiple white space', normalisedTexts)
 
 
         // remove texts that are empty after normalisation
         let filteredTexts = normalisedTexts.filter(text => text.length > 0).map(text => text);
+        if(req.body.remove_duplicates){
+            filteredTexts = [...new Set(filteredTexts)];
+        }
 
-        // remove duplicates
-        filteredTexts = [...new Set(filteredTexts)];
 
-        // tokenize
+        // Tokenize
         const tokenizedTexts = filteredTexts.map(text => text.split(' '));
         
         let globalTokenIndex = -1;  // this is used to index the tokenlist that is posted to mongo as a flat list when reconstructing texts
@@ -162,9 +177,12 @@ router.post('/create', utils.authenicateToken, async (req, res) => {
         const tokenList = tokenizedTexts.flat().map((token, index) => {
             let metaTags = Object.assign(...Object.keys(mapSets).filter(key => key !== 'rp').map(key => ({[key]: mapSets[key].has(token)})));
             const hasReplacement = mapSets.rp.has(token);
+            
             // check if token is digit - if so, classify as English
-            const isDigit = token.match(re) !== null;
-            metaTags = isDigit ? {...metaTags, 'en': true}: metaTags;
+            if (req.body.detect_digits){
+                const isDigit = token.match(re) !== null;
+                metaTags = isDigit ? {...metaTags, 'en': true}: metaTags;
+            }
             
             if (token === ''){
                 console.log(tokenizedTexts.flat().slice(index-10, index+10))

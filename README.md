@@ -15,6 +15,9 @@ LexiClean can be built and served locally once the dependencies are met. First, 
   
 If should have an *active* status.
 
+<!-- ```$ brew services list```  for macOS-->
+
+
 Next, clone this repository into a folder and navigate to the root of the directory:
 
     $ git clone https://github.com/nlp-tlp/lexiclean.git

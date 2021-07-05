@@ -157,25 +157,23 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
             chars_remove: values.charsRemove
           }
 
-          console.log(formPayload);
-
-          // console.log('Form payload ->', formPayload)
-          // if (formSubmitted === false){
-          //   setIsSubmitting(true);
-          //   await axios.post('/api/project/create', formPayload, {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}})
-          //   .then(response => {
-          //       if (response.status === 200){
-          //       setFormSubmitted(true);
-          //       setShowUpload(false);
-          //       }
-          //   })
-          //   .catch(error => {
-          //       if (error.response.status === 401 || 403){
-          //           console.log('unauthorized')
-          //           history.push('/unauthorized');
-          //       }
-          //   });
-          // }
+          console.log('Form payload ->', formPayload)
+          if (formSubmitted === false){
+            setIsSubmitting(true);
+            await axios.post('/api/project/create', formPayload, {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}})
+            .then(response => {
+                if (response.status === 200){
+                setFormSubmitted(true);
+                setShowUpload(false);
+                }
+            })
+            .catch(error => {
+                if (error.response.status === 401 || 403){
+                    console.log('unauthorized')
+                    history.push('/unauthorized');
+                }
+            });
+          }
         }
     }
 
@@ -389,7 +387,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
               />
               <Form.Check
                 type="checkbox"
-                label="Label digits as out-of-vocabulary"
+                label="Label digits as in-vocabulary"
                 name="detectDigitsCheck"
                 style={{fontSize: '14px'}}
                 checked={values.detectDigits}
