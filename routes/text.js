@@ -38,7 +38,7 @@ router.post('/filter', async (req, res) => {
             // Returns total pages instead of page of results
             try{
                 logger.info('Getting number of pages for paginator', { route: '/api/text/filter' });
-                const textsCount = await Text.find({ project_id : req.params.projectId}).count();
+                const textsCount = await Text.find({ project_id : req.body.project_id}).count();
                 const pages = Math.ceil(textsCount/req.query.limit);
                 res.json({"totalPages": pages})
             }catch(err){
@@ -292,7 +292,7 @@ router.patch('/tokenize', async (req, res) => {
         
         // update indexes based on current ordering
         tokensPayload['tokens'] = tokensPayload.tokens.map((token, newIndex) => ({...token, index: newIndex}))
-        console.log('combined payload reindexed', tokensPayload)
+        // console.log('combined payload reindexed', tokensPayload)
 
 
         // Capture tokenization group mapping
