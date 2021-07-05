@@ -475,7 +475,7 @@ router.post('/download/tokenizations', utils.authenicateToken, async (req, res) 
     try{
         const response = await Text.find({ project_id: req.body.project_id }).populate('tokens.token').lean();
         // Reduce all of the tokenization histories
-        const tHist = response.filter(text => text.tokenization_hist.length > 0).map(text => {
+        let tHist = response.filter(text => text.tokenization_hist.length > 0).map(text => {
             const histObj = Object.assign(...text.tokenization_hist)
             const history = Object.keys(histObj).map(key => ({'token': histObj[key].map(tokenInfo => tokenInfo.info.value).join(""), 'pieces': histObj[key].map(tokenInfo => tokenInfo.info.value)}))
             return({
@@ -484,6 +484,11 @@ router.post('/download/tokenizations', utils.authenicateToken, async (req, res) 
             })
 
         })
+
+        if (req.body.preview){
+            tHist = tHist.slice(0,10);
+        }
+
         res.json(tHist);
 
     }catch(err){

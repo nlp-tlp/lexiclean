@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { Modal, Button, Table, Form, OverlayTrigger, Popover } from 'react-bootstrap';
+import { Modal, Button, Table, Form} from 'react-bootstrap';
 import { MdFileDownload, MdLibraryBooks } from 'react-icons/md';
-import { IoInformationCircleSharp } from 'react-icons/io5';
+import { IoWarning } from 'react-icons/io5'
 import { createUseStyles } from 'react-jss';
 import axios from 'axios';
 
@@ -16,8 +16,6 @@ const useStyles = createUseStyles({
         }
     }
 })
-
-
 
 const DEFAULT_MAPS = ['ua', 'st', 'en'];
 
@@ -77,6 +75,38 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
             setPreviewContent(JSON.stringify(resultRes.data, null, 4));
         }
     }
+
+    const downloadTokeHist = async (project) => {
+        const response = await axios.post('/api/project/download/tokenizations',
+                                            { project_id: project._id },
+                                            {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}}
+                                            );
+        if (response.status === 200){
+            // Prepare for file download
+            const fileName = `${project.name}_tokenization_hist`;
+            const json = JSON.stringify(response.data, null, 4);
+            const blob = new Blob([json], {type: 'application/json'});
+            const href = await URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = href;
+            link.download = fileName + '.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+
+    const previewTokeHist = async (project) => {
+        const response = await axios.post('/api/project/download/tokenizations',
+                                            { project_id: project._id, preview: true },
+                                            {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}}
+                                            );
+        if (response.status === 200){
+            setShowPreview(true);
+            setPreviewContent(JSON.stringify(response.data, null, 4));
+        }
+    }
+
 
     const previewMap = async (project, mapName) => {
 
@@ -151,25 +181,52 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
 
             <Modal.Body>
                 <p>Normalisation and gazetteers for project <strong>{project.name}</strong></p>
+
+                <p style={{fontSize: '1em', fontWeight: 'bold'}}>Results</p>
+                <p>Normalisations and Tokenizations</p>
                 <Table bordered hover>
                     <tbody>
                         <tr style={{backgroundColor: 'rgba(0,0,0,0.05)'}}>
-                        <td>Normalisations
-                            <p
-                                className={classes.previewLink}
-                                onClick={() => previewResults(project)}
-                            >
-                                preview
-                            </p>
-                        </td>
-                        <td>Extended W-NUT JSON format { resultTypeCheckBox }</td>
-                        <td>
-                            <MdFileDownload
-                                style={{fontSize: '22px', margin: 'auto', color: 'black'}}
-                                onClick={() => downloadResults(project)}
-                            />
-                        </td>
+                            <td>Normalisations
+                                <p
+                                    className={classes.previewLink}
+                                    onClick={() => previewResults(project)}
+                                >
+                                    preview
+                                </p>
+                            </td>
+                            <td>Extended W-NUT JSON format { resultTypeCheckBox }</td>
+                            <td>
+                                <MdFileDownload
+                                    style={{fontSize: '22px', margin: 'auto', color: 'black'}}
+                                    onClick={() => downloadResults(project)}
+                                />
+                            </td>
                         </tr>
+                        <tr style={{backgroundColor: 'rgba(0,0,0,0.05)'}}>
+                            <td>Tokenizations
+                                <p
+                                    className={classes.previewLink}
+                                    onClick={() => previewTokeHist(project)}
+                                >
+                                    preview
+                                </p>
+                                {/* <IoWarning style={{fontSize: '22px', color: '#ff9800'}}/> */}
+                            </td>
+                            <td>Tokenization history in JSON format</td>
+                            <td>
+                                <MdFileDownload
+                                    style={{fontSize: '22px', margin: 'auto', color: 'black'}}
+                                    onClick={() => downloadTokeHist(project)}
+                                />
+                            </td>
+                        </tr>
+                    </tbody>
+                </Table>
+                <p>Replacements and Gazetteers</p>
+
+                <Table bordered hover>
+                    <tbody>
                         {
                             maps ?
                                 maps.map((mapName, index) => (
