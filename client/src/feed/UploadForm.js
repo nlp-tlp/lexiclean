@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Form, Col, Table, OverlayTrigger, Popover, Alert } from 'react-bootstrap';
+import { Button, Form, Col, Row, Table, OverlayTrigger, Popover, Alert } from 'react-bootstrap';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import axios from 'axios';
@@ -31,6 +31,8 @@ const infoContent = {
   }
 }
 
+const DEFAULT_REMOVE_CHARS = '~",?;!:()[]_{}*.$'
+
 const schema = yup.object().shape({
     projectName: yup.string().required(),
     projectDescription: yup.string().required(),
@@ -49,6 +51,9 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
     const [tempColour, setTempColour] = useState(DEFAULT_COLOUR)
     const [metaTags, setMetaTags] = useState({});
     const [formSubmitted, setFormSubmitted] = useState(false);
+
+    // Preprocessing
+    const [charsRemove, setCharsRemove] = useState(DEFAULT_REMOVE_CHARS);
     
     const readFile = (fileKey, fileMeta) => {
         let reader = new FileReader();
@@ -146,25 +151,31 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
             description: values.projectDescription,
             texts: fileData['textFile'].data,
             maps: maps,
+            lower_case: values.lowerCase,
+            remove_duplicates: values.removeDuplicates,
+            detect_digits: values.detectDigits,
+            chars_remove: values.charsRemove
           }
 
+          console.log(formPayload);
+
           // console.log('Form payload ->', formPayload)
-          if (formSubmitted === false){
-            setIsSubmitting(true);
-            await axios.post('/api/project/create', formPayload, {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}})
-            .then(response => {
-                if (response.status === 200){
-                setFormSubmitted(true);
-                setShowUpload(false);
-                }
-            })
-            .catch(error => {
-                if (error.response.status === 401 || 403){
-                    console.log('unauthorized')
-                    history.push('/unauthorized');
-                }
-            });
-          }
+          // if (formSubmitted === false){
+          //   setIsSubmitting(true);
+          //   await axios.post('/api/project/create', formPayload, {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}})
+          //   .then(response => {
+          //       if (response.status === 200){
+          //       setFormSubmitted(true);
+          //       setShowUpload(false);
+          //       }
+          //   })
+          //   .catch(error => {
+          //       if (error.response.status === 401 || 403){
+          //           console.log('unauthorized')
+          //           history.push('/unauthorized');
+          //       }
+          //   });
+          // }
         }
     }
 
@@ -215,6 +226,10 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
       initialValues={{
         projectName: '',
         projectDescription: '',
+        lowerCase: true,
+        removeDuplicates: true,
+        detectDigits: false,
+        charsRemove: DEFAULT_REMOVE_CHARS
       }}
     >
       {({
@@ -225,8 +240,10 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
         touched,
         isValid,
         errors,
+        setFieldValue
       }) => (
         <Form noValidate onSubmit={handleSubmit}>
+          <p style={{fontSize: '18px', fontWeight: 'bold', marginTop: '0.5em'}}>Project Details</p>
           <Form.Row>
             <Form.Group as={Col} md="12" controlId="validationFormik01">
               <Form.Label>Name</Form.Label>
@@ -264,6 +281,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
             </Form.Group>
         </Form.Row>
 
+        <p style={{fontSize: '18px', fontWeight: 'bold', marginTop: '0.5em'}}>Upload</p>
         <Form.Group>
           <Form.Row>
                 <Col>
@@ -290,7 +308,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
         </Form.Group>
 
         { infoOverlay(infoContent['meta_tags']) }
-        <Table striped bordered hover size="sm" style={{fontSize: '14px'}}>
+        <Table striped bordered hover size="sm" style={{fontSize: '14px', marginBottom: '0em'}}>
           <thead style={{textAlign: 'center'}}>
             <tr>
               <th>Tag Name</th>
@@ -299,7 +317,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
               <th>Add</th>
             </tr>
           </thead>
-          <tbody style={{textAlign: 'center'}}>
+          <tbody style={{textAlign: 'center', height: '5vh', overflow: 'auto'}}>
             <tr>
               <td>
                 <input type="text" style={{width: '8em'}} value={tempMetaTag} onChange={e => setTempMetaTag(e.target.value)}/>
@@ -343,7 +361,62 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
             }
           </tbody>
         </Table>
-        <small style={{color: 'grey'}}>Note: Please use underscores instead of white space in tag names. Gazetteers must be in .txt file format.</small>
+        <p style={{fontSize: '10px', color: 'grey', marginBottom: '0.5em'}}>Note: Tag names must have underscores instead of white space and gazetteers must be in .txt file format</p>
+        
+        <p style={{fontSize: '18px', fontWeight: 'bold', marginBottom: '0em'}}>Text Preprocessing</p>
+        <p style={{fontSize: '14px', color: 'grey', marginBottom: '1em'}}>Select preprocessing actions to be applied to raw text documents</p>
+
+          <Form.Group as={Row}>
+            <Form.Label column sm={3} style={{textAlign: 'right'}}>
+              Actions
+            </Form.Label>
+            <Col sm={9}>
+              <Form.Check
+                type="checkbox"
+                label="Lower case"
+                name="lowerCaseCheck"
+                style={{fontSize: '14px'}}
+                checked={values.lowerCase}
+                onChange={e => setFieldValue('lowerCase', e.target.checked)}
+              />
+              <Form.Check
+                type="checkbox"
+                label="Remove duplicates"
+                name="removeDuplicatesCheck"
+                style={{fontSize: '14px'}}
+                checked={values.removeDuplicates}
+                onChange={e => setFieldValue('removeDuplicates', e.target.checked)}
+              />
+              <Form.Check
+                type="checkbox"
+                label="Label digits as out-of-vocabulary"
+                name="detectDigitsCheck"
+                style={{fontSize: '14px'}}
+                checked={values.detectDigits}
+                onChange={e => setFieldValue('detectDigits', e.target.checked)}
+              />
+            </Col>
+
+          </Form.Group>
+
+          <Form.Group as={Row}>
+            <Form.Label column sm={3} style={{textAlign: 'right'}}>
+              Remove Characters
+            </Form.Label>
+            <Col sm={9} style={{margin: 'auto'}}>
+                <Form.Control
+                  type="text"
+                  placeholder={values.charsRemove}
+                  name="charsRemove"
+                  value={values.charsRemove}
+                  onChange={handleChange}
+                  autoComplete = 'off'
+                  style={{fontSize: '14px'}}
+                />
+              </Col>
+
+          </Form.Group>
+        
         <div style={{display: 'flex', justifyContent: 'space-evenly', marginTop: '4em'}}>
           <Button variant="secondary" onClick={() => setShowUpload(false)}>Cancel</Button>
           <Button type="submit" variant="dark">Create Project</Button>

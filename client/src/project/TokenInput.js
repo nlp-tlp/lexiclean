@@ -78,23 +78,22 @@ export default function TokenInput({showContextMenu,
                                 }) {
     const classes = useStyles();
 
-    const addReplacementPopover = <Popover
-                                    id={`popover`}
-                                    // onKeyDown={(event) => console.log(event)}
-                                    >
-                                    <div className={classes.popoverContainer}>
-                                        <div className={classes.textContainer}>
-                                            <p className={classes.originalText}>{originalToken}</p>
-                                            <p className={classes.arrow}><BsArrowRightShort/></p>
-                                            <p className={classes.suggestedText}>{currentToken}</p>
-                                        </div>
-                                        <div className={classes.actionContainer}>
-                                            <div className={classes.actionBtn} onClick={() => addReplacement(true)}><p className={classes.actionText}><MdBookmark/>Apply</p></div>
-                                            <div className={classes.actionBtn} onClick={() => addReplacement(false)}><p className={classes.actionText}><MdBrush/>Apply all</p></div>
-                                            <div className={classes.actionBtn} onClick={() => cancelChange()}><p className={classes.actionText}><MdDelete/>Ignore</p></div>
-                                        </div>
-                                    </div>
-                                </Popover>
+    const addReplacementPopover = (
+        <Popover id={`popover`}>
+            <div className={classes.popoverContainer}>
+                <div className={classes.textContainer}>
+                    <p className={classes.originalText}>{originalToken}</p>
+                    <p className={classes.arrow}><BsArrowRightShort/></p>
+                    <p className={classes.suggestedText}>{currentToken}</p>
+                </div>
+                <div className={classes.actionContainer}>
+                    <div className={classes.actionBtn} onClick={() => addReplacement(true)}><p className={classes.actionText}><MdBookmark/>Apply</p></div>
+                    <div className={classes.actionBtn} onClick={() => addReplacement(false)}><p className={classes.actionText}><MdBrush/>Apply all</p></div>
+                    <div className={classes.actionBtn} onClick={() => cancelChange()}><p className={classes.actionText}><MdDelete/>Ignore</p></div>
+                </div>
+            </div>
+        </Popover>
+        );
 
     return (
         <OverlayTrigger

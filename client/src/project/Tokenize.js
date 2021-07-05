@@ -134,14 +134,14 @@ export default function Tokenize({ project, textIntermediate, setTextIntermediat
         }
     }
 
-    const infoPopover = (
+    const infoPopover = 
         <Popover id="popover-info">
           <Popover.Title as="h3">Tokenization Help</Popover.Title>
           <Popover.Content>
             <img src={TokenizeGif} alt="tokenization gif" width="200px"/>
           </Popover.Content>
         </Popover>
-        )
+        ;
     
     return (
         <ErrorBoundary FallbackComponent={ErrorHandler} >
@@ -181,7 +181,6 @@ export default function Tokenize({ project, textIntermediate, setTextIntermediat
                     >
                         Clear
                     </Button>
-
                     <OverlayTrigger
                         trigger="click"
                         placement="right"

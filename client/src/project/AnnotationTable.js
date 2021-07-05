@@ -75,12 +75,9 @@ export default function AnnotationTable({project,
   const [page, setPage] = useState(pageNumber);
   
   // TOKEN SELECT HANDLER
-  const [selectedTokens, setSelectedTokens] = useState();
   const [tokenize, setTokenize] = useState();
   
-  
   // User interaction
-  const [updateSingleToken, setUpdateSingleToken] = useState(null);
   const [changeTrigger, setChangeTrigger] = useState(false);
 
 
@@ -114,7 +111,7 @@ export default function AnnotationTable({project,
         }
       }
     fetchData();
-  }, [page, pageLimit, saveTrigger, pageNumber, schemaTrigger]) // , tokenize// TODO review when implemented correctly.
+  }, [page, pageLimit, saveTrigger, pageNumber, schemaTrigger]);
 
 
   useEffect(() => {
@@ -153,7 +150,6 @@ export default function AnnotationTable({project,
   }, [page])
 
 
-  // Tokenization logic... TODO: fix name of tokenize object
   const handleTokenize = (textId) => {
     if (tokenize){
       setTokenize();
@@ -161,6 +157,7 @@ export default function AnnotationTable({project,
       setTokenize(textId);
     }
   }
+
 
   return (
     <>
@@ -181,10 +178,6 @@ export default function AnnotationTable({project,
                     page,
                     metaTagSuggestionMap,
                     setMetaTagSuggestionMap,
-                    updateSingleToken,
-                    setUpdateSingleToken,
-                    selectedTokens,
-                    setSelectedTokens,
                     bgColourMap,
                     tokenize,
                     changeTrigger,

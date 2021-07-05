@@ -115,8 +115,7 @@ router.post('/create', utils.authenicateToken, async (req, res) => {
         // Build texts and tokens including filtering
         console.log('Building texts and tokens');
         
-        // TOOD: review the use of lowercasing texts here. Should this be done or should
-        // casing be kept but for matching to ds, en, rp the lowercasing be used?
+        // Pre-processing
         // removes white space between tokens as this will break the validation of the Token model.
         const normalisedTexts = req.body.texts.map(text => text.toLowerCase()
                                                                .replace('\t', ' ')
@@ -124,6 +123,9 @@ router.post('/create', utils.authenicateToken, async (req, res) => {
                                                                .replace(/\s+/g,' ')
                                                                .replace(/\.$/, '')
                                                                .trim());
+
+
+
         // remove texts that are empty after normalisation
         let filteredTexts = normalisedTexts.filter(text => text.length > 0).map(text => text);
 
@@ -470,7 +472,6 @@ router.post('/download/result', utils.authenicateToken, async (req, res) => {
 })
 
 // Download tokenization history across project
-// WORK IN PROGRESS
 router.post('/download/tokenizations', utils.authenicateToken, async (req, res) => {
     try{
         const response = await Text.find({ project_id: req.body.project_id }).populate('tokens.token').lean();
@@ -482,7 +483,6 @@ router.post('/download/tokenizations', utils.authenicateToken, async (req, res) 
                 _id: text._id,
                 history: history,
             })
-
         })
 
         if (req.body.preview){
@@ -490,7 +490,6 @@ router.post('/download/tokenizations', utils.authenicateToken, async (req, res) 
         }
 
         res.json(tHist);
-
     }catch(err){
         res.json({ message: err })
     }

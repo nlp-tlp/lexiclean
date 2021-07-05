@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import { createUseStyles } from 'react-jss';
-import { Spinner, Button, Navbar, Nav, NavDropdown } from 'react-bootstrap';
+import { Spinner, Button, Navbar} from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
-import { MdBubbleChart } from 'react-icons/md';
 
 import NavBar from '../common/components/navbar'
 import ProjectList from './ProjectList'

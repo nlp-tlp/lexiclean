@@ -14,7 +14,7 @@ dotenv.config();
 const generateJWT = (user_id) => {
     // 24hr expiry
     // console.log(username, process.env.TOKEN_SECRET);
-    return jwt.sign({'user_id': user_id}, process.env.TOKEN_SECRET, { expiresIn: '24h' })
+    return jwt.sign({'user_id': user_id}, process.env.TOKEN_SECRET, { expiresIn: '72h' })
 }
 
 // Create user

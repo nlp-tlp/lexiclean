@@ -152,22 +152,3 @@ export default function NavBar({token,
     </Navbar>
     )
 }
-
-
-{/* <Navbar collapseOnSelect expand="lg" bg="light" variant="light" sticky="top">
-<Navbar.Toggle aria-controls="responsive-navbar-nav" />
-<Navbar.Collapse id="responsive-navbar-nav">
-    <Nav>
-        <NavDropdown title="Menu" alignRight>
-            <NavDropdown.Item onClick={() => setShowLegend(true)}>Legend</NavDropdown.Item>
-            <NavDropdown.Item onClick={() => setShowDownload(true)}>Download Results</NavDropdown.Item>
-            <NavDropdown.Item onClick={() => setShowModifySchema(true)}>Modify Schema</NavDropdown.Item>
-            <NavDropdown.Item onClick={() => setShowSettings(true)}>Settings</NavDropdown.Item>
-            <NavDropdown.Divider/>
-            <NavDropdown.Item onClick={() => history.push('/feed')}>Return To Feed</NavDropdown.Item>
-            <NavDropdown.Item disabled>Signed in as: {username}</NavDropdown.Item>
-        </NavDropdown>
-        <IoInformationCircleSharp style={{margin: 'auto', fontSize: '1.5em'}} onClick={() => setShowHelp(true)}/>
-    </Nav>
-</Navbar.Collapse>
-</Navbar> */}
