@@ -145,6 +145,7 @@ export default function TokenUnderline({ changeTrigger,
                 <OverlayTrigger
                     trigger="focus"
                     placement="bottom"
+                    rootClose
                     overlay={removeReplacementPopover}
                     show={showRemovePopover}
                 >
@@ -158,6 +159,7 @@ export default function TokenUnderline({ changeTrigger,
                 <OverlayTrigger
                     trigger="focus"
                     placement="bottom"
+                    rootClose
                     overlay={addSuggestionPopover}
                     show={showAddSuggestionPopover}
                 >

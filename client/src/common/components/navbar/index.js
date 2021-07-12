@@ -125,7 +125,7 @@ export default function NavBar({token,
                     </Nav.Link>
                     </>
                     : page === 'feed' ?
-                    <NavDropdown title="Menu" alignRight>
+                    <NavDropdown title="Menu" alignRight style={{zIndex: '100000'}}>
                         <NavDropdown.Item onClick={() => setShowUpload(true)}>New Project</NavDropdown.Item>
                         <NavDropdown.Item onClick={() => history.push('/')}>Home</NavDropdown.Item>
                         <NavDropdown.Divider/>
@@ -134,7 +134,7 @@ export default function NavBar({token,
                     </NavDropdown>
                     : page === 'project' ?
                     <>
-                    <NavDropdown title="Menu" alignRight>
+                    <NavDropdown title="Menu" alignRight style={{zIndex: '100000'}}>
                         <NavDropdown.Item onClick={() => setShowLegend(true)}>Legend</NavDropdown.Item>
                         <NavDropdown.Item onClick={() => setShowDownload(true)}>Download Results</NavDropdown.Item>
                         <NavDropdown.Item onClick={() => setShowModifySchema(true)}>Modify Schema</NavDropdown.Item>

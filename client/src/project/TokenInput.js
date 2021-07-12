@@ -98,6 +98,7 @@ export default function TokenInput({showContextMenu,
     return (
         <OverlayTrigger
             trigger = "click"
+            rootClose
             placement="bottom"
             overlay={addReplacementPopover}
             show={showPopover}

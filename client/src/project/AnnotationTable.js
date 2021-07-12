@@ -59,7 +59,9 @@ export default function AnnotationTable({project,
                                           saveTrigger,
                                           pageNumber,
                                           setSavePending,
-                                          schemaTrigger
+                                          schemaTrigger,
+                                          searchTerm,
+                                          setSearchTerm
                                         }) {
   const classes = useStyles();
 
@@ -89,29 +91,29 @@ export default function AnnotationTable({project,
   useEffect(() => {
     // Fetch pagination metadata
     const fetchPaginationInfo = async () => {
-      if (!paginatorLoaded || pageLimit){
-          const response = await axios.post('/api/text/filter', { project_id: project._id, get_pages: true }, { params: { limit: pageLimit }})
-          if (response.status === 200){
-            setTotalPages(response.data.totalPages);
-            setPaginatorLoaded(true);
-          }
-        }
+      if (!paginatorLoaded || pageLimit || searchTerm !== ''){
+        const response = await axios.post('/api/text/filter', { project_id: project._id, get_pages: true, search_term: searchTerm !== '' ? searchTerm : null }, { params: { limit: pageLimit }});
+        if (response.status === 200){
+          setTotalPages(response.data.totalPages);
+          setPaginatorLoaded(true);
+        }   
+      }
       }  
     fetchPaginationInfo();
-  }, [paginatorLoaded, pageLimit])
+  }, [paginatorLoaded, pageLimit, searchTerm])
 
   useEffect(() => {
     const fetchData = async () => {
         setLoaded(false);
         setPage(pageNumber);
-        const response = await axios.post('/api/text/filter', { project_id: project._id}, { params: { page: page, limit: pageLimit }});
+        const response = await axios.post('/api/text/filter', { project_id: project._id, search_term: searchTerm !== '' ? searchTerm : null}, { params: { page: page, limit: pageLimit }});
         if (response.status === 200){
           setCurrentTexts(response.data);
           setLoaded(true);
         }
       }
     fetchData();
-  }, [page, pageLimit, saveTrigger, pageNumber, schemaTrigger]);
+  }, [page, pageLimit, saveTrigger, pageNumber, schemaTrigger, searchTerm]);
 
 
   useEffect(() => {

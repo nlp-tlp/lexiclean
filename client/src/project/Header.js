@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import { useHistory } from 'react-router-dom'
 import { createUseStyles } from 'react-jss';
-import { Container, Row, Col, Spinner, Navbar, Nav, NavDropdown } from 'react-bootstrap';
-import { MdBubbleChart, MdSave } from 'react-icons/md'
-import { IoInformationCircleSharp } from 'react-icons/io5';
+import { Container, Row, Col, Spinner, InputGroup, FormControl, Button } from 'react-bootstrap';
+import { MdSave } from 'react-icons/md'
 
 import NavBar from '../common/components/navbar'
 
@@ -32,7 +31,7 @@ const useStyles = createUseStyles({
         fontSize: '36px',
         color: 'grey',
         cursor: 'pointer',
-    },
+    }
 })
 
 export default function Header({project,
@@ -48,7 +47,9 @@ export default function Header({project,
                                 saveTrigger,
                                 setSaveTrigger,
                                 savePending,
-                                setSavePending
+                                setSavePending,
+                                searchTerm,
+                                setSearchTerm
                             }) {
                                 
     const history = useHistory();
@@ -59,6 +60,9 @@ export default function Header({project,
     const [progress, setProgress] = useState();
     const [currentVocabSize, setCurrentVocabSize] = useState();
     const [currentOOVTokenCount, setCurrentOOVTokenCount] = useState();
+
+    const [tempValue, setTempValue] = useState(searchTerm);
+
 
     useEffect(() => {
         const fetchProgressInfo = async () => {
@@ -86,13 +90,15 @@ export default function Header({project,
         }
     }
 
+
     const navbarProps = {
         project,
         setShowLegend,
         setShowDownload,
         setShowModifySchema,
         setShowSettings,
-        setShowHelp
+        setShowHelp,
+        username
     }
 
     return (
@@ -101,7 +107,7 @@ export default function Header({project,
             <NavBar {...navbarProps} />
             
             <Row style={{backgroundColor: 'white', opacity: '0.9'}} >
-                <Col md="2" className="text-left">
+                <Col md="1" className="text-left" style={{marginTop: '0.5em'}}>
                     {
                         progress && project && currentVocabSize ?
                         <p
@@ -113,6 +119,23 @@ export default function Header({project,
                         </p>
                         : null
                     }
+                </Col>
+                <Col md="3" className="text-center">
+                    <Row style={{marginTop: '0.5em', backgroundColor: 'white', opacity: '1'}}>
+                        <InputGroup
+                            style={{ margin: '1em 0em 0em 0em', width: '100%', mixWidth: '300px', maxWidth: '500px', height: '2em', padding: '0em'}}
+                        >
+                            <FormControl
+                                placeholder="Enter term to filter"
+                                value={tempValue}
+                                onChange={e => setTempValue(e.target.value)}
+                            />
+                            <InputGroup.Append>
+                            <Button variant="dark" disabled={tempValue === ''} onClick={() => setSearchTerm(tempValue)}>Search</Button>
+                            <Button variant="outline-secondary" onClick={() => {setSearchTerm(''); setTempValue('')}}>Clear</Button>
+                            </InputGroup.Append>
+                        </InputGroup>
+                    </Row>
                 </Col>
             {
                 progress && project && currentVocabSize ?
@@ -162,7 +185,7 @@ export default function Header({project,
                 :
                 <Col md="8" className="text-center"><Spinner animation="border" size="sm" variant="light"/></Col>
             }
-                <Col md="2"></Col>
+                {/* <Col md="2"></Col> */}
             </Row>
         </Container>
         </>

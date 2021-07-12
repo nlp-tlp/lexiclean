@@ -24,6 +24,7 @@ const useStyles = createUseStyles({
         display: 'flex',
         flexDirection: 'column',
         minHeight: '100%',
+        marginBottom: '5em'
     }
 })
 
@@ -55,6 +56,8 @@ export default function Project() {
     const [projectLoaded, setProjectLoaded] = useState(false);
     const [pageLimit, setPageLimit] = useState(localStorage.getItem('pageLimit') ? localStorage.getItem('pageLimit') : PAGE_LIMIT)
     const [pageChanged, setPageChanged] = useState(); // uses page number to update state...
+    const [searchTerm, setSearchTerm] = useState('');
+
 
     const [toastInfo, setToastInfo] = useState();
     const [showToast, setShowToast] = useState(false);
@@ -104,7 +107,9 @@ export default function Project() {
         saveTrigger,
         setSaveTrigger,
         savePending,
-        setSavePending
+        setSavePending,
+        searchTerm,
+        setSearchTerm
     }
 
     const annotationTableProps = {
@@ -120,7 +125,9 @@ export default function Project() {
         setSaveTrigger,
         pageNumber,
         setSavePending,
-        schemaTrigger
+        schemaTrigger,
+        searchTerm,
+        setSearchTerm
     }
 
     const modifySchemaProps = {

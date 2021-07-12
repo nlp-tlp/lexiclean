@@ -29,7 +29,7 @@ const useStyles = createUseStyles({
     },
     actionContainer: {
         marginTop: '0.5em',
-        maxWidth: '200px',
+        maxWidth: '300px',
         display: 'flex',
         justifyContent: 'space-around',
         marginRight: 'auto'
@@ -57,7 +57,7 @@ const useStyles = createUseStyles({
             backgroundColor:'lightgrey',
             border:'0.1em solid grey',
         }
-    },
+    }
 })
 
 const MIN_TOKEN_WIDTH = 60; // px
@@ -134,6 +134,10 @@ export default function Tokenize({ project, textIntermediate, setTextIntermediat
         }
     }
 
+    const applyAllTokens = async () => {
+        console.log('hello all apply!');
+    }
+
     const infoPopover = 
         <Popover id="popover-info">
           <Popover.Title as="h3">Tokenization Help</Popover.Title>
@@ -172,7 +176,14 @@ export default function Tokenize({ project, textIntermediate, setTextIntermediat
                     >
                         Apply
                     </Button>
-                    {/* <button>Apply All</button> */}
+                    {/* <Button
+                        className={classes.actionButton}
+                        disabled={tokenIndexes.size <= 1 || !valid}
+                        size="sm"
+                        onClick={applyAllTokens}
+                    >
+                        Apply All
+                    </Button> */}
                     <Button
                         className={classes.actionButton}
                         onClick={clearTokens}

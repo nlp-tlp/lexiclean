@@ -33,27 +33,117 @@ router.get('/', async (req, res) => {
 // Text paginatior
 router.post('/filter', async (req, res) => {
     try {
-
         if (req.body.get_pages){
             // Returns total pages instead of page of results
             try{
-                logger.info('Getting number of pages for paginator', { route: '/api/text/filter' });
-                const textsCount = await Text.find({ project_id : req.body.project_id}).count();
-                const pages = Math.ceil(textsCount/req.query.limit);
-                res.json({"totalPages": pages})
+                if (req.body.search_term && req.body.search_term !== ''){
+                    logger.info('Getting number of pages for paginator (search filtered)', { route: '/api/text/filter' });
+
+                    const tokenResponse = await Token.find({ project_id: req.body.project_id, $or: [{value: {$regex: req.body.search_term}}, {replacement: {$regex: req.body.search_term}}]}).lean();
+                    const tokenIds = new Set(tokenResponse.map(token => token._id));
+                    const textResponse = await Text.find({ project_id: req.body.project_id, 'tokens.token': {$in: Array.from(tokenIds)}}).lean();
+                    const textIds = new Set(textResponse.map(text => text._id));
+                    const textsCount = await Text.find({ project_id : req.body.project_id, _id: {$in: Array.from(textIds)}}).count();
+                    const pages = Math.ceil(textsCount/req.query.limit);
+                    res.json({"totalPages": pages})
+
+                } else {
+                    logger.info('Getting number of pages for paginator', { route: '/api/text/filter' });
+                    
+                    const textsCount = await Text.find({ project_id : req.body.project_id}).count();
+                    const pages = Math.ceil(textsCount/req.query.limit);
+                    res.json({"totalPages": pages})
+                }
             }catch(err){
                 res.json({ message: err })
                 logger.error('Failed to get number of pages for paginator', {route: `/api/text/filter/pages/${req.params.projectId}`});
             }
+        } else if(req.body.search_term && req.body.search_term !== ''){
+            // Pagination with search term filtering
+            // TODO: Fix aggregation so that Text collection is hit directly rather than Token -> Text
+            logger.info('Fetching search filtered results from paginator', { route: '/api/text/filter'});
+            const skip = parseInt((req.query.page - 1) * req.query.limit)
+            const limit = parseInt(req.query.limit)
+
+            // Get _id's of texts that have tokens that match search_term
+            const tokenResponse = await Token.find({ project_id: req.body.project_id, $or: [{value: {$regex: req.body.search_term}}, {replacement: {$regex: req.body.search_term}}]}).lean();
+            const tokenIds = new Set(tokenResponse.map(token => token._id));
+            console.log(tokenIds.size);
+
+            const textResponse = await Text.find({ project_id: req.body.project_id, 'tokens.token': {$in: Array.from(tokenIds)}}).lean();
+            const textIds = new Set(textResponse.map(text => text._id));
+            console.log('texts matched', textIds.size);
+
+            // Filter results using text Ids for matching.
+            // TODO: remove duplication with code in else block...
+            const textAggregation = await Text.aggregate([
+                {
+                    $match: { 
+                        project_id: mongoose.Types.ObjectId(req.body.project_id),
+                        _id: {$in: Array.from(textIds)}
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'tokens',
+                        localField: 'tokens.token',
+                        foreignField: '_id',
+                        as: 'tokens_detail'
+                    }
+                },
+                {
+                    $project: {
+                        annotated: "$annotated",
+                        rank: "$rank",
+                        tokens: {
+                          $map: {
+                            input: "$tokens",
+                            as: "one",
+                            in: {
+                              $mergeObjects: [
+                                "$$one",
+                                {
+                                  $arrayElemAt: [
+                                    {
+                                      $filter: {
+                                        input: "$tokens_detail",
+                                        as:"two",
+                                        cond: { $eq: ["$$two._id", "$$one.token"]}
+                                    }
+                                    },
+                                    0
+                                    ]
+                                }
+                                ]
+                            }
+                          }
+                        }
+                      }
+                },
+                {
+                    $sort: { 'rank': 1 }
+                },
+                {
+                    $skip: skip // equiv to page
+                },
+                {
+                    $limit: limit // same as limit
+                }
+            ])
+            .allowDiskUse(true)
+            .exec();
+            res.json(textAggregation);
+
         } else {
             // Standard paginator with aggregation
             logger.info('Fetching results from paginator', { route: '/api/text/filter' });
             const skip = parseInt((req.query.page - 1) * req.query.limit)
             const limit = parseInt(req.query.limit)
+
             const textAggregation = await Text.aggregate([
                 {
                     $match: { 
-                        project_id: mongoose.Types.ObjectId(req.body.project_id), 
+                        project_id: mongoose.Types.ObjectId(req.body.project_id)
                     }
                 },
                 {
@@ -374,5 +464,22 @@ router.patch('/tokenize/undo', async (req, res) => {
         res.json({ message: err })
     }
 })
+
+
+router.patch('/tokenize/all', async (req, res) => {
+    // For trivial cases like ['hell', 'o', 'world'] this is easy.
+    // However, for hard cases like ['hell', 'o', 'w', 'o', 'rld'] this becomes hard
+    // especially when scanning other documents with different token orders and sizes...
+    try{
+        res.json('success!');
+
+
+
+    }catch(err){
+        res.json({ message: err })
+    }
+})
+
+
 
 module.exports = router;

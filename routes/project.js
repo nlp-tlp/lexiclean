@@ -117,16 +117,15 @@ router.post('/create', utils.authenicateToken, async (req, res) => {
         
         // Pre-processing
         let normalisedTexts = req.body.texts;
-
-        console.log(normalisedTexts)
+        // console.log(normalisedTexts)
         
         // Mandatory processing
         normalisedTexts = normalisedTexts.map(text => text.replace('\t', ' '));
-        console.log('remove tabs', normalisedTexts)
+        // console.log('remove tabs', normalisedTexts)
         
         if (req.body.lower_case){
             normalisedTexts = normalisedTexts.map(text => text.toLowerCase());
-            console.log('remove lowercase', normalisedTexts)
+            // console.log('remove lowercase', normalisedTexts)
         }
         if (req.body.chars_remove){
             const escapedChars = ['[', ']', '{', '}', '(', ')', '*', '+', '?', '|', '^', '$', '.', '\\'];
@@ -137,7 +136,7 @@ router.post('/create', utils.authenicateToken, async (req, res) => {
 
         // Remove multiple white space and trim
         normalisedTexts = normalisedTexts.map(text => text.replace(/\s+/g,' ').trim());
-        console.log('remove multiple white space', normalisedTexts)
+        // console.log('remove multiple white space', normalisedTexts)
 
 
         // remove texts that are empty after normalisation
