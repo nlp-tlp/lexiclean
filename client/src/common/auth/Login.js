@@ -1,7 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
+import { AuthContext } from './AuthContext';
+import history from '../utils/history'
+import axios from '../utils/api-interceptor'
+
+
 import { createUseStyles } from 'react-jss';
 import PropTypes from 'prop-types';
-import axios from 'axios';
 import { Card, Form, Button, Alert, Col } from 'react-bootstrap';
 import { useHistory } from 'react-router-dom'
 import { Formik } from 'formik';
@@ -23,9 +27,11 @@ const schema = yup.object().shape({
     password: yup.string().required()
 });
 
-export default function Login({ token, setToken }) {
+export default function Login() {
     const history = useHistory();
     const classes = useStyles();
+
+    const [, setIsAuthenticated] = useContext(AuthContext)
 
     const [showAlert, setShowAlert] = useState(false);
     const [alertText, setAlertText] = useState();
@@ -35,8 +41,9 @@ export default function Login({ token, setToken }) {
         await axios.post('/api/auth/login', { username: values.username, password: values.password })
         .then(response => {
             if (response.status === 200){
-                localStorage.setItem('username', values.username);
-                setToken(response.data.token);
+                setIsAuthenticated(true)
+                window.localStorage.setItem('token', response.data.token)
+                window.localStorage.setItem('username', values.username)
                 history.push("/feed");
             }
         })

@@ -27,8 +27,9 @@ router.get('/', utils.authenicateToken, async (req, res) => {
 
 
 // Fetch projects for project feed
-router.post('/feed', utils.authenicateToken, async(req, res) => {
+router.get('/feed', utils.authenicateToken, async(req, res) => {
     logger.info('Fetching project feed', {route: '/api/project/feed'})
+
     try{
         const user_id = utils.tokenGetUserId(req.headers['authorization']);
         if (user_id){

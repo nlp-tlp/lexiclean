@@ -75,10 +75,35 @@ router.post('/login', async (req, res) => {
 })
 
 // Validate JWT token
-router.post('/token/validate', async (req, res) => {
+router.get('/token/validate', async (req, res) => {
+
     logger.info('Validating JWT token', {route: '/token/validate'});
+
+    // Verify Auth header has been sent
+    const auth = req.headers.authorization
+    if (!auth){
+        console.log('token is missing');
+        res.status(401).send({message: "Token is missing"})
+    }
+
+    // Verify Ath header contains a bearer token
+    const bearer = auth.split(' ')
+    if (bearer[0].toLowerCase() !== 'bearer'){
+        console.log('Authorization header must start with Bearer')
+        res.status(401).send({ message: "Authorization header must start with Bearer"})
+    } else if(bearer.length === 1){
+        console.log('Token not found')
+        res.status(401).send({ message: "Token not found"})
+    } else if (bearer.length > 2){
+        console.log('Authorization header must be Bearer token')
+        res.status(401).send({ message: "Authorization header must be Bearer token"})
+    }
+
+    // Verify token is valid 
     try{
-        jwt.verify(req.body.token, process.env.TOKEN_SECRET, function(err, decoded) {
+        const token = bearer[1]
+
+        jwt.verify(token, process.env.TOKEN_SECRET, function(err, decoded) {
             if (err){
                 res.json({'valid': false})
                 logger.error('Validation failed', {route: '/token/validate'});

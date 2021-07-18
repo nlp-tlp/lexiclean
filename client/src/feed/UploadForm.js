@@ -8,8 +8,6 @@ import { MdAddCircle, MdRemoveCircle, MdBrush } from 'react-icons/md';
 import { IoInformationCircleSharp } from 'react-icons/io5';
 import { CompactPicker } from 'react-color';
 
-import useToken from '../common/auth/useToken'
-
 
 const DEFAULT_COLOUR = "#9B9B9B"
 const REPLACE_COLOUR = "#99BF9C"
@@ -39,7 +37,6 @@ const schema = yup.object().shape({
   });
   
 export default function UploadForm({ setShowUpload, setIsSubmitting }) {
-    const { token, setToken } = useToken();
     const history = useHistory();
 
     const [fileData, setFileData] = useState({'textFile': {'meta': null, 'data': null}, 'rpFile': {'meta': null, 'data': null}})
@@ -146,7 +143,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
           }
 
           const formPayload = {
-            token: token,
+            token: window.localStorage.getItem('token'),
             name: values.projectName,
             description: values.projectDescription,
             texts: fileData['textFile'].data,
