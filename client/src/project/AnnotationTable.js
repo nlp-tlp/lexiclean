@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createUseStyles } from 'react-jss';
 import { Spinner } from 'react-bootstrap';
-import axios from 'axios';
+import axios from "../common/utils/api-interceptor";
 import { CgMergeVertical, CgMoreVertical } from 'react-icons/cg';
 
 import Text from './Text';

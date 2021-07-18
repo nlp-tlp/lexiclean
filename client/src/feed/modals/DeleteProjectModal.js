@@ -1,10 +1,9 @@
 import React, { useState } from 'react'
 import { Modal, Button, Spinner } from 'react-bootstrap';
-import axios from 'axios';
-import { useHistory } from 'react-router-dom';
+import axios from "../../common/utils/api-interceptor";
+import history from "../../common/utils/history";
 
 export default function DeleteProjectModal({showProjectDelete, setShowProjectDelete, selectedProject}) {
-    const history = useHistory();
     const [valueMatched, setValueMatched] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const checkValueMatch = (value) => {
@@ -13,7 +12,7 @@ export default function DeleteProjectModal({showProjectDelete, setShowProjectDel
 
     const deleteProject =  async () => {
         setIsDeleting(true);
-        await axios.delete('/api/project/', { headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}, data: {project_id: selectedProject._id}})
+        await axios.delete('/api/project/')
                 .then(response => {
                         if (response.status === 200){
                         setIsDeleting(false);

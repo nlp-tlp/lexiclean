@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
+import axios from "../../common/utils/api-interceptor";
 import { Modal, Button, Table, Form} from 'react-bootstrap';
 import { MdFileDownload, MdLibraryBooks } from 'react-icons/md';
 import { IoWarning } from 'react-icons/io5'
 import { createUseStyles } from 'react-jss';
-import axios from 'axios';
 
 const useStyles = createUseStyles({
     previewLink: {
@@ -47,8 +47,7 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
     const downloadResults = async (project) => {
         // Fetch results
         const resultRes = await axios.post('/api/project/download/result',
-                                            { project_id: project._id, type: resultType },
-                                            {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}}
+                                            { project_id: project._id, type: resultType }
                                             );
         if (resultRes.status === 200){
             // Prepare for file download
@@ -67,8 +66,7 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
 
     const previewResults = async (project) => {
         const resultRes = await axios.post('/api/project/download/result',
-                                            { project_id: project._id, type: resultType, preview: true },
-                                            {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}}
+                                            { project_id: project._id, type: resultType, preview: true }
                                             );
         if (resultRes.status === 200){
             setShowPreview(true);
@@ -78,8 +76,7 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
 
     const downloadTokeHist = async (project) => {
         const response = await axios.post('/api/project/download/tokenizations',
-                                            { project_id: project._id },
-                                            {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}}
+                                            { project_id: project._id }
                                             );
         if (response.status === 200){
             // Prepare for file download
@@ -98,8 +95,7 @@ export default function DownloadModal({showDownload, setShowDownload, project}) 
 
     const previewTokeHist = async (project) => {
         const response = await axios.post('/api/project/download/tokenizations',
-                                            { project_id: project._id, preview: true },
-                                            {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}}
+                                            { project_id: project._id, preview: true }
                                             );
         if (response.status === 200){
             setShowPreview(true);

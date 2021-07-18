@@ -1,8 +1,8 @@
 // https://github.com/uber/react-vis/blob/master/packages/showcase/plot/labeled-heatmap.js
 import React, { useState, useEffect } from 'react'
+import axios from "../../common/utils/api-interceptor";
 import { Modal, Button, Spinner } from 'react-bootstrap';
 import { XYPlot, XAxis, YAxis, HeatmapSeries, Hint, LabelSeries, ChartLabel, LineSeries} from 'react-vis';
-import axios from 'axios';
 
 export default function OverviewModal({showOverview, setShowOverview, projectId, pageLimit}) {
     const [seriesType, setSeriesType] = useState()

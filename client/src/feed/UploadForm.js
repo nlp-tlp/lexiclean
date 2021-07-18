@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
+import axios from "../common/utils/api-interceptor";
+import history from "../common/utils/history";
 import { Button, Form, Col, Row, Table, OverlayTrigger, Popover, Alert } from 'react-bootstrap';
 import { Formik } from 'formik';
 import * as yup from 'yup';
-import axios from 'axios';
-import { useHistory } from 'react-router-dom';
 import { MdAddCircle, MdRemoveCircle, MdBrush } from 'react-icons/md';
 import { IoInformationCircleSharp } from 'react-icons/io5';
 import { CompactPicker } from 'react-color';
@@ -37,8 +37,6 @@ const schema = yup.object().shape({
   });
   
 export default function UploadForm({ setShowUpload, setIsSubmitting }) {
-    const history = useHistory();
-
     const [fileData, setFileData] = useState({'textFile': {'meta': null, 'data': null}, 'rpFile': {'meta': null, 'data': null}})
     const [dataFileLoaded, setDataFileLoaded] = useState(false);
     
@@ -157,7 +155,7 @@ export default function UploadForm({ setShowUpload, setIsSubmitting }) {
           console.log('Form payload ->', formPayload)
           if (formSubmitted === false){
             setIsSubmitting(true);
-            await axios.post('/api/project/create', formPayload, {headers: {Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))}})
+            await axios.post('/api/project/create', formPayload)
             .then(response => {
                 if (response.status === 200){
                 setFormSubmitted(true);

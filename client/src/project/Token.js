@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useContextMenu } from "react-contexify";
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import axios from "../common/utils/api-interceptor";
 
 import ContextMenu from '../common/utils/ContextMenu';
 import TokenInput from './TokenInput';

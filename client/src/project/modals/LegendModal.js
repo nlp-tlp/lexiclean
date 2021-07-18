@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
+import axios from "../../common/utils/api-interceptor";
 import { Modal, Button } from 'react-bootstrap';
 import { createUseStyles } from 'react-jss';
-import axios from 'axios';
 
 const useStyles = createUseStyles({
     legend: {

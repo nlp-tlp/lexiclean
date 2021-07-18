@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios';
+import axios from "../common/utils/api-interceptor";
 import { createUseStyles } from 'react-jss';
 import {ErrorBoundary} from 'react-error-boundary';
 import { Button, OverlayTrigger, Popover } from 'react-bootstrap';
