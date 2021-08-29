@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Modal, Spinner } from 'react-bootstrap';
 import { createUseStyles } from 'react-jss';
 
-import UploadForm from '../UploadForm';
+import CreateProjectForm from '../CreateProjectForm';
 
 const useStyles = createUseStyles({
     model: {
@@ -35,7 +35,7 @@ export default function UploadModal({showUpload, setShowUpload}) {
                     :
                     <div>
                         <p>Please enter the following details to commence your project</p>
-                        <UploadForm 
+                        <CreateProjectForm 
                             setShowUpload={setShowUpload}
                             setIsSubmitting={setIsSubmitting}
                         />

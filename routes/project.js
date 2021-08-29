@@ -107,6 +107,7 @@ router.post('/create', utils.authenicateToken, async (req, res) => {
 
         // Build maps
         console.log('Building maps')
+        console.log(req.body.maps);
         const mapResponse = await Map.insertMany(req.body.maps);
         
         // console.log(mapResponse)
@@ -165,7 +166,15 @@ router.post('/create', utils.authenicateToken, async (req, res) => {
 
         // Convert maps to Sets
         let mapSets = Object.assign(...mapResponse.map(map => ({[map.type]: new Set(map.tokens)}))) // TODO: include construction of rp map instead of doing separately. use ternary.
-        mapSets['rp'] = new Set(Object.keys(rpMap.replacements[0]));
+        
+
+        // Create object from array of replacement tokens (this is done as Mongo cannot store keys with . or $ tokens)
+        const rpObj = rpMap.replacements.reduce((obj, item) => ({...obj, [item.original]: item.normed}) ,{});
+        console.log('rpMap.replacements', rpObj)
+
+        
+        
+        mapSets['rp'] = new Set(Object.keys(rpObj));//new Set(Object.keys(rpMap.replacements[0]));
         mapSets['en'] = new Set(enMap.tokens);
         // console.log('map sets -> ', mapSets);    // too large with enMap
 
@@ -191,7 +200,7 @@ router.post('/create', utils.authenicateToken, async (req, res) => {
             return({
                     value: token,
                     meta_tags: metaTags,
-                    replacement: hasReplacement ? rpMap.replacements[0][token] : null,
+                    replacement: hasReplacement ? rpObj[token] : null, //rpMap.replacements[0][token] : null,
                     suggested_replacement: null,
                     active: true
                     })
