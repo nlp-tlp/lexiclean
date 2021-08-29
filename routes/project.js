@@ -344,11 +344,12 @@ router.post('/create', utils.authenicateToken, async (req, res) => {
 
 
 // Delete project
-router.delete('/', utils.authenicateToken, async (req, res) => {
+router.delete('/:projectId', utils.authenicateToken, async (req, res) => {
     try{
         logger.info('Deleting project', {route: '/api/project/'});
         const user_id = utils.tokenGetUserId(req.headers['authorization'])
-        const projectResponse = await Project.findOne({ _id: req.body.project_id, user: user_id})
+        
+        const projectResponse = await Project.findOne({ _id: req.params.projectId, user: user_id})
                                              .populate('texts').lean();
 
         // Get ids of associated documents
@@ -357,13 +358,13 @@ router.delete('/', utils.authenicateToken, async (req, res) => {
         const mapIds = projectResponse.maps;
 
         // Delete documents in collections
-        const projectDelete = await Project.deleteOne({ _id: req.body.project_id })
-        const textDelete = await Text.deleteMany({ _id: textIds})
-        const tokenDelete = await Token.deleteMany({ _id: tokenIds})
-        const mapDelete = await Map.deleteMany({ _id: mapIds})
+        await Project.deleteOne({ _id: req.params.projectId })
+        await Text.deleteMany({ _id: textIds})
+        await Token.deleteMany({ _id: tokenIds})
+        await Map.deleteMany({ _id: mapIds})
         res.json('Successfully deleted project.')
 
-    }catch(error){
+    }catch(err){
         res.json({ message: err })
         logger.error('Failed to delete project', {route: '/api/project/'});
     }
