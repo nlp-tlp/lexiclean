@@ -29,13 +29,15 @@ router.post('/signup', async (req, res) => {
             logger.error('User already exists', {route: '/signup'});
         } else {
             // hash password with bcrypt
+            logger.info('Creating new user', {route: '/signup'});
+
             const salt = bcrypt.genSaltSync(saltRounds);
             const hash = bcrypt.hashSync(req.body.password, salt);
             const newUser = new User({
                 username: req.body.username,
                 email: req.body.email,
                 password: hash
-            })
+            });
             const savedUser = await newUser.save();
             res.json({'username': req.body.username, token: generateJWT(savedUser._id)});
             logger.info('User created successfully', {route: '/signup'});

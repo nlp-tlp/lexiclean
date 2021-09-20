@@ -1,4 +1,5 @@
 const express = require('express');
+const _ = require('lodash');
 const router = express.Router();
 const logger = require('../logger');
 const Map = require('../models/Map');
@@ -65,15 +66,16 @@ router.post('/download', async (req, res) => {
         
         // Get tokens
         const tokens = await Token.find({ project_id: req.body.project_id }).lean();
-        // console.log(tokens);
 
         if (req.body.mapName === 'rp'){
             // Filter tokens for those with replacements
             const tokensReplaced = tokens.filter(token => token.replacement);
-            console.log('Tokens replaced -> ', tokensReplaced.length);
 
             const replacementPairs = tokensReplaced.map(token => ({token: token.value, replacement: token.replacement}));
-            console.log(replacementPairs[1])
+
+            // Get counts of replacements 
+            const replacementsFreq = _.countBy(replacementPairs.map(entry => entry.token))
+
 
             // Filter out duplicate replacements
             let uniqueReplacementPairs = replacementPairs.filter((thing, index, self) => 
@@ -81,17 +83,19 @@ router.post('/download', async (req, res) => {
                     t.token === thing.token && t.replacement === thing.replacement
                 ))
             )
-            
-            console.log('Unique replacement pairs -> ', uniqueReplacementPairs);
 
             if (req.body.preview){
                 uniqueReplacementPairs = uniqueReplacementPairs.length > 10 ? uniqueReplacementPairs.slice(0, 10) : uniqueReplacementPairs;
             }
 
-            // Convert to token:replacement for
-            const replacements = uniqueReplacementPairs.map(pair => ({[pair.token] : pair.replacement})).reduce(((r, c) => Object.assign(r, c)), {});
-            // console.log(replacements)
-            res.json(replacements)
+            // Convert to {token: {replacement: '', count: #}
+            const replacements = uniqueReplacementPairs.map(pair => ({[pair.token] : {replacement: pair.replacement, count: replacementsFreq[pair.token]}})).reduce(((r, c) => Object.assign(r, c)), {});
+            console.log(replacements)
+
+            // Sort key alphabetically
+            const replacementsSorted = Object.fromEntries(Object.entries(replacements).sort());
+
+            res.json(replacementsSorted)
         } else {
             // Filter tokens for those annotated with map
             const tokensMapped = tokens.filter(token => token.meta_tags[req.body.mapName])
