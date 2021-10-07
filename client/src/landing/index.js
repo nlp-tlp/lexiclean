@@ -85,6 +85,7 @@ export default function Landing() {
             >
               LexiClean
             </h1>
+            <p>v1.0.0</p>
           </div>
         </Row>
         <Row
