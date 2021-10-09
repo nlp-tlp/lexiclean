@@ -14,4 +14,4 @@ COPY . .
 EXPOSE 3001
 
 # Start up server
-CMD ["npm", "start"]
+CMD ["npm", "run", "server"]

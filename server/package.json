@@ -23,7 +23,7 @@
     "mongoose": "^5.12.7",
     "mongoose-aggregate-paginate-v2": "^1.0.42",
     "morgan": "^1.10.0",
-    "nodemon": "^2.0.7",
+    "nodemon": "^2.0.13",
     "path": "^0.12.7",
     "winston": "^3.3.3"
   },
