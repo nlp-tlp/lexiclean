@@ -6,6 +6,13 @@ const mongoose = require("mongoose");
 const { MongoClient } = require("mongodb");
 require("dotenv/config"); // have access to .env
 
+const { DB_HOST,
+DB_PORT,
+DB_NAME} = process.env;
+
+const DB_CONNECTION = `mongodb://${DB_HOST}:${DB_PORT}/${DB_NAME}`
+
+
 // import routes
 const authRoute = require("./routes/auth");
 const projectsRoute = require("./routes/project");
@@ -26,7 +33,7 @@ app.use("/api/token", tokenRoute);
 app.use("/api/text", textRoute);
 
 // Add English lexicon to mongo db
-const client = new MongoClient(process.env.DB_CONNECTION);
+const client = new MongoClient(DB_CONNECTION);
 
 async function run() {
   try {
@@ -54,7 +61,7 @@ run().catch(console.dir());
 
 
 // Connect to mongo db
-mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true }, () => {
+mongoose.connect(DB_CONNECTION, { useNewUrlParser: true }, () => {
   console.log("Connected to db!");
 });
 
