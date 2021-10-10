@@ -223,9 +223,6 @@ router.post("/create", utils.authenicateToken, async (req, res) => {
       (obj, item) => ({ ...obj, [item.original]: item.normed }),
       {}
     );
-    console.log("rpMap.replacements", rpObj);
-
-    console.log("enMap", enMap);
 
     mapSets["rp"] = new Set(Object.keys(rpObj)); //new Set(Object.keys(rpMap.replacements[0]));
     mapSets["en"] = new Set(enMap.tokens);
@@ -304,10 +301,17 @@ router.post("/create", utils.authenicateToken, async (req, res) => {
       )
       .map((token) => token.value);
 
+    console.log("Creating project");
     const projectResponse = await Project.create({
       user: user_id,
       name: req.body.name,
       description: req.body.description,
+      preprocessing: {
+        lower_case: req.body.lower_case,
+        remove_duplicates: req.body.remove_duplicates,
+        digits_iv: req.body.detect_digits,
+        chars_removed: req.body.chars_remove,
+      },
       texts: textObjectIds,
       maps: mapObjectIds,
       metrics: {
@@ -582,14 +586,6 @@ router.post("/download/result", utils.authenicateToken, async (req, res) => {
     }
 
     if (req.body.type === "seq2seq") {
-      const testres = texts.map((text) =>
-        text.tokens.map((tokenInfo) => tokenInfo)
-      );
-
-      // logger.info(testres, {
-      //     route: "/api/project/download/result",
-      //   })
-
       const results = texts.map((text) => ({
         tid: text._id,
         input: text.original.split(" "),
@@ -602,18 +598,20 @@ router.post("/download/result", utils.authenicateToken, async (req, res) => {
               : tokenInfo.token.value
           )
           .flat(),
-        class: text.tokens.map((tokenInfo, index) => {
-          if (
-            tokenInfo.token.replacement &&
-            tokenInfo.token.replacement.split(" ").length > 1
-          ) {
-            const tokenCount = tokenInfo.token.replacement.split(" ").length;
+        class: text.tokens
+          .map((tokenInfo, index) => {
+            if (
+              tokenInfo.token.replacement &&
+              tokenInfo.token.replacement.split(" ").length > 1
+            ) {
+              const tokenCount = tokenInfo.token.replacement.split(" ").length;
 
-            return Array(tokenCount).fill(text.tokens[index].token.meta_tags);
-          } else {
-            return tokenInfo.token.meta_tags;
-          }
-        }).flat(),
+              return Array(tokenCount).fill(text.tokens[index].token.meta_tags);
+            } else {
+              return tokenInfo.token.meta_tags;
+            }
+          })
+          .flat(),
       }));
 
       res.json(results);
