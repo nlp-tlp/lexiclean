@@ -14,6 +14,7 @@ const useStyles = createUseStyles({
     justifyContent: "center",
     width: "80%",
     margin: "auto",
+    marginTop: '4em',
     userSelect: "none", // Stops text from being selected on click
   },
   row: {
