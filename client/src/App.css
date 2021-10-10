@@ -1,29 +1,196 @@
-/* React Bootstrap Pagination Styling */
-
-.pagination > li > a
-{
-    background-color: white;
-    color: #8F8F8F;
+.App {
+  width: 100%;
+  height: 100vh;
+  align-items: stretch;
 }
 
-.pagination > li > span
-{
-  background-color: #8F8F8F !important;
-  border-color: #8F8F8F !important;
-  cursor: 'pointer';
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Sidebar */
+#sidebar-wrapper {
+  min-height: 100vh !important;
+  /* width: 100vw; */
+  max-width: 400px;
+  margin-left: -2em;
+  -webkit-transition: margin 0.25s ease-out;
+  -moz-transition: margin 0.25s ease-out;
+  -o-transition: margin 0.25s ease-out;
+  transition: margin 0.25s ease-out;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  min-height: 100vh !important;
+  max-width: 400px;
+  z-index: 100;
+  background-color: #f8f9fa;
+  padding: 0px 0 0;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  /* padding: 0.875rem 1.25rem; */
+  background-color: lightgray;
+  text-align: center;
+}
+
+.sidebar-header h3 {
+  padding: 1em;
+}
+
+.sidebar-header p {
+  padding: 0;
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.sidebar-subheader {
+  padding: 0.75rem 0.875rem;
+  font-size: 1.2rem;
+}
+
+.sidebar-subheader h4 {
+  font-weight: bold;
+  font-size: 1.25rem;
+}
+
+.sidebar-textsearch {
+  margin: 1em 0em 0em 0em;
+  width: 100%;
+  min-width: 300px;
+  max-width: 500px;
+  height: 2em;
+  padding: 0em;
+}
+
+.sidebar-textsearch .input {
+  width: 50px;
+}
+
+.sidebar-subheader .icon {
+  margin-right: 0.5em;
+  font-size: 1.25em;
+}
+
+.sidebar-subheader .metric {
+  display: flex;
+}
+.sidebar-subheader .detail-container {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.sidebar-subheader .value {
+  font-size: 1.5rem;
+  min-width: 5rem;
+  padding: 0 0 0 0em;
+  margin: 0;
+  text-align: center;
+  font-weight: bold;
+}
+
+.sidebar-subheader .detail {
+  font-size: 1rem;
+  padding: 0 0 0 1em;
+  margin: 0;
+  font-weight: bold;
+}
+
+.sidebar-subheader .description {
+  font-size: 1rem;
+  padding: 0 0 0 1em;
+}
+
+.sidebar-footer {
+  padding: 0.875rem 1.25rem;
+  text-align: center;
+  position: fixed;
+  bottom: 0;
+}
+
+#page-content-wrapper {
+  min-width: 0;
+  width: 100%;
+}
+
+.sidebar-subheader .nav-link {
+  color: black;
+  font-weight: 300;
+  font-size: 1.1rem;
+}
+
+.sidebar-subheader .nav-item:hover {
+  background: #8f8f8f;
+  color: #fff;
+  transition: 0.2s;
+}
+
+/* .sidebar-subheader .nav-item.open {
+  color: #e9ecef;
+  background: #313b4c;
+}
+
+.sidebar-subheader .nav-item.active {
+  color: #e9ecef;
+  background: #2d3646 !important;
+}
+
+.sidebar-subheader .nav-item:hover {
+  background: #313b4c;
+  color: #fff;
+  transition: .2s;
+}
+
+.sidebar-subheader .nav-item .svg-inline--fa {
+  color: inherit;
+} */
+
+/* React Bootstrap paginator */
+.pagination > li > a {
+  background-color: white;
+  color: #8f8f8f;
+}
+
+.pagination > li > span {
+  background-color: #8f8f8f !important;
+  border-color: #8f8f8f !important;
+  cursor: "pointer";
 }
 
 .pagination > li > a:focus,
 .pagination > li > a:hover,
-.pagination > li > span:focus
-{
+.pagination > li > span:focus {
   color: #5a5a5a;
   background-color: #eee;
   border-color: #ddd;
 }
 
-.pagination > li > span:hover
-{
+.pagination > li > span:hover {
   opacity: 0.5;
-  cursor: 'pointer';
+  cursor: "pointer";
+}
+
+/* Project Save button group */
+.save-button {
+  position: fixed;
+  right: 0;
+  top: 0;
+  margin: 1em 2em;
+  opacity: 0.5;
+}
+
+.save-button :hover {
+  opacity: 0.8;
+}
+
+.save-button .dropdown-item {
+  font-size: 0.8rem;
 }

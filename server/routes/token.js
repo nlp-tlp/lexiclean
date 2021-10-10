@@ -81,7 +81,7 @@ router.patch("/suggest/add/many/:projectId", async (req, res) => {
       route: `/api/token/suggest/add/many/${req.params.projectId}`,
     });
 
-    const startDate = new Date()
+    const startDate = new Date();
 
     const originalToken = req.body.original_token;
     const replacement = req.body.replacement;
@@ -111,8 +111,10 @@ router.patch("/suggest/add/many/:projectId", async (req, res) => {
 
     const endDate = new Date();
 
-    console.log('execution time', (endDate.getTime() - startDate.getTime()) / 1000)
-
+    console.log(
+      "execution time",
+      (endDate.getTime() - startDate.getTime()) / 1000
+    );
 
     res.json({ matches: candidateTokens.length });
   } catch (err) {
@@ -227,6 +229,8 @@ router.patch("/suggest/accept/:projectId", async (req, res) => {
     const textResponse = await Text.find({ _id: { $in: textIds } })
       .populate("tokens.token")
       .lean();
+
+    console.log(textIds);
 
     // Filter texts for token that have suggestions
     const candidateTokens = textResponse

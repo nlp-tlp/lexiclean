@@ -167,14 +167,13 @@ router.post("/filter", async (req, res) => {
         .allowDiskUse(true)
         .exec();
       res.json(textAggregation);
-
     } else {
       // Standard paginator with aggregation
       logger.info("Fetching results from paginator", {
         route: "/api/text/filter",
       });
 
-      const startDate = new Date()
+      const startDate = new Date();
 
       const skip = parseInt((req.query.page - 1) * req.query.limit);
       const limit = parseInt(req.query.limit);
@@ -235,9 +234,11 @@ router.post("/filter", async (req, res) => {
         .allowDiskUse(true)
         .exec();
 
-
-        const endDate = new Date();
-        console.log('execution time', (endDate.getTime() - startDate.getTime()) / 1000)
+      const endDate = new Date();
+      console.log(
+        "execution time",
+        (endDate.getTime() - startDate.getTime()) / 1000
+      );
 
       res.json(textAggregation);
     }
@@ -372,30 +373,42 @@ router.patch("/annotations/update", async (req, res) => {
     const textsRes = await Text.find({ _id: { $in: req.body.textIds } })
       .populate("tokens.token")
       .lean();
-    const checkTextState = (text) => {
-      // Checks whether the tokens in a text have been annotated - if so, the text will be marked as annotated.
-      // - Dont include token.token.english_word
-      const textHasCandidates =
-        text.tokens.filter(
-          (token) =>
-            token.token.unsure ||
-            token.token.sensitive ||
-            token.token.noise ||
-            token.token.abbreviation ||
-            token.token.domain_specific ||
-            token.token.replacement
-        ).length > 0;
-      return textHasCandidates;
-    };
-    const annotatedTextIds = textsRes
-      .filter((text) => checkTextState(text))
-      .map((text) => text._id);
-    // Patch annotated field on texts
-    const testUpdateRes = await Text.updateMany(
-      { _id: { $in: annotatedTextIds } },
-      { annotated: true, last_modified: new Date(Date.now()) }
-    );
-    res.json(testUpdateRes);
+
+    // console.log(textsRes);
+
+    if (req.body.replacements_only) {
+      const checkTextState = (text) => {
+        // Checks whether the tokens in a text have been annotated - if so, the text will be marked as annotated
+        const textHasCandidates =
+          text.tokens.filter(
+            (token) =>
+              token.token.meta_tags.length > 1 ||
+              token.token.replacement ||
+              token.token.suggested_replacement
+          ).length > 0;
+        return textHasCandidates;
+      };
+
+      const annotatedTextIds = textsRes
+        .filter((text) => checkTextState(text))
+        .map((text) => text._id);
+
+      console.log(annotatedTextIds);
+
+      // Patch annotated field on texts
+      const testUpdateRes = await Text.updateMany(
+        { _id: { $in: annotatedTextIds } },
+        { annotated: true, last_modified: new Date(Date.now()) }
+      );
+      res.json(testUpdateRes);
+    } else {
+      // Previously only marked annotated texts as those that had a change made.
+      const testUpdateRes = await Text.updateMany(
+        { _id: { $in: req.body.textIds } },
+        { annotated: true, last_modified: new Date(Date.now()) }
+      );
+      res.json(testUpdateRes);
+    }
   } catch (err) {
     res.json({ message: err });
     logger.error("Failed to update annotation states of texts", {

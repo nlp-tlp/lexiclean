@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { createUseStyles } from "react-jss";
 import axios from "../common/utils/api-interceptor";
 import history from "../common/utils/history";
-import { Spinner, Navbar } from "react-bootstrap";
 
-import AnnotationTable from "./AnnotationTable";
-import Header from "./Header";
+import { Spinner, Container, Row, Col, Button } from "react-bootstrap";
+
+import Sidebar from "../common/components/Sidebar";
+import SaveButton from "./components/SaveButton";
+
+import AnnotationTable from "./components/AnnotationTable";
 import ContextToast from "../common/utils/ContextToast";
 
 import DownloadModal from "./modals/DownloadModal";
@@ -17,19 +19,9 @@ import LegendModal from "./modals/LegendModal";
 import ModifySchemaModal from "./modals/ModifySchemaModal";
 import HelpModal from "./modals/HelpModal";
 
-const useStyles = createUseStyles({
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    minHeight: "100%",
-    marginBottom: "5em",
-  },
-});
-
 const PAGE_LIMIT = 10;
 
 export default function Project() {
-  const classes = useStyles();
   const { projectId } = useParams();
   let { pageNumber } = useParams();
   pageNumber = parseInt(pageNumber);
@@ -38,6 +30,7 @@ export default function Project() {
   const [currentTexts, setCurrentTexts] = useState();
   const [saveTrigger, setSaveTrigger] = useState(false);
   const [savePending, setSavePending] = useState(false);
+  const [saveReplacementsOnly, setSaveReplacementsOnly] = useState(false);
   const [schemaTrigger, setSchemaTrigger] = useState(false);
 
   const [showDownload, setShowDownload] = useState(false);
@@ -57,7 +50,10 @@ export default function Project() {
       : PAGE_LIMIT
   );
   const [pageChanged, setPageChanged] = useState(); // uses page number to update state...
+
+  // Search functionality
   const [searchTerm, setSearchTerm] = useState("");
+  const [tempValue, setTempValue] = useState(searchTerm);
 
   const [toastInfo, setToastInfo] = useState();
   const [showToast, setShowToast] = useState(false);
@@ -93,25 +89,6 @@ export default function Project() {
     localStorage.setItem("replacements", JSON.stringify(replacementDict));
   }, [replacementDict]);
 
-  const headerProps = {
-    project,
-    currentTexts,
-    setShowDownload,
-    setShowProgress,
-    setShowSettings,
-    setShowOverview,
-    setShowLegend,
-    setShowModifySchema,
-    setShowHelp,
-    pageChanged,
-    saveTrigger,
-    setSaveTrigger,
-    savePending,
-    setSavePending,
-    searchTerm,
-    setSearchTerm,
-  };
-
   const annotationTableProps = {
     project,
     replacementDict,
@@ -123,6 +100,7 @@ export default function Project() {
     setCurrentTexts,
     saveTrigger,
     setSaveTrigger,
+    saveReplacementsOnly,
     pageNumber,
     setSavePending,
     schemaTrigger,
@@ -136,6 +114,35 @@ export default function Project() {
     project,
     schemaTrigger,
     setSchemaTrigger,
+  };
+
+  const sidebarProps = {
+    project,
+    pageChanged,
+    saveTrigger,
+    currentTexts,
+    setSaveTrigger,
+    tempValue,
+    setTempValue,
+    searchTerm,
+    setSearchTerm,
+    setShowDownload,
+    setShowProgress,
+    setShowSettings,
+    setShowOverview,
+    setShowLegend,
+    setShowModifySchema,
+    setShowHelp,
+  };
+
+  const saveBtnProps = {
+    project,
+    currentTexts,
+    saveTrigger,
+    setSaveTrigger,
+    savePending,
+    setSavePending,
+    setSaveReplacementsOnly
   };
 
   return (
@@ -189,18 +196,23 @@ export default function Project() {
         />
       ) : null}
 
-      <div className={classes.container} tabIndex="0">
-        <Header {...headerProps} />
-        {!projectLoaded ? (
-          <Spinner animation="border" />
-        ) : (
-          <AnnotationTable {...annotationTableProps} />
-        )}
-      </div>
-
-      <Navbar bg="light" fixed="bottom">
-        <Navbar.Text className="m-auto">© UWA NLP-TLP Group 2021.</Navbar.Text>
-      </Navbar>
+      <Container fluid>
+        <Row>
+          <Col id="sidebar-wrapper">
+            <Sidebar {...sidebarProps} />
+          </Col>
+          <Col id="page-content-wrapper">
+            {!projectLoaded ? (
+              <Spinner animation="border" />
+            ) : (
+              <>
+                <SaveButton {...saveBtnProps} />
+                <AnnotationTable {...annotationTableProps} />
+              </>
+            )}
+          </Col>
+        </Row>
+      </Container>
     </>
   );
 }

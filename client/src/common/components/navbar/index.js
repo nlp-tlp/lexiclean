@@ -1,6 +1,5 @@
 import React, { useContext } from "react";
 import history from "../../utils/history";
-import { AuthContext } from "../../auth/AuthContext";
 import AuthButton from "../../auth/AuthButton";
 
 import { createUseStyles } from "react-jss";
@@ -79,7 +78,6 @@ export default function NavBar({
   setShowHelp,
 }) {
   const classes = useStyles();
-  const [isAuthenticated] = useContext(AuthContext);
 
   const changeNavContext = () => {
     switch (window.location.pathname.split("/")[1]) {
