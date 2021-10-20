@@ -71,6 +71,7 @@ export default function Project() {
         .get(`/api/project/${projectId}`)
         .then((response) => {
           if (response.status === 200) {
+            console.log('project data', response.data);
             setProject(response.data);
             setProjectLoaded(true);
           }

@@ -1,0 +1,82 @@
+.token {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.5em;
+}
+
+.token-input {
+  padding: 0.5em;
+  margin-right: 0.5em;
+  border: none;
+  vertical-align: center;
+  text-align: center;
+  border-radius: 4px;
+  font-size: 1em;
+}
+
+.token-input :hover {
+  opacity: 0.8;
+}
+
+.popover {
+  min-width: 120px;
+  padding: 0.5em;
+}
+
+.popover #text-container {
+  display: flex;
+  justify-content: space-around;
+  border-bottom: 1px solid lightgrey;
+}
+
+.popover #original-text {
+  font-size: 16px;
+  font-weight: bold;
+  padding: 4px;
+  border-radius: 4px;
+  vertical-align: middle;
+  text-decoration: line-through 3px rgba(191, 88, 78, 0.5);
+}
+
+.popover #arrow {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.popover #suggested-text {
+  background-color: #99bf9c;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.popover #action-container {
+}
+
+.popover #action-container #action-btn {
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.popover #action-container #action-btn:hover {
+  background-color: lightgrey;
+}
+
+.popover #action-container #action-text {
+  margin: 0.2em 0 0.2em 0;
+  text-align: center;
+}
+
+.token-underline-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.token-underline {
+  cursor: pointer;
+  height: 6px;
+  border-radius: 2px;
+  margin-top: 2px;
+  margin-bottom: 0.5em;
+}

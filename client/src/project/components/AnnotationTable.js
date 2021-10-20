@@ -131,6 +131,7 @@ export default function AnnotationTable({
     fetchData();
   }, [pageLimit, saveTrigger, pageNumber, schemaTrigger, searchTerm]); //page, 
 
+  
   useEffect(() => {
     const fetchProjectMaps = async () => {
       if (!mapsLoaded && project) {

@@ -6,7 +6,7 @@ import { Router, Switch, Route } from "react-router-dom";
 import Login from "./common/auth/Login";
 import SignUp from "./common/auth/SignUp";
 import Landing from "./landing";
-// import Layout from "./project/Layout";
+import ProjectTest from "./features/project/Project";
 
 import Project from "./project";
 import ProjectFeed from "./feed";
@@ -22,16 +22,17 @@ function App() {
       <AuthProvider>
         <Switch>
           <ProtectedRoute path="/project/:projectId/page/:pageNumber">
-            {/* <Layout> */}
-              <Project />
-            {/* </Layout> */}
+            <Project />
           </ProtectedRoute>
-
           <ProtectedRoute path="/feed">
             <ProjectFeed />
           </ProtectedRoute>
 
           <Route exact path="/unauthorized" component={Unauthorized} />
+
+          <Route exact path="/test">
+            <ProjectTest />
+          </Route>
           <Route exact path="/login">
             <Login />
           </Route>
