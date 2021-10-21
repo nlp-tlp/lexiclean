@@ -1,0 +1,52 @@
+.annotation-table {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 80%;
+  margin: auto;
+  margin-top: 4em;
+  /* user-select - stops text from being selected on text */
+  user-select: none;
+}
+
+.annotation-table #row {
+  display: flex;
+  justify-content: space-between;
+  padding: 1em;
+  background-color: #f2f2f2;
+  margin-top: 1em;
+  height: 100%;
+}
+
+.annotation-table #index-column {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.annotation-table #index-column #icon {
+  font-size: 22px;
+  font-weight: bold;
+  width: 2em;
+  height: 2em;
+  margin: auto;
+}
+
+.annotation-table #text-column {
+  display: flex;
+  margin-left: 1em;
+  min-height: 2em;
+  width: 90%;
+}
+
+.annotation-table #tokenize-icon {
+  font-size: 26px;
+  font-weight: bold;
+  color: grey;
+  cursor: pointer;
+}
+
+.annotation-table #tokenize-icon:hover {
+  opacity: 0.8;
+}

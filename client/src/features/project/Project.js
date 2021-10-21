@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { nanoid } from "@reduxjs/toolkit";
 import {
   Spinner,
   Container,
@@ -11,10 +12,13 @@ import {
 } from "react-bootstrap";
 import { MdDelete, MdBrush, MdBookmark, MdBook } from "react-icons/md";
 import { BsArrowRightShort } from "react-icons/bs";
+import { CgMergeVertical, CgMoreVertical } from "react-icons/cg";
+import { IoInformationCircleSharp } from "react-icons/io5";
+import TokenizeGif from "../../common/media/tokenize.gif";
 
-import { createUseStyles } from "react-jss";
-import "./Token.css";
+import "./AnnotationTable.css";
 import "./Text.css";
+import "./Token.css";
 import {
   setSearchTerm,
   // addTokenToReplacementDict,
@@ -28,11 +32,13 @@ import {
   selectCurrentTexts,
   selectPageLimit,
   selectPage,
+  selectTokenizeTextId,
   fetchTexts,
   getTotalPages,
   setIdle,
   setPageLimit,
   setPage,
+  setTokenizeTextId,
 } from "./textSlice";
 import {
   selectTextTokenMap,
@@ -42,6 +48,7 @@ import {
   addAllReplacements,
   acceptSingleSuggestedReplacement,
   acceptAllSuggestedReplacements,
+  applySingleTokenization,
   updateSingleTokenDetails,
   updateAllTokenDetails,
   updateCurrentValue,
@@ -49,74 +56,29 @@ import {
   removeAllReplacements,
   removeSingleSuggestedReplacement,
   removeAllSuggestedReplacements,
+  patchSingleReplacement,
 } from "./tokenSlice";
 
-const useStyles = createUseStyles({
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    width: "80%",
-    margin: "auto",
-    marginTop: "4em",
-    userSelect: "none", // Stops text from being selected on click
-  },
-  row: {
-    display: "flex",
-    justifyContent: "space-between",
-    padding: "1em",
-    backgroundColor: "#F2F2F2",
-    marginTop: "1em",
-    minHeight: "100%",
-    maxWidth: "100%",
-  },
-  textColumn: {
-    marginLeft: "1em",
-    minHeight: "2em",
-    display: "flex",
-    width: "90%",
-  },
-  indexColumn: {
-    display: "flex",
-    justifyContent: "center",
-    textAlign: "center",
-    verticalAlign: "middle",
-  },
-  indexIcon: {
-    fontSize: "22px",
-    fontWeight: "bold",
-    width: "2em",
-    height: "2em",
-    margin: "auto",
-  },
-  textContainer: {
-    display: "flex",
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-});
-
 export default function Test() {
-  const classes = useStyles();
-
   const dispatch = useDispatch();
 
   const project = useSelector(selectProject);
   const projectStatus = useSelector((state) => state.project.status);
   const projectError = useSelector((state) => state.project.error);
   const bgColourMap = useSelector(selectBgColourMap);
+  const searchTerm = useSelector(selectSearchTerm);
 
   const currentTexts = useSelector(selectCurrentTexts);
   const pageLimit = useSelector(selectPageLimit);
   const page = useSelector(selectPage);
   const textsStatus = useSelector((state) => state.texts.status);
   const textsError = useSelector((state) => state.texts.error);
-
-  const searchTerm = useSelector(selectSearchTerm);
+  const tokenizeTextId = useSelector(selectTokenizeTextId);
 
   const textTokenMap = useSelector(selectTextTokenMap);
 
   useEffect(() => {
+    // Loader for project information
     if (projectStatus === "idle") {
       dispatch(fetchProject());
       dispatch(fetchProjectMaps());
@@ -181,33 +143,37 @@ export default function Test() {
     textsContent = <Spinner />;
   } else if (textsStatus === "succeeded") {
     textsContent = (
-      <div className={classes.container}>
+      <div className="annotation-table">
         {textTokenMap &&
           textTokenMap.map((text, id) => {
             return (
-              <div className={classes.row}>
-                <div className={classes.indexColumn}>
-                  <p className={classes.indexIcon}>
-                    {id + 1 + (page - 1) * pageLimit}
-                  </p>
+              <div id="row">
+                <div id="index-column">
+                  <p id="icon">{id + 1 + (page - 1) * pageLimit}</p>
                 </div>
-                <div className={classes.textColumn}>
-                  <Text {...text.token_ids} />
+                <div id="text-column">
+                  {tokenizeTextId === text.text_id ? (
+                    <Tokenize tokenIds={text.token_ids} textId={text.text_id} />
+                  ) : (
+                    <Text tokenIds={text.token_ids} textId={text.text_id} />
+                  )}
                 </div>
                 <div
-                  style={{
-                    fontSize: "26px",
-                    fontWeight: "bold",
-                    color: "grey",
-                  }}
-                  // onClick={() => handleTokenize(text._id)}
+                  id="tokenize-icon"
+                  onClick={() =>
+                    dispatch(
+                      setTokenizeTextId(
+                        tokenizeTextId === text.text_id ? null : text.text_id
+                      )
+                    )
+                  }
                 >
-                  x
-                  {/* {tokenize !== text._id ? (
+                  {/* TODO: Make icon coloured if the text has been tokenized */}
+                  {tokenizeTextId === text.text_id ? (
                     <CgMergeVertical />
-                    ) : (
+                  ) : (
                     <CgMoreVertical />
-                  )} */}
+                  )}
                 </div>
               </div>
             );
@@ -239,21 +205,31 @@ export default function Test() {
             <input
               type="number"
               value={pageLimit}
-              onChange={(e) => dispatch(setPageLimit(Number(e.target.value)))}
+              min={1}
+              onChange={(e) => {
+                dispatch(setPageLimit(Number(e.target.value)));
+                dispatch(setIdle());
+              }}
             />
-            <button onClick={() => dispatch(setIdle())}>Submit</button>
           </div>
           <div>
             Page:
             <input
               type="number"
               value={page}
-              onChange={(e) => dispatch(setPage(Number(e.target.value)))}
+              min={1}
+              onChange={(e) => {
+                dispatch(setPage(Number(e.target.value)));
+                dispatch(setIdle());
+              }}
             />
-            <button onClick={() => dispatch(setIdle())}>Submit</button>
           </div>
           <p>Text status: {textsStatus}</p>
           {/* Annotation Table */}
+          <div>
+            <button>Undo</button>
+            <button>Redo</button>
+          </div>
           {textsContent}
         </Col>
       </Row>
@@ -261,29 +237,140 @@ export default function Test() {
   );
 }
 
-const Text = (tokens) => {
+const Text = ({ tokenIds, textId }) => {
   return (
-    <div className="text">
-      {Object.values(tokens).map((token_id) => {
-        return <Token token_id={token_id} />;
+    <div className="text-container">
+      {Object.values(tokenIds).map((tokenId) => {
+        return <Token tokenId={tokenId} textId={textId} />;
       })}
     </div>
   );
 };
 
-const Token = ({ token_id }) => {
+const Tokenize = ({ tokenIds, textId }) => {
+  const dispatch = useDispatch();
   const tokenValues = useSelector(selectTokenValues);
-  const token = tokenValues[token_id];
+  const [tokenIndexes, setTokenIndexes] = useState(new Set());
+  const [tokenIndexGroups, setTokenIndexGroups] = useState([]);
+  const [valid, setValid] = useState(false);
+
+  const handleIndex = (index) => {
+    if (tokenIndexes.has(index)) {
+      setTokenIndexes((prev) => new Set([...prev].filter((x) => x !== index)));
+    } else {
+      setTokenIndexes((prev) => new Set(prev.add(index)));
+    }
+  };
+
+  useEffect(() => {
+    const indexes = Array.from(tokenIndexes).sort((a, b) => {
+      return a - b;
+    });
+    const groups = indexes.reduce((r, n) => {
+      // https://stackoverflow.com/questions/47906850/javascript-group-the-numbers-from-an-array-with-series-of-consecutive-numbers
+      const lastSubArray = r[r.length - 1];
+      if (!lastSubArray || lastSubArray[lastSubArray.length - 1] !== n - 1) {
+        r.push([]);
+      }
+      r[r.length - 1].push(n);
+      return r;
+    }, []);
+    setTokenIndexGroups(groups);
+    // Check all sub arrays are greater than 1 in length
+    const validSelection = groups.filter((l) => l.length === 1).length === 0;
+    setValid(validSelection);
+  }, [tokenIndexes]);
+
+  const infoPopover = (
+    <Popover id="tokenize-popover">
+      <Popover.Title as="h3">Tokenization Help</Popover.Title>
+      <Popover.Content>
+        <img id="tokenization-gif" src={TokenizeGif} alt="tokenization gif" />
+      </Popover.Content>
+    </Popover>
+  );
 
   return (
-    <div className="token" key={token._id}>
-      <TokenInput token={token} />
-      <TokenUnderline token={token} />
+    <div className="tokenize-container">
+      <div id="tokens">
+        {tokenIds &&
+          Object.values(tokenIds).map((token_id) => {
+            const token = tokenValues[token_id];
+            const colour = tokenIndexes.has(token.index)
+              ? "#BFE3BF"
+              : "#fdfd96";
+            // TODO: Integrate into utlity function that is shared across components
+            // 60 is MIN_TOKEN_WIDTH
+            const width =
+              (token.value.length + 2) * 10 < 60
+                ? "60px"
+                : `${(token.value.length + 2) * 10}px`;
+
+            return (
+              <div
+                id="token"
+                style={{
+                  backgroundColor: colour,
+                  width: width,
+                }}
+                onClick={() => handleIndex(token.index)}
+              >
+                {token.value}
+              </div>
+            );
+          })}
+      </div>
+      <div className="action-container">
+        <Button
+          id="action-button"
+          size="sm"
+          disabled={tokenIndexes.size <= 1 || !valid}
+          onClick={() => {
+            dispatch(
+              applySingleTokenization({
+                originalTokenIds: tokenIds,
+                tokenIndexes: tokenIndexes,
+                tokenIndexGroups: tokenIndexGroups,
+                textId: textId,
+                newTokenIds: Array(tokenIndexGroups.length).fill(nanoid()),
+              })
+            );
+            dispatch(
+              setTokenizeTextId({
+                tokenizeTextId: null,
+              })
+            );
+          }}
+        >
+          Apply
+        </Button>
+        {/* <Button id="action-button" size="sm" disabled>
+          Apply all
+        </Button> */}
+        <Button id="action-button" size="sm" disabled={tokenIndexes.size === 0}>
+          Clear
+        </Button>
+        <OverlayTrigger trigger="click" placement="right" overlay={infoPopover}>
+          <IoInformationCircleSharp id="action-info" />
+        </OverlayTrigger>
+      </div>
     </div>
   );
 };
 
-const TokenInput = ({ token }) => {
+const Token = ({ tokenId, textId }) => {
+  const tokenValues = useSelector(selectTokenValues);
+  const token = tokenValues[tokenId];
+
+  return (
+    <div className="token" key={token._id}>
+      <TokenInput token={token} textId={textId} />
+      <TokenUnderline token={token} textId={textId} />
+    </div>
+  );
+};
+
+const TokenInput = ({ token, textId }) => {
   const bgColourMap = useSelector(selectBgColourMap);
   const dispatch = useDispatch();
 
@@ -334,13 +421,7 @@ const TokenInput = ({ token }) => {
       trigger="click"
       rootClose
       placement="bottom"
-      overlay={popoverManager(
-        popoverProps
-        // token,
-        // "addReplacement",
-        // dispatch,
-        // setShowTokenPopover
-      )}
+      overlay={popoverManager(popoverProps)}
       show={showTokenPopover}
     >
       <input
@@ -361,7 +442,8 @@ const TokenInput = ({ token }) => {
   );
 };
 
-const TokenUnderline = ({ token, edited }) => {
+// TODO: connect up edited status...
+const TokenUnderline = ({ token, textId, edited }) => {
   const bgColourMap = useSelector(selectBgColourMap);
   const dispatch = useDispatch();
 
@@ -394,6 +476,7 @@ const TokenUnderline = ({ token, edited }) => {
     dispatch,
     setShowPopover,
     bgColourMap,
+    textId,
   };
 
   const popover = hasEditOrReplacement
@@ -439,12 +522,20 @@ const popoverManager = (props) => {
         // TODO: update to api call
         function: () => {
           props.dispatch(
-            addSingleReplacement({
-              token_id: props.token._id,
+            patchSingleReplacement({
+              tokenId: props.token._id,
               replacement: props.token.currentValue,
+              textId: props.textId,
               bgColourMap: props.bgColourMap,
             })
           );
+          // props.dispatch(
+          //   addSingleReplacement({
+          //     token_id: props.token._id,
+          //     replacement: props.token.currentValue,
+          //     bgColourMap: props.bgColourMap,
+          //   })
+          // );
           props.setShowTokenPopover(false);
         },
       },
@@ -534,7 +625,7 @@ const popoverManager = (props) => {
         },
       },
       {
-        name: "Accept",
+        name: "Accept one",
         icon: <MdBookmark />,
         function: () => {
           props.dispatch(

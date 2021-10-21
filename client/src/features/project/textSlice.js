@@ -9,6 +9,7 @@ const initialState = {
   totalPages: null,
   currentTexts: [],
   saveReplacementsOnly: false,
+  tokenizeTextId: null,
 };
 
 export const getTotalPages = createAsyncThunk(
@@ -63,6 +64,7 @@ export const textSlice = createSlice({
   initialState: initialState,
   reducers: {
     setIdle: (state, action) => {
+      // TODO: rename to 'refresh'
       state.status = "idle";
     },
     setPageLimit: (state, action) => {
@@ -70,6 +72,9 @@ export const textSlice = createSlice({
     },
     setPage: (state, action) => {
       state.page = Number(action.payload);
+    },
+    setTokenizeTextId: (state, action) => {
+      state.tokenizeTextId = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -92,10 +97,12 @@ export const textSlice = createSlice({
   },
 });
 
-export const { setIdle, setPageLimit, setPage } = textSlice.actions;
+export const { setIdle, setPageLimit, setPage, setTokenizeTextId } =
+  textSlice.actions;
 
 export const selectCurrentTexts = (state) => state.texts.currentTexts;
 export const selectPageLimit = (state) => state.texts.pageLimit;
 export const selectPage = (state) => state.texts.page;
+export const selectTokenizeTextId = (state) => state.texts.tokenizeTextId;
 
 export default textSlice.reducer;

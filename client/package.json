@@ -30,6 +30,7 @@
     "react-toastify": "^7.0.4",
     "react-vis": "^1.11.7",
     "redux": "^4.1.1",
+    "redux-undo": "^1.0.1",
     "web-vitals": "^1.0.1",
     "yup": "^0.32.9"
   },

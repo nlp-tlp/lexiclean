@@ -16,7 +16,7 @@ const initialState = {
 export const fetchProject = createAsyncThunk(
   "project/fetchProject",
   async () => {
-    const response = await axios.get("/api/project/6162558c19b1ca02599da934");
+    const response = await axios.get("/api/project/6170ac96c1e25b001d572bfc");
     return response.data;
   }
 );
@@ -24,7 +24,7 @@ export const fetchProject = createAsyncThunk(
 export const fetchProjectMaps = createAsyncThunk(
   "project/fetchProjectMaps",
   async () => {
-    const response = await axios.get("/api/map/6162558c19b1ca02599da934");
+    const response = await axios.get("/api/map/6170ac96c1e25b001d572bfc");
     return response.data;
   }
 );

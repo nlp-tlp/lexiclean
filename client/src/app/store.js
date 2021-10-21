@@ -7,6 +7,6 @@ export default configureStore({
   reducer: {
     project: projectReducer,
     texts: textReducer,
-    tokens: tokenReducer
+    tokens: tokenReducer,
   },
 });
