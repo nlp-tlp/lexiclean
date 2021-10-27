@@ -17,7 +17,8 @@ router.get("/", utils.authenicateToken, async (req, res) => {
   try {
     logger.info("Fetching all projects", { route: "/api/project/" });
     const user_id = utils.tokenGetUserId(req.headers["authorization"]);
-    const projects = await Project.find({ user: user_id });
+    const projects = await Project.find({ user: user_id }, { texts: 0 }).lean();
+
     res.json(projects);
   } catch (err) {
     res.json({ message: err });
@@ -27,52 +28,54 @@ router.get("/", utils.authenicateToken, async (req, res) => {
 
 // Fetch projects for project feed
 router.get("/feed", utils.authenicateToken, async (req, res) => {
-  logger.info("Fetching project feed", { route: "/api/project/feed" });
+  // logger.info("Fetching project feed", { route: "/api/project/feed" });
 
   try {
     const user_id = utils.tokenGetUserId(req.headers["authorization"]);
     if (user_id) {
-      const projects = await Project.find({ user: user_id })
-        .populate({ path: "texts", populate: [{ path: "tokens.token" }] })
-        .lean();
-      const feedInfo = projects.map((project) => {
-        const allTokens = project.texts
-          .map((text) => text.tokens.map((token) => token.token))
-          .flat();
-        const annotatedTexts = project.texts.filter(
-          (text) => text.annotated
-        ).length;
-        const uniqueTokens = new Set(
-          allTokens
-            .map((token) =>
-              token.replacement ? token.replacement : token.value
+      const projects = await Project.find({ user: user_id }).lean();
+
+      const feedInfo = await Promise.all(
+        projects.map(async (project) => {
+          const allTokens = null;
+          const annotatedTexts = await Text.count({
+            project_id: project._id,
+            annotated: true,
+          });
+          const tokens = await Token.find({ project_id: project._id }).lean();
+
+          const uniqueTokens = new Set(
+            tokens
+              .map((token) =>
+                token.replacement ? token.replacement : token.value
+              )
+              .flat()
+          ).size;
+
+          const currentOOVTokens = tokens
+            .filter(
+              (token) =>
+                Object.values(token.meta_tags).filter((tagBool) => tagBool)
+                  .length === 0 && !token.replacement
             )
-            .flat()
-        ).size;
-        const currentOOVTokens = allTokens
-          .filter(
-            (token) =>
-              Object.values(token.meta_tags).filter((tagBool) => tagBool)
-                .length === 0 && !token.replacement
-          )
-          .map((token) => token.value).length;
-        return {
-          created_on: project.created_on,
-          description: project.description,
-          last_modified: project.last_modified,
-          name: project.name,
-          metrics: project.metrics,
-          starting_token_count: project.starting_token_count,
-          text_count: project.texts.length,
-          annotated_texts: annotatedTexts,
-          vocab_reduction:
-            ((project.metrics.starting_vocab_size - uniqueTokens) /
-              project.metrics.starting_vocab_size) *
-            100,
-          oov_corrections: currentOOVTokens,
-          _id: project._id,
-        };
-      });
+            .map((token) => token.value).length;
+
+          return {
+            _id: project._id,
+            starting_oov_token_count: project.metrics.starting_oov_token_count,
+            starting_vocab_size: project.metrics.starting_vocab_size,
+            starting_token_count: project.starting_token_count,
+            text_count: project.texts.length,
+            annotated_texts: annotatedTexts,
+            vocab_reduction:
+              ((project.metrics.starting_vocab_size - uniqueTokens) /
+                project.metrics.starting_vocab_size) *
+              100,
+            oov_corrections: currentOOVTokens,
+          };
+        })
+      );
+
       res.json(feedInfo);
     } else {
       res.json({ message: "token invalid" });
@@ -111,10 +114,13 @@ router.get("/:projectId", utils.authenicateToken, async (req, res) => {
       route: `/api/project/${req.params.projectId}`,
     });
     const user_id = utils.tokenGetUserId(req.headers["authorization"]);
-    const response = await Project.findOne({
-      _id: req.params.projectId,
-      user: user_id,
-    }).lean();
+    const response = await Project.findOne(
+      {
+        _id: req.params.projectId,
+        user: user_id,
+      },
+      { texts: 0 }
+    ).lean();
     res.json(response);
   } catch (err) {
     res.json({ message: err });
@@ -567,6 +573,75 @@ router.get("/counts/:projectId", utils.authenicateToken, async (req, res) => {
     logger.error("Failed to get project token counts", {
       route: `/api/project/counts/${req.params.projectId}`,
     });
+  }
+});
+
+// Get metrics that are used in the sidebar for a single project
+router.get("/metrics/:projectId", utils.authenicateToken, async (req, res) => {
+  try {
+    const project = await Project.findById({
+      _id: req.params.projectId,
+    }).lean();
+    const textsTotal = await Text.count({ project_id: req.params.projectId });
+    const textsAnnotated = await Text.count({
+      project_id: req.params.projectId,
+      annotated: true,
+    });
+    const tokens = await Token.find({
+      project_id: req.params.projectId,
+    }).lean();
+
+    // Capture the number of tokens that exist in the original values or
+    // introduced through replacements (if a token has one)
+    const vocabSize = new Set(
+      tokens.map((token) =>
+        token.replacement ? token.replacement : token.value
+      )
+    ).size;
+
+    // Capture the number of tokens that are OOV e.g. have no meta-tags that are true
+    // including English and do not have a current replacement.
+    const oovTokenLength = tokens
+      .filter(
+        (token) =>
+          Object.values(token.meta_tags).filter((tagBool) => tagBool).length ===
+            0 && !token.replacement
+      )
+      .map((token) => token.value).length;
+
+    const payload = [
+      {
+        description: "Texts Annotated",
+        detail: `${textsAnnotated} / ${textsTotal}`,
+        value: `${Math.round((textsAnnotated * 100) / textsTotal)}%`,
+        title: "Texts that have had classifications or replacements.",
+      },
+      {
+        description: "Vocabulary Reduction",
+        detail: `${vocabSize} / ${project.metrics.starting_vocab_size}`,
+        value: `${Math.round(
+          (1 - vocabSize / project.metrics.starting_vocab_size) * 100
+        )}%`,
+        title:
+          "Comparison between of current vocabulary and starting vocabulary",
+      },
+      {
+        description: "OOV Corrections",
+        detail: `${
+          project.metrics.starting_oov_token_count - oovTokenLength
+        } / ${project.metrics.starting_oov_token_count}`,
+        value: `${Math.round(
+          ((project.metrics.starting_oov_token_count - oovTokenLength) * 100) /
+            project.metrics.starting_oov_token_count
+        )}%`,
+        title:
+          "Sum of all outstanding out-of-vocabulary tokens. All tokens replaced and/or classified with meta-tags are captured",
+      },
+    ];
+
+    res.json(payload);
+  } catch (err) {
+    res.json({ message: err });
   }
 });
 

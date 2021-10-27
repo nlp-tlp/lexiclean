@@ -5,11 +5,10 @@ import { Router, Switch, Route } from "react-router-dom";
 
 import Login from "./common/auth/Login";
 import SignUp from "./common/auth/SignUp";
-import Landing from "./landing";
-import ProjectTest from "./features/project/Project";
-
-import Project from "./project";
-import ProjectFeed from "./feed";
+import { Landing } from "./landing/landing";
+import { Project } from "./features/project/project";
+import { Feed } from "./features/feed/feed";
+import { PortalModal } from "./features/project/modalportal";
 
 import { AuthProvider } from "./common/auth/AuthContext";
 import ProtectedRoute from "./common/auth/ProtectedRoute";
@@ -23,16 +22,15 @@ function App() {
         <Switch>
           <ProtectedRoute path="/project/:projectId/page/:pageNumber">
             <Project />
+            <PortalModal />
           </ProtectedRoute>
           <ProtectedRoute path="/feed">
-            <ProjectFeed />
+            <Feed />
+            <PortalModal />
           </ProtectedRoute>
 
           <Route exact path="/unauthorized" component={Unauthorized} />
 
-          <Route exact path="/test">
-            <ProjectTest />
-          </Route>
           <Route exact path="/login">
             <Login />
           </Route>

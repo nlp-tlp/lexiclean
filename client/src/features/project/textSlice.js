@@ -5,9 +5,8 @@ const initialState = {
   status: "idle",
   error: null,
   page: 1,
-  pageLimit: 5,
+  pageLimit: 10,
   totalPages: null,
-  currentTexts: [],
   saveReplacementsOnly: false,
   tokenizeTextId: null,
 };
@@ -30,30 +29,12 @@ export const getTotalPages = createAsyncThunk(
   }
 );
 
-export const fetchTexts = createAsyncThunk(
-  "texts/fetchTexts",
-  async (payload) => {
-    const response = await axios.post(
-      "/api/text/filter",
-      {
-        project_id: payload.project_id,
-        search_term: payload.search_term !== "" ? payload.search_term : null,
-      },
-      {
-        params: { page: payload.page, limit: payload.page_limit },
-      }
-    );
-    return response.data;
-  }
-);
-
-// Unsure whether need to pass in payload or can access text state directly.
 export const updateAnnotationStates = createAsyncThunk(
   "texts/updateAnnotationStates",
-  async (payload) => {
+  async ({ currentTexts, saveReplacementsOnly }) => {
     const response = await axios.patch("/api/text/annotations/update", {
-      textIds: payload.currentTexts.map((text) => text._id),
-      replacements_only: payload.saveReplacementsOnly,
+      textIds: currentTexts.map((text) => text._id),
+      replacements_only: saveReplacementsOnly,
     });
     return response.data;
   }
@@ -78,31 +59,18 @@ export const textSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(fetchTexts.pending, (state, action) => {
-        state.status = "loading";
-      })
-      .addCase(fetchTexts.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        // Add fetched project to details
-        state.currentTexts = action.payload;
-      })
-      .addCase(fetchTexts.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.error.message;
-      })
-      .addCase(getTotalPages.fulfilled, (state, action) => {
-        state.totalPages = action.payload.totalPages;
-      });
+    builder.addCase(getTotalPages.fulfilled, (state, action) => {
+      state.totalPages = action.payload.totalPages;
+    });
   },
 });
 
 export const { setIdle, setPageLimit, setPage, setTokenizeTextId } =
   textSlice.actions;
 
-export const selectCurrentTexts = (state) => state.texts.currentTexts;
 export const selectPageLimit = (state) => state.texts.pageLimit;
 export const selectPage = (state) => state.texts.page;
 export const selectTokenizeTextId = (state) => state.texts.tokenizeTextId;
+export const selectTotalPages = (state) => state.texts.totalPages;
 
 export default textSlice.reducer;

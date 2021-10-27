@@ -1,6 +1,8 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 import history from "./history";
+import { selectToken, setToken } from "../../features/project/userSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 const errorHandler = (error) => {
   // Use a common toastId for "Session Expired" toast so there is only ever one

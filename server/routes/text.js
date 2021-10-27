@@ -6,7 +6,6 @@ const Text = require("../models/Text");
 const Token = require("../models/Token");
 const Map = require("../models/Map");
 
-// Get single text
 router.get("/:textId", async (req, res) => {
   try {
     logger.info("Get single text", { route: `/api/text/${req.params.textId}` });
@@ -22,7 +21,6 @@ router.get("/:textId", async (req, res) => {
   }
 });
 
-// Get all texts
 router.get("/", async (req, res) => {
   try {
     const response = await Text.find().populate("tokens.token").lean();
@@ -99,14 +97,12 @@ router.post("/filter", async (req, res) => {
         ],
       }).lean();
       const tokenIds = new Set(tokenResponse.map((token) => token._id));
-      console.log(tokenIds.size);
 
       const textResponse = await Text.find({
         project_id: req.body.project_id,
         "tokens.token": { $in: Array.from(tokenIds) },
       }).lean();
       const textIds = new Set(textResponse.map((text) => text._id));
-      console.log("texts matched", textIds.size);
 
       // Filter results using text Ids for matching.
       // TODO: remove duplication with code in else block...
@@ -118,40 +114,10 @@ router.post("/filter", async (req, res) => {
           },
         },
         {
-          $lookup: {
-            from: "tokens",
-            localField: "tokens.token",
-            foreignField: "_id",
-            as: "tokens_detail",
-          },
-        },
-        {
           $project: {
             annotated: "$annotated",
             rank: "$rank",
-            tokens: {
-              $map: {
-                input: "$tokens",
-                as: "one",
-                in: {
-                  $mergeObjects: [
-                    "$$one",
-                    {
-                      $arrayElemAt: [
-                        {
-                          $filter: {
-                            input: "$tokens_detail",
-                            as: "two",
-                            cond: { $eq: ["$$two._id", "$$one.token"] },
-                          },
-                        },
-                        0,
-                      ],
-                    },
-                  ],
-                },
-              },
-            },
+            token_ids: "$tokens.token",
           },
         },
         {
@@ -166,18 +132,25 @@ router.post("/filter", async (req, res) => {
       ])
         .allowDiskUse(true)
         .exec();
-      res.json(textAggregation);
+
+      // Fetch tokens using ids
+      const tokenIdsAgg = textAggregation.map((text) => text.token_ids).flat();
+      const tokens = await Token.find({ _id: { $in: tokenIdsAgg } }).lean();
+
+      const payload = {
+        textTokenMap: textAggregation,
+        tokens: tokens,
+      };
+
+      res.json(payload);
     } else {
       // Standard paginator with aggregation
       logger.info("Fetching results from paginator", {
         route: "/api/text/filter",
       });
 
-      const startDate = new Date();
-
       const skip = parseInt((req.query.page - 1) * req.query.limit);
       const limit = parseInt(req.query.limit);
-
       const textAggregation = await Text.aggregate([
         {
           $match: {
@@ -185,40 +158,10 @@ router.post("/filter", async (req, res) => {
           },
         },
         {
-          $lookup: {
-            from: "tokens",
-            localField: "tokens.token",
-            foreignField: "_id",
-            as: "tokens_detail",
-          },
-        },
-        {
           $project: {
             annotated: "$annotated",
             rank: "$rank",
-            tokens: {
-              $map: {
-                input: "$tokens",
-                as: "one",
-                in: {
-                  $mergeObjects: [
-                    "$$one",
-                    {
-                      $arrayElemAt: [
-                        {
-                          $filter: {
-                            input: "$tokens_detail",
-                            as: "two",
-                            cond: { $eq: ["$$two._id", "$$one.token"] },
-                          },
-                        },
-                        0,
-                      ],
-                    },
-                  ],
-                },
-              },
-            },
+            token_ids: "$tokens.token",
           },
         },
         {
@@ -234,13 +177,16 @@ router.post("/filter", async (req, res) => {
         .allowDiskUse(true)
         .exec();
 
-      const endDate = new Date();
-      console.log(
-        "execution time",
-        (endDate.getTime() - startDate.getTime()) / 1000
-      );
+      // Fetch tokens using ids
+      const tokenIds = textAggregation.map((text) => text.token_ids).flat();
+      const tokens = await Token.find({ _id: { $in: tokenIds } }).lean();
 
-      res.json(textAggregation);
+      const payload = {
+        textTokenMap: textAggregation,
+        tokens: tokens,
+      };
+
+      res.json(payload);
     }
   } catch (err) {
     res.json({ message: err });
