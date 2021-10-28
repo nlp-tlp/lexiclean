@@ -9,8 +9,8 @@ export const Annotate = ({ projectId }) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const confirmationAction = () => {
-    history.push(`/project/${projectId}/page/1`);
     dispatch(setActiveModal(null));
+    history.push(`/project/${projectId}/page/1`);
   };
 
   return (

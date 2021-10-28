@@ -88,6 +88,10 @@ export const projectSlice = createSlice({
     setModalInfo: (state, action) => {
       state.modalInfo = action.payload;
     },
+    setProject: (state, action) => {
+      state.metrics = null;
+      state.details = action.payload; 
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -181,7 +185,7 @@ export const projectSlice = createSlice({
   },
 });
 
-export const { setSearchTerm, setActiveModal, setModalInfo } =
+export const { setSearchTerm, setActiveModal, setModalInfo, setProject } =
   projectSlice.actions;
 
 export const selectProject = (state) => state.project.details;

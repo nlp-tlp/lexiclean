@@ -18,10 +18,16 @@ import {
   Dropdown,
   ButtonGroup,
 } from "react-bootstrap";
-import { MdDelete, MdBrush, MdBookmark, MdBook } from "react-icons/md";
+import { MdDelete, MdBrush, MdBookmark } from "react-icons/md";
 import { BsArrowRightShort } from "react-icons/bs";
-import { CgMergeVertical, CgMoreVertical } from "react-icons/cg";
-import { IoInformationCircleSharp } from "react-icons/io5";
+import {
+  IoInformationCircleSharp,
+  IoCheckmarkCircleSharp,
+  IoCloseCircle,
+  IoEllipsisVerticalCircleSharp,
+} from "react-icons/io5";
+import { RiEditCircleFill } from "react-icons/ri";
+
 import {
   FaSlidersH,
   FaUserCircle,
@@ -67,6 +73,7 @@ import {
   setPage,
   setTokenizeTextId,
   updateAnnotationStates,
+  patchSingleAnnotationState,
 } from "./textSlice";
 import {
   setIdle,
@@ -97,7 +104,6 @@ import {
   patchAllMetaTags,
 } from "./tokenSlice";
 import { selectUsername } from "./userSlice";
-import { setActiveProject } from "./feedSlice";
 
 export const Project = () => {
   const dispatch = useDispatch();
@@ -142,9 +148,6 @@ export const Project = () => {
       projectStatus === "succeeded" &&
       tokensStatus === "idle"
     ) {
-      // Global variable that is used with modals...
-      dispatch(setActiveProject(project));
-
       // Fetches the count of total pages based on current settings
       // and the tokens associated with the texts on the current page.
       dispatch(
@@ -183,41 +186,80 @@ export const Project = () => {
         {textTokenMap &&
           textTokenMap.map((text, id) => {
             return (
-              <div
-                id="row"
-                key={id}
-                style={{
-                  background: text.annotated
-                    ? "rgba(153,191,156,0.2)"
-                    : "#f2f2f2",
-                }}
-              >
-                <div id="index-column">
-                  <p id="icon">{id + 1 + (page - 1) * pageLimit}</p>
-                </div>
-                <div id="text-column">
-                  {tokenizeTextId === text._id ? (
-                    <Tokenize tokenIds={text.token_ids} textId={text._id} />
+              <div id="container">
+                <div id="actions">
+                  {text.annotated ? (
+                    <IoCheckmarkCircleSharp
+                      id="icon"
+                      onClick={() => {
+                        dispatch(
+                          patchSingleAnnotationState({
+                            textId: text._id,
+                            value: true,
+                          })
+                        );
+                      }}
+                    />
                   ) : (
-                    <Text tokenIds={text.token_ids} textId={text._id} />
+                    <IoCloseCircle
+                      id="icon"
+                      onClick={() => {
+                        dispatch(
+                          patchSingleAnnotationState({
+                            textId: text._id,
+                            value: false,
+                          })
+                        );
+                      }}
+                    />
+                  )}
+                  {/* TODO: Make icon coloured if the text has been tokenized */}
+                  {tokenizeTextId === text._id ? (
+                    <IoEllipsisVerticalCircleSharp
+                      id="icon"
+                      style={{ color: "#fdfd96", fontWeight: "bold" }}
+                      title="Go to replacement view"
+                      onClick={() =>
+                        dispatch(
+                          setTokenizeTextId(
+                            tokenizeTextId === text._id ? null : text._id
+                          )
+                        )
+                      }
+                    />
+                  ) : (
+                    <RiEditCircleFill
+                      id="icon"
+                      title="Go to tokenization view"
+                      onClick={() =>
+                        dispatch(
+                          setTokenizeTextId(
+                            tokenizeTextId === text._id ? null : text._id
+                          )
+                        )
+                      }
+                    />
                   )}
                 </div>
                 <div
-                  id="tokenize-icon"
-                  onClick={() =>
-                    dispatch(
-                      setTokenizeTextId(
-                        tokenizeTextId === text._id ? null : text._id
-                      )
-                    )
-                  }
+                  id="row"
+                  key={id}
+                  style={{
+                    background: text.annotated
+                      ? "rgba(153,191,156,0.2)"
+                      : "#f2f2f2",
+                  }}
                 >
-                  {/* TODO: Make icon coloured if the text has been tokenized */}
-                  {tokenizeTextId === text._id ? (
-                    <CgMergeVertical />
-                  ) : (
-                    <CgMoreVertical />
-                  )}
+                  <div id="index-column">
+                    <p id="icon">{id + 1 + (page - 1) * pageLimit}</p>
+                  </div>
+                  <div id="text-column">
+                    {tokenizeTextId === text._id ? (
+                      <Tokenize tokenIds={text.token_ids} textId={text._id} />
+                    ) : (
+                      <Text tokenIds={text.token_ids} textId={text._id} />
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -242,21 +284,10 @@ export const Project = () => {
               tokensStatus === "loading" ? (
                 <div
                   style={{
-                    margin: "auto",
-                    padding: "1em",
-                    borderRadius: "0.5em",
-                    justifyContent: "center",
-                    width: "20vw",
-                    maxWidth: "200px",
-                    backgroundColor: "lightgray",
-                    boxShadow: "inset -1px 0 0 rgba(0, 0, 0, 0.1)",
-                    display: "flex",
-                    marginTop: "25vh",
+                    textAlign: "center",
                   }}
                 >
-                  <Spinner animation="border" style={{ marginRight: "1em" }} />
-
-                  <p style={{ fontSize: "1.5em" }}>Loading...</p>
+                  <Spinner animation="border" style={{ marginTop: "50vh" }} />
                 </div>
               ) : (
                 <>
@@ -346,8 +377,10 @@ const Sidebar = () => {
               </div>
             ))
           ) : (
-            <div style={{ margin: "auto" }}>
-              <Spinner animation="border" size="sm" />
+            <div>
+              <Spinner animation="grow" size="sm" />
+              <Spinner animation="grow" size="sm" />
+              <Spinner animation="grow" size="sm" />
             </div>
           )}
         </div>
@@ -1203,8 +1236,12 @@ const SaveButton = () => {
   const [savePending, setSavePending] = useState(false);
 
   useEffect(() => {
-    setSavePending(true);
-  }, [dispatch]);
+    const textsNotAnnotated =
+      textTokenMap &&
+      textTokenMap.filter((text) => text.annotated).length !==
+        textTokenMap.length;
+    setSavePending(textsNotAnnotated);
+  }, [textTokenMap, dispatch]);
 
   return (
     <Dropdown
@@ -1221,14 +1258,16 @@ const SaveButton = () => {
           borderColor: savePending ? "rgb(107, 176, 191)" : "",
           opacity: savePending ? "0.8" : "0.5",
         }}
-        onClick={() =>
+        onClick={() => {
           dispatch(
             updateAnnotationStates({
               textIds: textTokenMap.map((text) => text._id),
               saveReplacementsOnly: false,
             })
-          )
-        }
+          );
+          dispatch(setIdle());
+          dispatch(fetchMetrics({ projectId: project._id }));
+        }}
         variant="secondary"
         title="Click to save the current pages suggested replacements and to mark all documents as annotated"
       >
@@ -1256,14 +1295,16 @@ const SaveButton = () => {
       <Dropdown.Menu>
         <Dropdown.Item
           title="Click to save only the replacements made on the current page"
-          onClick={() =>
+          onClick={() => {
             dispatch(
               updateAnnotationStates({
                 textIds: textTokenMap.map((text) => text._id),
                 saveReplacementsOnly: true,
               })
-            )
-          }
+            );
+            dispatch(setIdle());
+            dispatch(fetchMetrics({ projectId: project._id }));
+          }}
         >
           Save Replacements
         </Dropdown.Item>

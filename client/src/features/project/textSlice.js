@@ -12,7 +12,7 @@ const initialState = {
 };
 
 export const getTotalPages = createAsyncThunk(
-  "texts/getTotalPages",
+  "/texts/getTotalPages",
   async (payload) => {
     const response = await axios.post(
       "/api/text/filter",
@@ -30,13 +30,28 @@ export const getTotalPages = createAsyncThunk(
 );
 
 export const updateAnnotationStates = createAsyncThunk(
-  "texts/updateAnnotationStates",
-  async ({ currentTexts, saveReplacementsOnly }) => {
-    const response = await axios.patch("/api/text/annotations/update", {
-      textIds: currentTexts.map((text) => text._id),
+  "/texts/updateAnnotationStates",
+  async ({ textIds, saveReplacementsOnly }) => {
+    const response = await axios.patch("/api/text/save/annotations", {
+      textIds: textIds,
       replacements_only: saveReplacementsOnly,
     });
     return response.data;
+  }
+);
+
+export const patchSingleAnnotationState = createAsyncThunk(
+  "/texts/patchSingleAnnotationState",
+  async ({ textId, value }) => {
+    const response = await axios.patch(`/api/text/save/annotations/${textId}`, {
+      value: value,
+    });
+    return {
+      response: response.data,
+      details: {
+        textId: textId,
+      },
+    };
   }
 );
 
@@ -45,7 +60,6 @@ export const textSlice = createSlice({
   initialState: initialState,
   reducers: {
     setIdle: (state, action) => {
-      // TODO: rename to 'refresh'
       state.status = "idle";
     },
     setPageLimit: (state, action) => {
@@ -61,7 +75,7 @@ export const textSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(getTotalPages.fulfilled, (state, action) => {
       state.totalPages = action.payload.totalPages;
-    });
+    })
   },
 });
 

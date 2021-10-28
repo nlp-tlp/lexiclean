@@ -3,9 +3,12 @@ import { useSelector, useDispatch } from "react-redux";
 
 import {
   selectPageLimit,
-  setIdle,
   setPageLimit,
 } from "../../features/project/textSlice";
+
+import {
+  setIdle
+} from "../../features/project/tokenSlice"
 
 export const Settings = () => {
   const dispatch = useDispatch();

@@ -310,21 +310,19 @@ router.get("/overview/:projectId", async (req, res) => {
 });
 
 // Check if text has been annotated - if so, patch the annotated field on the text
-// TODO: refactor
-router.patch("/annotations/update", async (req, res) => {
-  logger.info("Checking annotation states of texts", {
-    route: "/api/text/annotations/update",
+router.patch("/save/annotations", async (req, res) => {
+  logger.info("Saving annotation states on texts", {
+    route: "/api/text/save/annotations",
   });
   try {
     const textsRes = await Text.find({ _id: { $in: req.body.textIds } })
       .populate("tokens.token")
       .lean();
 
-    // console.log(textsRes);
-
     if (req.body.replacements_only) {
       const checkTextState = (text) => {
-        // Checks whether the tokens in a text have been annotated - if so, the text will be marked as annotated
+        // Checks whether the tokens in a text have been annotated
+        // if so, the text will be marked as annotated
         const textHasCandidates =
           text.tokens.filter(
             (token) =>
@@ -346,9 +344,10 @@ router.patch("/annotations/update", async (req, res) => {
         { _id: { $in: annotatedTextIds } },
         { annotated: true, last_modified: new Date(Date.now()) }
       );
+
       res.json(testUpdateRes);
     } else {
-      // Previously only marked annotated texts as those that had a change made.
+      // Previously only marked annotated texts as those that had a change made
       const testUpdateRes = await Text.updateMany(
         { _id: { $in: req.body.textIds } },
         { annotated: true, last_modified: new Date(Date.now()) }
@@ -360,6 +359,21 @@ router.patch("/annotations/update", async (req, res) => {
     logger.error("Failed to update annotation states of texts", {
       route: "/api/text/annotations/update",
     });
+  }
+});
+
+
+router.patch("/save/anotations/:textId", async (req, res) => {
+// Updates the annotation status of a given text
+  try {
+    await Text.updateOne(
+      { _id: req.params.textId },
+      { annotated: req.body.value, last_modified: new Date(Date.now()) }
+    );
+
+    res.json({ message: "successfully saved annotation" });
+  } catch (err) {
+    res.json({ message: err });
   }
 });
 

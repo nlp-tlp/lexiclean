@@ -15,16 +15,25 @@ import ProtectedRoute from "./common/auth/ProtectedRoute";
 import Unauthorized from "./common/auth/Unauthorized";
 import history from "./common/utils/history";
 
+import { Helmet } from "react-helmet";
+
 function App() {
   return (
     <Router history={history}>
       <AuthProvider>
         <Switch>
           <ProtectedRoute path="/project/:projectId/page/:pageNumber">
+            <Helmet>
+              <title>Annotation | LexiClean</title>
+            </Helmet>
             <Project />
             <PortalModal />
           </ProtectedRoute>
           <ProtectedRoute path="/feed">
+            <Helmet>
+              <title>Project Feed | LexiClean</title>
+            </Helmet>
+
             <Feed />
             <PortalModal />
           </ProtectedRoute>
@@ -32,9 +41,15 @@ function App() {
           <Route exact path="/unauthorized" component={Unauthorized} />
 
           <Route exact path="/login">
+            <Helmet>
+              <title>Login | LexiClean</title>
+            </Helmet>
             <Login />
           </Route>
           <Route exact path="/signup">
+            <Helmet>
+              <title>Signup | LexiClean</title>
+            </Helmet>
             <SignUp />
           </Route>
           <Route exact path="/">

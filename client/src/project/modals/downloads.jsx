@@ -141,7 +141,10 @@ export const Downloads = ({ projectId, projectName }) => {
         className="download"
         id="checkbox"
         checked={resultType === "seq2seq"}
-        onChange={() => setResultType("seq2seq")}
+        onChange={() => {
+          setResultType("seq2seq");
+          previewResults();
+        }}
       />
       <Form.Check
         inline
@@ -150,7 +153,10 @@ export const Downloads = ({ projectId, projectName }) => {
         type="checkbox"
         label="Token Classification"
         checked={resultType === "tokenclf"}
-        onChange={() => setResultType("tokenclf")}
+        onChange={() => {
+          setResultType("tokenclf");
+          previewResults();
+        }}
       />
     </div>
   );

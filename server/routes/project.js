@@ -91,7 +91,6 @@ router.get("/feed", utils.authenicateToken, async (req, res) => {
   }
 });
 
-// Update single project
 router.patch("/", utils.authenicateToken, async (req, res) => {
   try {
     logger.info("Updating single project", { route: "/api/project/" });
@@ -107,7 +106,6 @@ router.patch("/", utils.authenicateToken, async (req, res) => {
   }
 });
 
-// Fetch single project
 router.get("/:projectId", utils.authenicateToken, async (req, res) => {
   try {
     logger.info("Fetching single project", {
@@ -130,7 +128,6 @@ router.get("/:projectId", utils.authenicateToken, async (req, res) => {
   }
 });
 
-// Create project
 router.post("/create", utils.authenicateToken, async (req, res) => {
   try {
     logger.info("Creating project", { route: "/api/project/create" });
@@ -480,7 +477,6 @@ router.post("/create", utils.authenicateToken, async (req, res) => {
   }
 });
 
-// Delete project
 router.delete("/:projectId", utils.authenicateToken, async (req, res) => {
   try {
     logger.info("Deleting project", { route: "/api/project/" });
@@ -645,19 +641,23 @@ router.get("/metrics/:projectId", utils.authenicateToken, async (req, res) => {
   }
 });
 
-// Download results as seq2seq or tokenclf
-// Format results similar to WNUT 2015 (see: http://noisy-text.github.io/2015/norm-shared-task.html), with some modifications
 router.post("/download/result", utils.authenicateToken, async (req, res) => {
+  // Download normalisation results as seq2seq or tokenclf
   try {
     logger.info("Downloading project results", {
       route: "/api/project/download/result",
     });
-    let texts = await Text.find({ project_id: req.body.project_id })
-      .populate("tokens.token")
-      .lean();
+    let texts;
 
     if (req.body.preview) {
-      texts = texts.slice(0, 10);
+      texts = await Text.find({ project_id: req.body.project_id })
+        .limit(10)
+        .populate("tokens.token")
+        .lean();
+    } else {
+      texts = await Text.find({ project_id: req.body.project_id })
+        .populate("tokens.token")
+        .lean();
     }
 
     if (req.body.type === "seq2seq") {
@@ -769,6 +769,7 @@ router.post(
       const response = await Text.find({ project_id: req.body.project_id })
         .populate("tokens.token")
         .lean();
+        
       // Reduce all of the tokenization histories
       let tHist = response
         .filter((text) => text.tokenization_hist.length > 0)

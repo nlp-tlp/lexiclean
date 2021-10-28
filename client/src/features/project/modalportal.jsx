@@ -7,7 +7,7 @@ import {
   selectActiveModal,
 } from "./projectSlice";
 
-import { selectActiveProject } from "./feedSlice";
+import { selectproject } from "./feedSlice";
 
 import { Button, Modal } from "react-bootstrap";
 
@@ -25,7 +25,6 @@ export const PortalModal = () => {
   const dispatch = useDispatch();
   const project = useSelector(selectProject);
   const activeModal = useSelector(selectActiveModal);
-  const activeProject = useSelector(selectActiveProject);
 
   const modalContent = {
     legend: {
@@ -46,11 +45,11 @@ export const PortalModal = () => {
       body: <Schema projectId={project._id} />,
     },
     downloads: {
-      title: `Downloads (${activeProject && activeProject.name})`,
+      title: `Downloads (${project && project.name})`,
       body: (
         <Downloads
-          projectId={activeProject && activeProject._id}
-          projectName={activeProject && activeProject.name}
+          projectId={project && project._id}
+          projectName={project && project.name}
         />
       ),
       modalSize: "modal-wide",
@@ -64,14 +63,14 @@ export const PortalModal = () => {
       title: "Delete Project",
       body: (
         <Delete
-          projectId={activeProject && activeProject._id}
-          projectName={activeProject && activeProject.name}
+          projectId={project && project._id}
+          projectName={project && project.name}
         />
       ),
     },
     annotate: {
-      title: `Annotate Project (${activeProject && activeProject.name})`,
-      body: <Annotate projectId={activeProject && activeProject._id} />,
+      title: `Annotate Project (${project && project.name})`,
+      body: <Annotate projectId={project && project._id} />,
     },
   };
 
@@ -87,7 +86,7 @@ export const PortalModal = () => {
         <Modal.Title>{modalContent[activeModal].title}</Modal.Title>
       </Modal.Header>
       <Modal.Body>{modalContent[activeModal].body}</Modal.Body>
-      <Modal.Footer>
+      <Modal.Footer style={{ justifyContent: "left" }}>
         <Button
           variant="secondary"
           onClick={() => dispatch(setActiveModal(null))}

@@ -2,11 +2,15 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: 80%;
+  width: 100%;
   margin: auto;
   margin-top: 4em;
   /* user-select - stops text from being selected on text */
   user-select: none;
+}
+
+.annotation-table #container {
+  display: flex;
 }
 
 .annotation-table #row {
@@ -39,13 +43,24 @@
   width: 90%;
 }
 
-.annotation-table #tokenize-icon {
-  font-size: 26px;
+.annotation-table #actions {
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(211, 211, 211, 0.5);
+  margin-top: 1em;
+  padding: 0.5em;
+  min-height: 2em;
+}
+
+.annotation-table #actions #icon {
+  font-size: 1.25em;
+  text-align: center;
   font-weight: bold;
   color: grey;
   cursor: pointer;
+  margin-top: 0.5em;
 }
 
-.annotation-table #tokenize-icon:hover {
+.annotation-table #actions #icon:hover {
   opacity: 0.8;
 }

@@ -555,7 +555,6 @@ export const tokenSlice = createSlice({
         state.status = "failed";
         state.error = action.error.message;
       })
-
       .addCase(patchSingleReplacement.fulfilled, (state, action) => {
         // Patches the replacement value of a token and updates
         // the currentValue, classification, bgColour, and width.
@@ -647,7 +646,7 @@ export const tokenSlice = createSlice({
           content: {
             original: originalValue,
             replacement: replacementValue,
-            count: matchedTokenIds.length + 1, // Includes token that replacement was applied to too.
+            count: action.payload.response.matches + 1, // Includes token that replacement was applied to too.
           },
         };
         state.showToast = true;
@@ -726,7 +725,7 @@ export const tokenSlice = createSlice({
           content: {
             original: details.originalValue,
             replacement: details.replacement,
-            count: matchedTokenIds.length,
+            count: action.payload.response.matches,
           },
         };
         state.showToast = true;
@@ -800,7 +799,7 @@ export const tokenSlice = createSlice({
           content: {
             original: details.originalValue,
             replacement: null,
-            count: matchedTokenIds.length,
+            count: action.payload.response.matches,
           },
         };
         state.showToast = true;
@@ -870,7 +869,7 @@ export const tokenSlice = createSlice({
           content: {
             original: details.originalValue,
             replacement: details.suggestedReplacement,
-            count: matchedTokenIds.length,
+            count: action.payload.response.matches,
           },
         };
         state.showToast = true;

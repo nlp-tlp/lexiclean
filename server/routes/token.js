@@ -83,9 +83,9 @@ router.patch("/replace/remove/many/:projectId", async (req, res) => {
         upsert: true,
       },
     }));
-    const updateResponse = await Token.bulkWrite(updateTokens);
+    await Token.bulkWrite(updateTokens);
 
-    res.json(updateResponse);
+    res.json({ matches: tokenResponse.length });
   } catch (err) {
     res.json({ message: err });
   }
@@ -125,8 +125,6 @@ router.patch("/suggest/add/many/:projectId", async (req, res) => {
       route: `/api/token/suggest/add/many/${req.params.projectId}`,
     });
 
-    const startDate = new Date();
-
     const originalToken = req.body.original_token;
     const replacement = req.body.replacement;
 
@@ -152,13 +150,6 @@ router.patch("/suggest/add/many/:projectId", async (req, res) => {
       },
     }));
     await Token.bulkWrite(updateTokens);
-
-    const endDate = new Date();
-
-    console.log(
-      "execution time",
-      (endDate.getTime() - startDate.getTime()) / 1000
-    );
 
     res.json({ matches: candidateTokens.length });
   } catch (err) {
@@ -205,9 +196,9 @@ router.patch("/suggest/remove/many/:projectId", async (req, res) => {
         upsert: true,
       },
     }));
-    const updateResponse = await Token.bulkWrite(updateTokens);
+    await Token.bulkWrite(updateTokens);
 
-    res.json(updateResponse);
+    res.json({ matches: tokenResponse.length });
   } catch (err) {
     res.json({ message: err });
   }
@@ -295,7 +286,7 @@ router.patch("/suggest/accept/many/:projectId", async (req, res) => {
       }))
     );
 
-    res.json(suggestedReplaceResponse);
+    res.json({matches: tokenResponse.length});
   } catch (err) {
     res.json({ message: err });
   }

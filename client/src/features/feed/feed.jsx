@@ -3,7 +3,11 @@ import { Spinner, Button, Navbar, ListGroup } from "react-bootstrap";
 import { MdDelete, MdEdit, MdFileDownload } from "react-icons/md";
 import { RiNumbersFill } from "react-icons/ri";
 import { useSelector, useDispatch } from "react-redux";
-import { setActiveModal } from "../project/projectSlice";
+import {
+  setActiveModal,
+  setProject,
+  selectProject,
+} from "../project/projectSlice";
 import {
   fetchProjects,
   fetchProjectMetrics,
@@ -42,7 +46,7 @@ export const Feed = () => {
     <>
       <NavBar />
       <div className="feed-container">
-        {/* <h1 id="title">Projects Feed</h1> */}
+        {/* <h1 id="title">Project Feed</h1> */}
         {feedStatus !== "succeeded" ? (
           <div id="loader">
             <Spinner animation="border" />
@@ -78,7 +82,7 @@ const ProjectList = () => {
   const projectMetrics = useSelector(selectProjectMetrics);
 
   const modalHandler = (project, type) => {
-    dispatch(setActiveProject(project));
+    dispatch(setProject(project)); // Sets project as active...
     dispatch(setActiveModal(type));
   };
 
@@ -116,7 +120,7 @@ const ProjectList = () => {
                             </p>
                           ) : (
                             <Spinner
-                              animation="grow"
+                              animation="border"
                               variant="secondary"
                               size="sm"
                             />
@@ -144,7 +148,7 @@ const ProjectList = () => {
                             </p>
                           ) : (
                             <Spinner
-                              animation="grow"
+                              animation="border"
                               variant="secondary"
                               size="sm"
                             />
@@ -171,7 +175,7 @@ const ProjectList = () => {
                             </p>
                           ) : (
                             <Spinner
-                              animation="grow"
+                              animation="border"
                               variant="secondary"
                               size="sm"
                             />
