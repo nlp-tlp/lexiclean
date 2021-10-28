@@ -1,0 +1,178 @@
+.modal-wide {
+  min-width: 600px;
+  max-width: 800px;
+  height: 100%;
+}
+
+.legend #container {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  background-color: white;
+}
+
+.legend #table {
+  display: flex;
+  flex-direction: column;
+  font-size: 16px;
+  padding: 0.25em;
+  justify-content: space-between;
+}
+.legend #description {
+}
+.legend #legend-item {
+  text-align: center;
+  width: 8em;
+  margin: 0.5em;
+  border-radius: 0.25em;
+  padding: 0.2em;
+}
+
+/* .help #override {
+    'width': '90vw',
+    'minWidth': '90vw'
+} */
+
+.help {
+  margin: auto;
+}
+
+.help #qrg-img {
+  max-width: 100%;
+}
+
+.help #description-title {
+  font-weight: bold;
+  font-size: 22px;
+}
+
+/* SCHEMA */
+
+.schema #description-title {
+  margin-bottom: 0.5em;
+  font-weight: bold;
+}
+
+.schema thead,
+tbody {
+  text-align: center;
+}
+
+.schema input {
+  width: 8em;
+}
+
+.schema #add-btn {
+  font-size: 22px;
+  color: #28a745;
+}
+
+.schema #active-state {
+  font-weight: bolder;
+}
+
+/* DOWNLOAD */
+.download {
+  /* width: 600px; */
+}
+
+.download #list-header {
+  text-transform: capitalize;
+}
+
+.download #checkbox-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.download #checkbox-container #checkbox {
+  font-size: 10px;
+}
+
+.download #main-description {
+  font-size: 1em;
+}
+
+.download .list-item {
+    font-size: 0.9em;
+}
+
+.download .list-group-item.active {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.download .list-header {
+    font-weight: bold;
+    color: black;
+    font-size: 1em;
+}
+
+/* CREATE PROJECT */
+
+.create {
+
+}
+
+.create #section-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-top: 0.5em;
+  background-color: rgba(0,0,0,0.1);
+  padding: 0.2em;
+}
+
+.create .custom-file-label {
+
+}
+
+.create #section-subtitle {
+  font-weight: bold;
+  color: rgba(0,0,0,0.75);
+  margin: 0em 0em 0.25em 0em;
+}
+
+.create #info-label {
+  margin-left: 2px;
+  color: grey;
+}
+
+.create .preview-container {
+  background-color: rgba(0,0,0,0.025);
+  padding: 0.5em;
+  overflow-y: scroll;
+  max-height: 20vh;
+  height: 20vh;
+}
+
+/* DELETE PROJECT */
+
+.delete-loading {
+  text-align: center;
+  margin: auto;
+  margin-top: 4em;
+  margin-bottom: 4em;
+}
+
+.delete-loading #loading-text {
+  font-size: 18px;
+}
+
+.delete {
+  text-align: center;
+}
+
+.delete #input-text {
+  text-align: center;
+  background-color: rgba(0,0,0,0.1);
+  border: none;
+  outline: none;
+  padding: 0.5em;
+  border-radius: 0.5em;
+}
+
+.delete #button {
+  display: flex;
+  justify-content: space-evenly;
+  margin-top: 1em;
+}

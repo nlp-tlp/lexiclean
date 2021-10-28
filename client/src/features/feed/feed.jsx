@@ -1,13 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { Spinner, Button, Navbar, ListGroup } from "react-bootstrap";
+import React, { useEffect } from "react";
+import "./Feed.css";
+import { Spinner, Button, ListGroup } from "react-bootstrap";
 import { MdDelete, MdEdit, MdFileDownload } from "react-icons/md";
 import { RiNumbersFill } from "react-icons/ri";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  setActiveModal,
-  setProject,
-  selectProject,
-} from "../project/projectSlice";
+import { setActiveModal, setProject } from "../project/projectSlice";
 import {
   fetchProjects,
   fetchProjectMetrics,
@@ -17,11 +14,7 @@ import {
   selectFeedMetricsError,
   selectProjects,
   selectProjectMetrics,
-  setActiveProject,
 } from "../project/feedSlice";
-import "./Feed.css";
-
-import { NavBar } from "../common/navbar";
 
 export const Feed = () => {
   const dispatch = useDispatch();
@@ -43,35 +36,28 @@ export const Feed = () => {
   }, [feedStatus, feedMetricsStatus, dispatch]);
 
   return (
-    <>
-      <NavBar />
-      <div className="feed-container">
-        {/* <h1 id="title">Project Feed</h1> */}
-        {feedStatus !== "succeeded" ? (
-          <div id="loader">
-            <Spinner animation="border" />
-            <p>Loading...</p>
-          </div>
-        ) : projects.length === 0 ? (
-          <div id="create-project">
-            <p>No projects</p>
-            <Button
-              variant="dark"
-              size="lg"
-              onClick={() => dispatch(setActiveModal("create"))}
-            >
-              Create Project
-            </Button>
-          </div>
-        ) : (
-          <ProjectList />
-        )}
-      </div>
-
-      <Navbar bg="light" fixed="bottom">
-        <Navbar.Text className="m-auto">© UWA NLP-TLP Group 2021.</Navbar.Text>
-      </Navbar>
-    </>
+    <div className="feed-container">
+      {/* <h1 id="title">Project Feed</h1> */}
+      {feedStatus !== "succeeded" ? (
+        <div id="loader">
+          <Spinner animation="border" />
+          <p>Loading...</p>
+        </div>
+      ) : projects.length === 0 ? (
+        <div id="create-project">
+          <p>No projects</p>
+          <Button
+            variant="dark"
+            size="lg"
+            onClick={() => dispatch(setActiveModal("create"))}
+          >
+            Create Project
+          </Button>
+        </div>
+      ) : (
+        <ProjectList />
+      )}
+    </div>
   );
 };
 

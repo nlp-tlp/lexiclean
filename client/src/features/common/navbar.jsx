@@ -1,32 +1,16 @@
 import React from "react";
-import history from "../../common/utils/history";
+import "./Navbar.css";
+import history from "../utils/history";
 import { useSelector, useDispatch } from "react-redux";
-
-import AuthButton from "../../common/auth/AuthButton";
-
-import { createUseStyles } from "react-jss";
 import { Navbar, Nav, NavDropdown } from "react-bootstrap";
 import { IoLogoGithub, IoLogoYoutube } from "react-icons/io5";
 import { MdBubbleChart } from "react-icons/md";
-
 import { setActiveModal } from "../project/projectSlice";
-import { selectUsername } from "../project/userSlice";
-import "../project/Navbar.css";
-
-const useStyles = createUseStyles({
-  githubLogo: {
-    fontSize: "22px",
-    marginRight: "1em",
-  },
-  youtubeLogo: {
-    fontSize: "22px",
-    marginRight: "1em",
-  },
-});
+import { selectUsername } from "./userSlice";
+import { AuthButton } from "../auth/authbutton";
 
 export const NavBar = () => {
   const dispatch = useDispatch();
-  const classes = useStyles();
   const username = useSelector(selectUsername);
 
   const changeNavContext = () => {
@@ -50,7 +34,7 @@ export const NavBar = () => {
       sticky="top"
     >
       <Navbar.Brand href="/">
-        {page === "feed" && <MdBubbleChart style={{ fontSize: "40px" }} />}
+        <MdBubbleChart id="brand" />
       </Navbar.Brand>
       <Navbar.Toggle aria-controls="responsive-navbar-nav" />
       <Navbar.Collapse id="responsive-navbar-nav">
@@ -62,7 +46,7 @@ export const NavBar = () => {
             <>
               <Nav.Link>
                 <IoLogoGithub
-                  className={classes.githubLogo}
+                  id="logo"
                   onClick={() =>
                     window.open(
                       "https://github.com/nlp-tlp/lexiclean",
@@ -73,7 +57,7 @@ export const NavBar = () => {
               </Nav.Link>
               <Nav.Link>
                 <IoLogoYoutube
-                  className={classes.youtubeLogo}
+                  id="logo"
                   onClick={() =>
                     window.open("https://youtu.be/P7_ooKrQPDU", "_blank")
                   }
@@ -84,7 +68,7 @@ export const NavBar = () => {
               </Nav.Link>
             </>
           ) : page === "feed" ? (
-            <NavDropdown title="Menu" alignRight style={{ zIndex: "100000" }}>
+            <NavDropdown id="menu" title="Menu" alignRight>
               <NavDropdown.Item
                 onClick={() => dispatch(setActiveModal("create"))}
               >
@@ -98,7 +82,7 @@ export const NavBar = () => {
                 Signed in as: {username}
               </NavDropdown.Item>
               <NavDropdown.Item>
-                <AuthButton style={{ margin: "0em", padding: "0em" }} />
+                <AuthButton id="auth-button" />
               </NavDropdown.Item>
             </NavDropdown>
           ) : null}

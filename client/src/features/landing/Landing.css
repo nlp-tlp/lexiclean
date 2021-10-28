@@ -1,0 +1,83 @@
+.landing {
+  margin-bottom: 5em;
+  text-align: center;
+}
+
+.landing #row-title {
+  margin-top: 10vh;
+  justify-content: center;
+}
+
+.landing #title-container {
+  display: flex;
+  align-items: center;
+}
+
+.landing #title-icon {
+  font-size: 80px;
+}
+
+.landing #title-container h1 {
+  letter-spacing: 2px;
+  font-weight: bold;
+  font-size: 60px;
+}
+
+.landing #row-description {
+  justify-content: center;
+  margin-top: 3vh;
+  margin-bottom: 2vh;
+}
+
+.landing #row-description h3 {
+  font-size: 26px;
+}
+
+.landing #row-signup {
+  margin-top: 2vh;
+  margin-bottom: 2vh;
+}
+
+.landing #signup-button {
+  margin-top: 1em;
+  color: black;
+  font-size: 26px;
+  font-weight: bold;
+  background-color: #f8f9fa;
+  border: 2px solid black;
+  padding: 0.25em 1em 0.25em 1em;
+  max-width: 20vw;
+  margin: auto;
+}
+
+.landing #signup-button :hover {
+  background-color: rgb(143, 143, 143);
+  border-color: white;
+}
+
+.landing #signup-button :active {
+  background-color: white;
+  border-color: white;
+  color: rgb(143, 143, 143);
+}
+
+.landing #row-details {
+  justify-content: center;
+}
+
+.landing #row-details #box {
+  display: flex;
+  flex-direction: row;
+  padding: 0.5em;
+  flex: 1 1 0;
+}
+
+.landing #row-details #text {
+  display: flex;
+  flex-direction: column;
+}
+
+.landing #row-details #icon {
+  font-size: 48px;
+  margin: auto;
+}

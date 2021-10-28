@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import history from "../../common/utils/history";
+import history from "../utils/history";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { nanoid } from "@reduxjs/toolkit";
@@ -38,7 +38,7 @@ import {
   FaArrowAltCircleLeft,
   FaSave,
 } from "react-icons/fa";
-import TokenizeGif from "../../common/media/tokenize.gif";
+import TokenizeGif from "../../media/tokenize.gif";
 // Context Menu
 import { useContextMenu, Menu, Item, Submenu, theme } from "react-contexify";
 import { IoMdArrowDropright } from "react-icons/io";
@@ -103,7 +103,7 @@ import {
   patchSingleMetaTag,
   patchAllMetaTags,
 } from "./tokenSlice";
-import { selectUsername } from "./userSlice";
+import { selectUsername } from "../common/userSlice";
 
 export const Project = () => {
   const dispatch = useDispatch();
@@ -188,6 +188,7 @@ export const Project = () => {
             return (
               <div id="container">
                 <div id="actions">
+
                   {text.annotated ? (
                     <IoCheckmarkCircleSharp
                       id="icon"
@@ -197,26 +198,26 @@ export const Project = () => {
                             textId: text._id,
                             value: true,
                           })
-                        );
+                          );
                       }}
                     />
-                  ) : (
+                    ) : (
                     <IoCloseCircle
-                      id="icon"
+                    id="icon"
                       onClick={() => {
                         dispatch(
                           patchSingleAnnotationState({
                             textId: text._id,
                             value: false,
                           })
-                        );
-                      }}
+                          );
+                        }}
                     />
-                  )}
+                    )}
                   {/* TODO: Make icon coloured if the text has been tokenized */}
                   {tokenizeTextId === text._id ? (
                     <IoEllipsisVerticalCircleSharp
-                      id="icon"
+                    id="icon"
                       style={{ color: "#fdfd96", fontWeight: "bold" }}
                       title="Go to replacement view"
                       onClick={() =>
@@ -224,19 +225,19 @@ export const Project = () => {
                           setTokenizeTextId(
                             tokenizeTextId === text._id ? null : text._id
                           )
-                        )
-                      }
-                    />
-                  ) : (
-                    <RiEditCircleFill
-                      id="icon"
-                      title="Go to tokenization view"
-                      onClick={() =>
-                        dispatch(
-                          setTokenizeTextId(
-                            tokenizeTextId === text._id ? null : text._id
                           )
-                        )
+                        }
+                        />
+                        ) : (
+                          <RiEditCircleFill
+                          id="icon"
+                          title="Go to tokenization view"
+                          onClick={() =>
+                            dispatch(
+                              setTokenizeTextId(
+                                tokenizeTextId === text._id ? null : text._id
+                                )
+                                )
                       }
                     />
                   )}

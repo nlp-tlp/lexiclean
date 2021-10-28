@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import ReduxUndo from "redux-undo";
 
-import axios from "../../common/utils/api-interceptor";
+import axios from "../utils/api-interceptor";
 
 const initialState = {
   status: "idle",

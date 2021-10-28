@@ -15,10 +15,10 @@
 
 .annotation-table #row {
   display: flex;
-  justify-content: space-between;
   padding: 1em;
   margin-top: 1em;
   height: 100%;
+  width: 90%;
 }
 
 .annotation-table #index-column {
@@ -40,7 +40,7 @@
   display: flex;
   margin-left: 1em;
   min-height: 2em;
-  width: 90%;
+  /* width: 90%; */
 }
 
 .annotation-table #actions {

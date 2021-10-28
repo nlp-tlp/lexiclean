@@ -1,0 +1,17 @@
+#logo {
+    font-size: 22px;
+    margin-right: 1em;
+}
+
+#auth-button {
+    margin: 0em;
+    padding: 0em;
+}
+
+#menu {
+    z-index: 10000;
+}
+
+#brand {
+    font-size: 40px;
+}

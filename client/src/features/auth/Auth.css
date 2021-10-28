@@ -1,0 +1,27 @@
+#login-card {
+  width: 25em;
+  margin: auto;
+  margin-top: 5vh;
+}
+
+#signup-card {
+  width: 25em;
+  margin: auto;
+  margin-top: 5vh;
+}
+
+#unauthorized-card {
+    width: 40vw;
+    margin: auto;
+    margin-top: 25vh;
+}
+
+#unauthorized-container {
+    display: flex;
+    justify-content: space-around;
+    width: 50%;
+}
+
+#return-button {
+    margin-top: 1em;
+}

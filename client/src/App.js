@@ -3,17 +3,19 @@ import "./App.css";
 import React from "react";
 import { Router, Switch, Route } from "react-router-dom";
 
-import Login from "./common/auth/Login";
-import SignUp from "./common/auth/SignUp";
-import { Landing } from "./landing/landing";
+import { Login } from "./features/auth/login";
+import { SignUp } from "./features/auth/signup";
+import { Landing } from "./features/landing/landing";
 import { Project } from "./features/project/project";
 import { Feed } from "./features/feed/feed";
-import { PortalModal } from "./features/project/modalportal";
+import { PortalModal } from "./features/modals/modalportal";
+import { NavBar } from "./features/common/navbar";
+import { Footer } from "./features/common/footer";
 
-import { AuthProvider } from "./common/auth/AuthContext";
-import ProtectedRoute from "./common/auth/ProtectedRoute";
-import Unauthorized from "./common/auth/Unauthorized";
-import history from "./common/utils/history";
+import { AuthProvider } from "./features/auth/authcontext";
+import { ProtectedRoute } from "./features/auth/protectedroute";
+import { Unauthorized } from "./features/auth/unauthorized";
+import history from "./features/utils/history";
 
 import { Helmet } from "react-helmet";
 
@@ -33,8 +35,9 @@ function App() {
             <Helmet>
               <title>Project Feed | LexiClean</title>
             </Helmet>
-
+            <NavBar />
             <Feed />
+            <Footer />
             <PortalModal />
           </ProtectedRoute>
 
@@ -53,6 +56,7 @@ function App() {
             <SignUp />
           </Route>
           <Route exact path="/">
+            <NavBar />
             <Landing />
           </Route>
         </Switch>
