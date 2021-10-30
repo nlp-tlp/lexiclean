@@ -3,7 +3,7 @@ import "./Auth.css";
 import { AuthContext } from "./authcontext";
 import history from "../utils/history";
 import axios from "../utils/api-interceptor";
-import { setUsername } from "../common/userSlice";
+import { setUsername } from "./userSlice";
 import { useDispatch } from "react-redux";
 import PropTypes from "prop-types";
 import { Card, Form, Button, Alert, Col } from "react-bootstrap";

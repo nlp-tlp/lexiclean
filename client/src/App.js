@@ -56,7 +56,6 @@ function App() {
             <SignUp />
           </Route>
           <Route exact path="/">
-            <NavBar />
             <Landing />
           </Route>
         </Switch>

@@ -4,8 +4,7 @@
   justify-content: center;
   width: 100%;
   margin: auto;
-  margin-top: 4em;
-  /* user-select - stops text from being selected on text */
+  margin-top: 4rem;
   user-select: none;
 }
 
@@ -15,52 +14,89 @@
 
 .annotation-table #row {
   display: flex;
-  padding: 1em;
-  margin-top: 1em;
+  padding: 1rem;
+  margin-top: 1rem;
   height: 100%;
   width: 90%;
+  background-color: #eceff1;
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+
+.annotation-table #row[annotated] {
+  background-color: #b0bec5;
+  /* #eceff1ed; */
 }
 
 .annotation-table #index-column {
   display: flex;
   justify-content: center;
-  text-align: center;
-  vertical-align: middle;
+  flex-direction: column;
+  background: #eceff1ed;
+  /* #fff3e0; */
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+  margin-top: 1rem;
+  width: 2rem;
+}
+
+.annotation-table #index-column[annotated] {
+  background-color: #b0bec5;
 }
 
 .annotation-table #index-column #icon {
-  font-size: 22px;
+  font-size: 1rem;
   font-weight: bold;
-  width: 2em;
-  height: 2em;
-  margin: auto;
+  transform-origin: center;
+  transform: rotate(-90deg);
+  text-align: center;
 }
 
 .annotation-table #text-column {
   display: flex;
-  margin-left: 1em;
-  min-height: 2em;
-  /* width: 90%; */
+  margin-left: 1rem;
+  min-height: 2rem;
 }
 
 .annotation-table #actions {
   display: flex;
   flex-direction: column;
-  background-color: rgba(211, 211, 211, 0.5);
-  margin-top: 1em;
-  padding: 0.5em;
-  min-height: 2em;
+  background-color: #cfd8dc;
+  margin-top: 1rem;
+  padding: 0rem 0.5rem;
+  min-height: 2rem;
 }
 
 .annotation-table #actions #icon {
-  font-size: 1.25em;
+  font-size: 1.25rem;
   text-align: center;
   font-weight: bold;
-  color: grey;
+  color: #f44336;
   cursor: pointer;
-  margin-top: 0.5em;
+  margin-top: 0.5rem;
 }
 
 .annotation-table #actions #icon:hover {
+  opacity: 0.8;
+}
+
+.annotation-table #actions #icon[annotated] {
+  color: #1b5e20;
+}
+
+.annotation-table #actions #icon-tokenize {
+  font-size: 1.25rem;
+  text-align: center;
+  font-weight: bold;
+  color: #607d8b;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.annotation-table #actions #icon-tokenize[active] {
+  color: #ffeb3b;
+}
+
+.annotation-table #actions #icon-tokenize:hover {
   opacity: 0.8;
 }

@@ -1,20 +1,20 @@
 import React, { useEffect } from "react";
-import "./Feed.css";
-import { Spinner, Button, ListGroup } from "react-bootstrap";
+import { Button, Container, Row, Col, Spinner } from "react-bootstrap";
 import { MdDelete, MdEdit, MdFileDownload } from "react-icons/md";
-import { RiNumbersFill } from "react-icons/ri";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setActiveModal, setProject } from "../project/projectSlice";
+import "./Feed.css";
 import {
-  fetchProjects,
   fetchProjectMetrics,
-  selectFeedStatus,
+  fetchProjects,
   selectFeedError,
-  selectFeedMetricsStatus,
   selectFeedMetricsError,
-  selectProjects,
+  selectFeedMetricsStatus,
+  selectFeedStatus,
   selectProjectMetrics,
-} from "../project/feedSlice";
+  selectProjects,
+  setProjectMetrics,
+} from "./feedSlice";
 
 export const Feed = () => {
   const dispatch = useDispatch();
@@ -26,17 +26,17 @@ export const Feed = () => {
   const feedMetricsError = useSelector(selectFeedMetricsError);
 
   useEffect(() => {
-    //   Needs to update when new project created or existing one is deleted
     if (feedStatus === "idle") {
+      dispatch(setProjectMetrics(null)); // Remove any cached metrics before loading projects.
       dispatch(fetchProjects());
     }
-    if (feedMetricsStatus === "idle") {
+    if (feedStatus === "succeeded" && feedMetricsStatus === "idle") {
       dispatch(fetchProjectMetrics());
     }
   }, [feedStatus, feedMetricsStatus, dispatch]);
 
   return (
-    <div className="feed-container">
+    <Container className="feed-container">
       {/* <h1 id="title">Project Feed</h1> */}
       {feedStatus !== "succeeded" ? (
         <div id="loader">
@@ -57,7 +57,7 @@ export const Feed = () => {
       ) : (
         <ProjectList />
       )}
-    </div>
+    </Container>
   );
 };
 
@@ -73,129 +73,144 @@ const ProjectList = () => {
   };
 
   return (
-    <div className="project-list-container">
-      <ListGroup>
-        {projects.map((project, index) => {
-          return (
-            <>
-              <ListGroup.Item action key={index}>
-                <div id="list-item-container" key={index}>
-                  <div
-                    id="detail-container"
+    <Container fluid className="project-list-container">
+      {projects.map((project, index) => {
+        return (
+          <>
+            <Row className="feed-item">
+              <Col key={index}>
+                <Row>
+                  <Col
+                    md={4}
                     onClick={() => modalHandler(project, "annotate")}
                     key={index}
                   >
-                    <h1 id="project-name">{project.name}</h1>
-                    <p id="description">{project.description}</p>
-                    <p id="project-creation-date">
-                      {new Date(project.created_on).toDateString()}
-                    </p>
-                  </div>
+                    <Row>
+                      <Col>
+                        <h1 id="project-name">{project.name}</h1>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col>
+                        <p id="description">{project.description}</p>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col>
+                        <p id="project-creation-date">
+                          {new Date(project.created_on).toDateString()}
+                        </p>
+                      </Col>
+                    </Row>
+                  </Col>
 
-                  <div id="metrics-container">
-                    <div id="metrics-container-single">
-                      <div id="metric-icon">
-                        <RiNumbersFill />
-                      </div>
-                      <div id="metrics-text-container">
-                        <div>
-                          {projectMetrics ? (
-                            <p id="metric-number">
-                              {projectMetrics[project._id].annotated_texts}/
-                              {projectMetrics[project._id].text_count}
+                  <Col
+                    md={7}
+                    className="justify-content-center"
+                    style={{ display: "flex", alignItems: "center" }}
+                  >
+                    <Row>
+                      <Col>
+                        <div id="metrics-text-container">
+                          <div>
+                            {projectMetrics ? (
+                              <p id="metric-number">
+                                {projectMetrics[project._id].annotated_texts}/
+                                {projectMetrics[project._id].text_count}
+                              </p>
+                            ) : (
+                              <Spinner
+                                animation="border"
+                                variant="secondary"
+                                size="sm"
+                              />
+                            )}
+                            <p id="metric-title">
+                              Texts
+                              <br />
+                              Annotated
                             </p>
-                          ) : (
-                            <Spinner
-                              animation="border"
-                              variant="secondary"
-                              size="sm"
-                            />
-                          )}
-                          <p id="metric-title">
-                            Texts
-                            <br />
-                            Annotated
-                          </p>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                    <div id="metrics-container-single">
-                      <div id="metric-icon">
-                        <RiNumbersFill />
-                      </div>
-                      <div id="metrics-text-container">
-                        <div>
-                          {projectMetrics ? (
-                            <p id="metric-number">
-                              {Math.round(
-                                projectMetrics[project._id].vocab_reduction
-                              )}
-                              %
+                      </Col>
+                      <Col>
+                        <div id="metrics-text-container">
+                          <div>
+                            {projectMetrics ? (
+                              <p id="metric-number">
+                                {Math.round(
+                                  projectMetrics[project._id].vocab_reduction
+                                )}
+                                %
+                              </p>
+                            ) : (
+                              <Spinner
+                                animation="border"
+                                variant="secondary"
+                                size="sm"
+                              />
+                            )}
+                            <p id="metric-title">
+                              Vocabulary
+                              <br />
+                              Reduction
                             </p>
-                          ) : (
-                            <Spinner
-                              animation="border"
-                              variant="secondary"
-                              size="sm"
-                            />
-                          )}
-                          <p id="metric-title">
-                            Vocabulary
-                            <br />
-                            Reduction
-                          </p>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                    <div id="metrics-container-single">
-                      <div id="metric-icon">
-                        <RiNumbersFill />
-                      </div>
-                      <div id="metrics-text-container">
-                        <div>
-                          {projectMetrics ? (
-                            <p id="metric-number">
-                              {project.metrics.starting_oov_token_count -
-                                projectMetrics[project._id].oov_corrections}
-                              /{project.metrics.starting_oov_token_count}
+                      </Col>
+                      <Col>
+                        <div id="metrics-text-container">
+                          <div>
+                            {projectMetrics ? (
+                              <p id="metric-number">
+                                {project.metrics.starting_oov_token_count -
+                                  projectMetrics[project._id].oov_corrections}
+                                /{project.metrics.starting_oov_token_count}
+                              </p>
+                            ) : (
+                              <Spinner
+                                animation="border"
+                                variant="secondary"
+                                size="sm"
+                              />
+                            )}
+                            <p id="metric-title">
+                              OOV
+                              <br />
+                              Corrections
                             </p>
-                          ) : (
-                            <Spinner
-                              animation="border"
-                              variant="secondary"
-                              size="sm"
-                            />
-                          )}
-                          <p id="metric-title">
-                            OOV
-                            <br />
-                            Corrections
-                          </p>
+                          </div>
                         </div>
-                      </div>
+                      </Col>
+                    </Row>
+                  </Col>
+                  <Col
+                    md={1}
+                    className="justify-content-right"
+                    style={{ display: "flex", alignItems: "center" }}
+                  >
+                    <div id="action-container">
+                      <MdEdit
+                        id="action-icon"
+                        onClick={() => modalHandler(project, "annotate")}
+                      />
+                      <MdFileDownload
+                        id="action-icon"
+                        onClick={() => modalHandler(project, "downloads")}
+                      />
+                      <MdDelete
+                        id="action-icon"
+                        style={{ color: DELETE_COLOUR }}
+                        onClick={() => modalHandler(project, "delete")}
+                      />
                     </div>
-                  </div>
-                  <div id="action-container">
-                    <MdEdit
-                      id="action-icon"
-                      onClick={() => modalHandler(project, "annotate")}
-                    />
-                    <MdFileDownload
-                      id="action-icon"
-                      onClick={() => modalHandler(project, "downloads")}
-                    />
-                    <MdDelete
-                      id="action-icon"
-                      style={{ color: DELETE_COLOUR }}
-                      onClick={() => modalHandler(project, "delete")}
-                    />
-                  </div>
-                </div>
-              </ListGroup.Item>
-            </>
-          );
-        })}
-      </ListGroup>
-    </div>
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+          </>
+        );
+      })}
+    </Container>
   );
 };

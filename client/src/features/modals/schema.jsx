@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "../utils/api-interceptor";
+import "./Modals.css";
 import { useSelector, useDispatch } from "react-redux";
 import {
   Button,
@@ -8,18 +8,17 @@ import {
   Table,
   OverlayTrigger,
   Popover,
+  Form,
+  Row,
+  Col,
 } from "react-bootstrap";
 import { MdAddCircle, MdBrush } from "react-icons/md";
 import { CompactPicker } from "react-color";
-
-import "./Modals.css";
-
 import {
   selectProjectSchema,
   patchProjectSchema,
   changeMetaTagStatus,
 } from "../../features/project/projectSlice";
-
 import { setIdle } from "../../features/project/textSlice";
 
 const DEFAULT_COLOUR = "#9B9B9B";
@@ -34,6 +33,7 @@ export const Schema = ({ projectId }) => {
   const maps = useSelector(selectProjectSchema);
 
   const addMetaTag = () => {
+    console.log(tempMetaTag, tempColour);
     dispatch(
       patchProjectSchema({
         projectId: projectId,
@@ -55,72 +55,47 @@ export const Schema = ({ projectId }) => {
     // TODO: trigger token colour and context menu to reload...
   };
 
-  const popover = (
-    <Popover id="popover-colour">
-      <Popover.Title>Select Colour</Popover.Title>
-      <Popover.Content>
-        <CompactPicker
-          color={tempColour}
-          onChange={(color) => setTempColour(color.hex)}
-          onChangeComplete={(color) => setTempColour(color.hex)}
-        />
-      </Popover.Content>
-    </Popover>
-  );
-
   return (
     <div className="schema">
-      <h5 id="description-title">New Meta Tags</h5>
-      <p>Here additional meta tags can be added</p>
-      {maps ? (
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Colour</th>
-              <th>Status</th>
-              <th>Add</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <input
-                  type="text"
-                  value={tempMetaTag}
-                  onChange={(e) => setTempMetaTag(e.target.value)}
-                />
-              </td>
-              <td>
-                <OverlayTrigger
-                  trigger="click"
-                  placement="left"
-                  overlay={popover}
-                >
-                  <Button
-                    style={{
-                      borderColor: tempColour,
-                      backgroundColor: tempColour,
-                      padding: "0.2em",
-                    }}
-                  >
-                    <MdBrush />
-                  </Button>
-                </OverlayTrigger>
-              </td>
-              <td id="active-state">Active</td>
-              <td>
-                {tempMetaTag !== "" ? (
-                  <MdAddCircle id="add-btn" onClick={() => addMetaTag()} />
-                ) : null}
-              </td>
-            </tr>
-          </tbody>
-        </Table>
-      ) : null}
+      <p>
+        <strong>Info:</strong> Here you can make modifications to the meta-tag
+        schema currently being used. This includes adding new tags, updating the
+        colour or active state of existing ones.
+      </p>
+      <h5 id="description-title">Add New</h5>
+      <Form>
+        <Form.Group as={Row}>
+          <Col md>
+            <Form.Label>Name</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter meta-tag name"
+              value={tempMetaTag}
+              onChange={(e) => setTempMetaTag(e.target.value)}
+            />
+          </Col>
+          <Col md>
+            <Form.Label htmlFor="exampleColorInput">Color picker</Form.Label>
+            <Form.Control
+              type="color"
+              id="exampleColorInput"
+              defaultValue={DEFAULT_COLOUR}
+              title="Choose your color"
+              style={{ width: "50px" }}
+              onChange={(e) => setTempColour(e.target.value)}
+            />
+          </Col>
+        </Form.Group>
+      </Form>
+      <Button
+        className="mb-3"
+        disabled={tempMetaTag === ""}
+        onClick={() => addMetaTag()}
+      >
+        Add
+      </Button>
 
-      <h5 id="description-title">Modify Existing Meta Tags</h5>
-      <p>Here existing meta tags can have their active state changed</p>
+      <h5 id="description-title">Update Existing</h5>
       {maps ? (
         <Table striped bordered hover>
           <thead>
@@ -138,16 +113,15 @@ export const Schema = ({ projectId }) => {
                     <tr>
                       <td>{key}</td>
                       <td>
-                        <Button
-                          disabled
-                          style={{
-                            borderColor: maps.contents[key].colour,
-                            backgroundColor: maps.contents[key].colour,
-                            padding: "0.2em",
-                          }}
-                        >
-                          <MdBrush style={{ color: "white" }} />
-                        </Button>
+                        <Form.Control
+                          type="color"
+                          id="exampleColorInput"
+                          defaultValue={maps.contents[key].colour}
+                          title="Choose your color"
+                          // onChange={(e) => setTempColour(e.target.value)}
+                          // Update with way to modify existing token colours etc.
+                          style={{ width: "50px" }}
+                        />
                       </td>
                       <td style={{ fontWeight: "bolder" }}>
                         <ButtonGroup toggle>

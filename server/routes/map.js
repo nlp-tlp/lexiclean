@@ -176,7 +176,7 @@ router.get("/:projectId", async (req, res) => {
         .filter((map) => map.active)
         .map((map) => ({ [map.type]: map.colour }))
     ); // Filters for active maps
-    colourMap = { ...colourMap, ua: "#F2A477", st: "#6BB0BF", en: "#D9D9D9" };
+    colourMap = { ...colourMap, ua: "#ff5722", st: "#2196f3", en: "#cfd8dc" };
     res.json({
       contents: mapsRestructured,
       map_keys: mapKeys,

@@ -6,7 +6,7 @@ import { Navbar, Nav, NavDropdown } from "react-bootstrap";
 import { IoLogoGithub, IoLogoYoutube } from "react-icons/io5";
 import { MdBubbleChart } from "react-icons/md";
 import { setActiveModal } from "../project/projectSlice";
-import { selectUsername } from "./userSlice";
+import { selectUsername } from "../auth/userSlice";
 import { AuthButton } from "../auth/authbutton";
 
 export const NavBar = () => {
@@ -27,9 +27,9 @@ export const NavBar = () => {
 
   return (
     <Navbar
+    className="navbar"
       collapseOnSelect
       expand="lg"
-      bg="light"
       variant="light"
       sticky="top"
     >

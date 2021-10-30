@@ -622,7 +622,7 @@ router.get("/metrics/:projectId", utils.authenicateToken, async (req, res) => {
           "Comparison between of current vocabulary and starting vocabulary",
       },
       {
-        description: "OOV Corrections",
+        description: "Vocabulary Corrections",
         detail: `${
           project.metrics.starting_oov_token_count - oovTokenLength
         } / ${project.metrics.starting_oov_token_count}`,
@@ -650,21 +650,50 @@ router.post("/download/result", utils.authenicateToken, async (req, res) => {
     let texts;
 
     if (req.body.preview) {
-      texts = await Text.find({ project_id: req.body.project_id })
-        .limit(10)
-        .populate("tokens.token")
-        .lean();
+      if (req.body.annotated) {
+        texts = await Text.find({
+          project_id: req.body.project_id,
+          annotated: req.body.annotated,
+        })
+          .limit(10)
+          .populate("tokens.token")
+          .lean();
+      } else {
+        texts = await Text.find({ project_id: req.body.project_id })
+          .limit(10)
+          .populate("tokens.token")
+          .lean();
+      }
     } else {
-      texts = await Text.find({ project_id: req.body.project_id })
-        .populate("tokens.token")
-        .lean();
+      if (req.body.annotated) {
+        texts = await Text.find({
+          project_id: req.body.project_id,
+          annotated: req.body.annotated,
+        })
+          .populate("tokens.token")
+          .lean();
+      } else {
+        texts = await Text.find({ project_id: req.body.project_id })
+          .populate("tokens.token")
+          .lean();
+      }
+    }
+
+    let count;
+
+    if (req.body.annotated) {
+      count = await Text.count({
+        project_id: req.body.project_id,
+        annotated: req.body.annotated,
+      });
+    } else {
+      count = await Text.count({ project_id: req.body.project_id });
     }
 
     if (req.body.type === "seq2seq") {
       const results = texts.map((text) => ({
         tid: text._id,
         input: text.original.split(" "),
-        // Here tokens marked with 'remove' should be converted to an empty string
 
         output: text.tokens
           .map((tokenInfo) =>
@@ -689,7 +718,7 @@ router.post("/download/result", utils.authenicateToken, async (req, res) => {
           .flat(),
       }));
 
-      res.json(results);
+      res.json({ results: results, count: count });
     } else if (req.body.type === "tokenclf") {
       // Use tokenization history to format output as n:n
       const results = texts.map((text) => {
@@ -746,12 +775,11 @@ router.post("/download/result", utils.authenicateToken, async (req, res) => {
           class: text.tokens.map((tokenInfo) => tokenInfo.token.meta_tags),
         };
       });
-      res.json(results);
+      res.json({ results: results, count: count });
     } else {
       // Error invalid type...
       res.sendStatus(500);
     }
-    res.json(results);
   } catch (err) {
     res.json({ message: err });
     logger.error("Failed to download project results", {
@@ -769,7 +797,7 @@ router.post(
       const response = await Text.find({ project_id: req.body.project_id })
         .populate("tokens.token")
         .lean();
-        
+
       // Reduce all of the tokenization histories
       let tHist = response
         .filter((text) => text.tokenization_hist.length > 0)

@@ -50,6 +50,7 @@ export const PortalModal = () => {
           projectName={project && project.name}
         />
       ),
+      // backdrop: "static",
       modalSize: "modal-wide",
     },
     create: {
@@ -78,6 +79,7 @@ export const PortalModal = () => {
       show={activeModal}
       onHide={() => dispatch(setActiveModal(null))}
       keyboard={false}
+      backdrop={modalContent[activeModal].backdrop}
       dialogClassName={modalContent[activeModal].modalSize}
     >
       <Modal.Header>
@@ -86,6 +88,7 @@ export const PortalModal = () => {
       <Modal.Body>{modalContent[activeModal].body}</Modal.Body>
       <Modal.Footer style={{ justifyContent: "left" }}>
         <Button
+          size="sm"
           variant="secondary"
           onClick={() => dispatch(setActiveModal(null))}
         >

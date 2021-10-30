@@ -76,10 +76,6 @@ tbody {
   /* width: 600px; */
 }
 
-.download #list-header {
-  text-transform: capitalize;
-}
-
 .download #checkbox-container {
   display: flex;
   flex-direction: column;
@@ -94,7 +90,7 @@ tbody {
 }
 
 .download .list-item {
-    font-size: 0.9em;
+  font-size: 0.9em;
 }
 
 .download .list-group-item.active {
@@ -103,32 +99,31 @@ tbody {
 }
 
 .download .list-header {
-    font-weight: bold;
-    color: black;
-    font-size: 1em;
+  font-weight: bold;
+  color: black;
+  font-size: 1em;
+  background-color: #b0bec5;
 }
 
 /* CREATE PROJECT */
 
 .create {
-
 }
 
 .create #section-title {
   font-size: 1.2em;
   font-weight: bold;
   margin-top: 0.5em;
-  background-color: rgba(0,0,0,0.1);
+  background-color: rgba(0, 0, 0, 0.1);
   padding: 0.2em;
 }
 
 .create .custom-file-label {
-
 }
 
 .create #section-subtitle {
   font-weight: bold;
-  color: rgba(0,0,0,0.75);
+  color: rgba(0, 0, 0, 0.75);
   margin: 0em 0em 0.25em 0em;
 }
 
@@ -138,7 +133,7 @@ tbody {
 }
 
 .create .preview-container {
-  background-color: rgba(0,0,0,0.025);
+  background-color: rgba(0, 0, 0, 0.025);
   padding: 0.5em;
   overflow-y: scroll;
   max-height: 20vh;
@@ -164,7 +159,7 @@ tbody {
 
 .delete #input-text {
   text-align: center;
-  background-color: rgba(0,0,0,0.1);
+  background-color: rgba(0, 0, 0, 0.1);
   border: none;
   outline: none;
   padding: 0.5em;

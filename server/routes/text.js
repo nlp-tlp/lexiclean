@@ -30,7 +30,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Text paginatior
 router.post("/filter", async (req, res) => {
   try {
     if (req.body.get_pages) {
@@ -196,9 +195,9 @@ router.post("/filter", async (req, res) => {
   }
 });
 
-// Get candidate counts across all documents bucketed by their page number
-// This is used for effort estimation for users
 router.get("/overview/:projectId", async (req, res) => {
+  // Get candidate counts across all documents bucketed by their page number
+  // This is used for effort estimation for users
   //console.log('Getting candidate overview');
   try {
     const limit = parseInt(req.query.limit);
@@ -309,7 +308,6 @@ router.get("/overview/:projectId", async (req, res) => {
   }
 });
 
-// Check if text has been annotated - if so, patch the annotated field on the text
 router.patch("/save/annotations", async (req, res) => {
   logger.info("Saving annotation states on texts", {
     route: "/api/text/save/annotations",
@@ -362,47 +360,71 @@ router.patch("/save/annotations", async (req, res) => {
   }
 });
 
-
-router.patch("/save/anotations/:textId", async (req, res) => {
-// Updates the annotation status of a given text
+router.patch("/save/annotation/:textId", async (req, res) => {
+  // Updates the annotation status of a given text
   try {
     await Text.updateOne(
       { _id: req.params.textId },
       { annotated: req.body.value, last_modified: new Date(Date.now()) }
     );
 
-    res.json({ message: "successfully saved annotation" });
+    res.json({ message: "successfully updated annotation state" });
   } catch (err) {
     res.json({ message: err });
   }
 });
 
-// Tokenize single text
-router.patch("/tokenize", async (req, res) => {
+router.patch("/tokenize/:textId", async (req, res) => {
   try {
-    logger.info("Tokenizing one text", { route: `/api/text/tokenize/` });
+    logger.info("Tokenizing single text", {
+      route: `/api/text/tokenize/${req.params.textId}`,
+    });
 
-    const text = await Text.findOne({ _id: req.body.text_id })
+    const text = await Text.findOne({ _id: req.params.textId })
       .populate("tokens.token")
       .lean();
-    const tokenIndexesTK = req.body.indexes_tk;
+    const textIndexes = text.tokens.map((token) => token.index);
 
-    // Combine tokens to  (tc)change and get their positions
+    // Get indexes of all those in token piece groups
+    const tokenIndexesTCAll = req.body.index_groups_tc.flat();
+
+    // TC: Indexes To Change
+    // Only looks at the first index of each group as this will be where
+    // the new token will be inserted
     const tokenIndexesTC = req.body.index_groups_tc.map((group) => group[0]);
+
+    // TK: Indexes To Keep
+    const tokenIndexesTK = textIndexes.filter(
+      (x) => !tokenIndexesTCAll.includes(x)
+    );
+
+    // Convert groups of token indexes into strings
+    // There may be n groups of token pieces
     let tokenValuesTC = req.body.index_groups_tc.map((group) =>
       group.map(
         (value) =>
           text.tokens
             .filter((token) => token.index === value)
-            .map((token) => token.token.value)[0]
+            .map((token) =>
+              token.token.replacement
+                ? token.token.replacement
+                : token.token.value
+            )[0]
       )
     );
     tokenValuesTC = tokenValuesTC.map((valueGroup) => valueGroup.join(""));
 
+    // These are used to update the app store values
+    const tokenIdsTC = text.tokens
+      .filter((token) => tokenIndexesTCAll.includes(token.index))
+      .map((token) => token._id);
+
     // Create new tokens
     const enMap = await Map.findOne({ type: "en" }).lean();
     const enMapSet = new Set(enMap.tokens);
-    // Here all historical info will be stripped from new tokens regardless of whether new combinations are in IV form
+
+    // Here all historical info will be stripped from new tokens; however they will
+    // be checked if they are in the English lexicon
     const newTokenList = tokenValuesTC.map((token) => {
       return {
         value: token,
@@ -412,14 +434,13 @@ router.patch("/tokenize", async (req, res) => {
         project_id: req.body.project_id,
       };
     });
-    // console.log('newTokenList', newTokenList);
 
     // Insert tokens into Token collection
     const tokenListRes = await Token.insertMany(newTokenList);
-    // console.log(tokenListRes)
 
     // Build token array, assign indices and update text
-    // // These are original tokens that remain unchanged, filtered by their index
+    // - these are original tokens that remain unchanged, filtered by
+    //   their index
     const oTokens = text.tokens
       .map((token) => token.token)
       .filter((e, i) => {
@@ -431,35 +452,33 @@ router.patch("/tokenize", async (req, res) => {
         token: oTokens[sliceIndex]._id,
       })),
     };
-    // console.log('original tokens payload', oTokensPayload)
 
-    // // Add new tokens to payload
+    // Add new tokens
     const nTokensPayload = {
       tokens: tokenIndexesTC.map((originalIndex, sliceIndex) => ({
         index: originalIndex,
         token: tokenListRes[sliceIndex]._id,
       })),
     };
-    // console.log('nwe tokens payload', nTokensPayload)
 
-    // Combine both payloads into single object
+    // Get new token Ids to update app store values
+    const newTokenIds = nTokensPayload.tokens.map((token) => token.token);
+
+    // Combine both payloads into single array
     let tokensPayload = {
       tokens: [...oTokensPayload["tokens"], ...nTokensPayload["tokens"]],
     };
-    // console.log('combined payload', tokensPayload)
 
     // Sort combined payload by original index
     tokensPayload["tokens"] = tokensPayload["tokens"].sort(
       (a, b) => a.index - b.index
     );
-    // console.log('combined payload sorted', tokensPayload)
 
     // update indexes based on current ordering
     tokensPayload["tokens"] = tokensPayload.tokens.map((token, newIndex) => ({
       ...token,
       index: newIndex,
     }));
-    // console.log('combined payload reindexed', tokensPayload)
 
     // Capture tokenization group mapping
     // {original_index : token_group} where token_group is the original token values
@@ -471,41 +490,46 @@ router.patch("/tokenize", async (req, res) => {
             .map((token) => ({ index: token.index, info: token.token }))[0]
       ),
     }));
-    // console.log(tokenizationMap)
 
     // Update text tokens array with new tokens
-    await Text.findByIdAndUpdate({ _id: req.body.text_id }, tokensPayload, {
+    await Text.findByIdAndUpdate({ _id: req.params.textId }, tokensPayload, {
       new: true,
     });
 
     // Update text tokenization history
     const updatedTextRes = await Text.findByIdAndUpdate(
-      { _id: req.body.text_id },
+      { _id: req.params.textId },
       { $push: { tokenization_hist: tokenizationMap } },
       { upsert: true, new: true }
     )
       .populate("tokens.token")
       .lean();
-    // console.log(updatedTextRes)
 
-    // convert text into same format as the paginator (this is expected by front-end components)
+    // Convert output for app store
     const outputTokens = updatedTextRes.tokens.map((token) => ({
       ...token.token,
       index: token.index,
       token: token.token._id,
     }));
-    // console.log(outputTokens);
-    const outputText = { ...updatedTextRes, tokens: outputTokens };
-    // console.log(outputText)
+
+    const outputText = {
+      ...updatedTextRes,
+      tokens: outputTokens,
+      old_token_ids: tokenIdsTC,
+      new_token_ids: newTokenIds,
+    };
 
     res.json(outputText);
 
-    // Remove old tokens (that were tokenized) from token collection otherwise they mess with toasts and metrics in the UI
-    const tokenIdsToDelete = text.tokens
+    // Deactivate unused tokens
+    const tokenIdsToDeactive = text.tokens
       .map((token) => token)
       .filter((token) => req.body.index_groups_tc.flat().includes(token.index))
       .map((token) => token.token._id);
-    await Token.deleteMany({ _id: { $in: tokenIdsToDelete } });
+    await Token.updateMany(
+      { _id: { $in: tokenIdsToDeactive } },
+      { active: false }
+    );
   } catch (err) {
     res.json({ message: err });
   }

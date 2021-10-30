@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "../utils/api-interceptor";
-import { Form, Tab, Row, Col, ListGroup } from "react-bootstrap";
+import { Form, Tab, Row, Col, ListGroup, Button } from "react-bootstrap";
 import { MdFileDownload, MdLibraryBooks } from "react-icons/md";
 import "./Modals.css";
 
@@ -8,22 +8,28 @@ import { useSelector } from "react-redux";
 import { selectProjectSchema } from "../../features/project/projectSlice";
 
 const DEFAULT_MAPS = ["ua", "st", "en"];
+const DEFAULT_MAPS_EN = ["ua", "st", "rp"];
 
 export const Downloads = ({ projectId, projectName }) => {
   const schema = useSelector(selectProjectSchema);
   const [resultType, setResultType] = useState("seq2seq");
   const [previewContent, setPreviewContent] = useState("");
+  const [annotated, setAnnotated] = useState(false);
+  const [resultCount, setResultCount] = useState();
+
+  const [downloadSchema, setDownloadSchema] = useState([]);
 
   const downloadResults = async (project) => {
     // Fetch results
     const resultRes = await axios.post("/api/project/download/result", {
       project_id: projectId,
       type: resultType,
+      annotated: annotated,
     });
     if (resultRes.status === 200) {
       // Prepare for file download
       const fileName = `${projectName}_${resultType}_results`;
-      const json = JSON.stringify(resultRes.data, null, 4);
+      const json = JSON.stringify(resultRes.data.results, null, 4);
       const blob = new Blob([json], { type: "application/json" });
       const href = await URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -36,13 +42,15 @@ export const Downloads = ({ projectId, projectName }) => {
   };
 
   const previewResults = async () => {
-    const resultRes = await axios.post("/api/project/download/result", {
+    const response = await axios.post("/api/project/download/result", {
       project_id: projectId,
       type: resultType,
       preview: true,
+      annotated: annotated,
     });
-    if (resultRes.status === 200) {
-      setPreviewContent(JSON.stringify(resultRes.data, null, 4));
+    if (response.status === 200) {
+      setPreviewContent(JSON.stringify(response.data.results, null, 4));
+      setResultCount(response.data.count);
     }
   };
 
@@ -87,9 +95,8 @@ export const Downloads = ({ projectId, projectName }) => {
         setPreviewContent(JSON.stringify(response.data, null, 2));
       } else {
         // Format TXT
-        console.log(response.data);
         setPreviewContent(
-          response.data.length > 0 && response.data.values.join("\n")
+          response.data.values.length > 0 && response.data.values.join("\n")
         );
       }
     }
@@ -132,7 +139,7 @@ export const Downloads = ({ projectId, projectName }) => {
     }
   };
 
-  const resultTypeCheckBox = (
+  const resultTypeCheckBoxes = (
     <div className="download" id="checkbox-container">
       <Form.Check
         inline
@@ -159,6 +166,47 @@ export const Downloads = ({ projectId, projectName }) => {
         }}
       />
     </div>
+  );
+
+  const downloadOptionsContainer = (
+    <Form.Group>
+      <Row>
+        <Col>
+          <Form.Check
+            inline
+            type="checkbox"
+            label="Annotated Only"
+            className="download"
+            id="checkbox"
+            checked={!annotated}
+            onChange={() => {
+              setAnnotated(!annotated);
+              previewResults();
+            }}
+          />
+        </Col>
+        <Col>
+          {/* <Form.Control
+        as="select"
+        multiple
+        value={downloadSchema}
+        onChange={(e) =>
+          setDownloadSchema(
+            [].slice.call(e.target.selectedOptions).map((item) => item.value)
+          )
+        }
+      >
+        {schema.map_keys
+          .filter((key) => !DEFAULT_MAPS_EN.includes(key))
+          .map((key) => (
+            <option key={key} value={key}>
+              {key}
+            </option>
+          ))}
+      </Form.Control> */}
+        </Col>
+      </Row>
+    </Form.Group>
   );
 
   const resources = {
@@ -217,7 +265,11 @@ export const Downloads = ({ projectId, projectName }) => {
               {Object.keys(resources).map((header) => {
                 return (
                   <>
-                    <ListGroup.Item variant="secondary" className="list-header">
+                    <ListGroup.Item
+                      // variant="secondary"
+                      className="list-header"
+                      style={{ textTransform: "capitalize" }}
+                    >
                       {header}
                     </ListGroup.Item>
                     {Object.keys(resources[header]).map((item) => {
@@ -256,7 +308,9 @@ export const Downloads = ({ projectId, projectName }) => {
                       <p style={{ fontSize: "1em", fontWeight: "bold" }}>
                         Preview
                       </p>
-                      {item === "normalisations" && <p>{resultTypeCheckBox}</p>}
+                      {item === "normalisations" && (
+                        <p>{resultTypeCheckBoxes}</p>
+                      )}
                       <div
                         style={{
                           backgroundColor: "rgba(0,0,0,0.025)",
@@ -268,24 +322,55 @@ export const Downloads = ({ projectId, projectName }) => {
                       >
                         <pre>{previewContent}</pre>
                       </div>
-                      <p
-                        style={{
-                          marginTop: "0.5em",
-                          fontSize: "1em",
-                          fontWeight: "bold",
-                          cursor: "pointer",
-                          color: "black",
-                        }}
-                        onClick={resources[header][item].function}
-                      >
-                        <MdFileDownload
+                      {item === "normalisations" ? (
+                        <>
+                          <p
+                            style={{
+                              marginTop: "0.5em",
+                              fontSize: "1em",
+                              fontWeight: "bold",
+                              cursor: "pointer",
+                              color: "black",
+                            }}
+                          >
+                            Download Options
+                          </p>
+                          {downloadOptionsContainer}
+                          <Button
+                            variant="dark"
+                            size="sm"
+                            style={{
+                              marginTop: "1em",
+                            }}
+                            onClick={resources[header][item].function}
+                          >
+                            <MdFileDownload
+                              style={{
+                                fontSize: "22px",
+                                margin: "auto",
+                              }}
+                            />
+                            Download ({resultCount})
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          variant="dark"
+                          size="sm"
                           style={{
-                            fontSize: "22px",
-                            margin: "auto",
+                            marginTop: "1em",
                           }}
-                        />
-                        Download
-                      </p>
+                          onClick={resources[header][item].function}
+                        >
+                          <MdFileDownload
+                            style={{
+                              fontSize: "22px",
+                              margin: "auto",
+                            }}
+                          />
+                          Download
+                        </Button>
+                      )}
                     </Tab.Pane>
                   );
                 });

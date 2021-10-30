@@ -40,21 +40,6 @@ export const updateAnnotationStates = createAsyncThunk(
   }
 );
 
-export const patchSingleAnnotationState = createAsyncThunk(
-  "/texts/patchSingleAnnotationState",
-  async ({ textId, value }) => {
-    const response = await axios.patch(`/api/text/save/annotations/${textId}`, {
-      value: value,
-    });
-    return {
-      response: response.data,
-      details: {
-        textId: textId,
-      },
-    };
-  }
-);
-
 export const textSlice = createSlice({
   name: "texts",
   initialState: initialState,
@@ -75,7 +60,7 @@ export const textSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(getTotalPages.fulfilled, (state, action) => {
       state.totalPages = action.payload.totalPages;
-    })
+    });
   },
 });
 

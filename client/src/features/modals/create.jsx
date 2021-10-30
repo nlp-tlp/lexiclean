@@ -10,7 +10,6 @@ import {
   Table,
   OverlayTrigger,
   Popover,
-  Alert,
   Spinner,
 } from "react-bootstrap";
 import { Formik } from "formik";
@@ -20,10 +19,12 @@ import { IoInformationCircleSharp } from "react-icons/io5";
 import { CompactPicker } from "react-color";
 import { useDispatch } from "react-redux";
 import { setActiveModal } from "../../features/project/projectSlice";
-import { setIdle } from "../../features/project/feedSlice";
+import { setIdle } from "../feed/feedSlice";
+
+// ua: "#ff5722", st: "#2196f3", en: "#cfd8dc" 
 
 const DEFAULT_COLOUR = "#9B9B9B";
-const REPLACE_COLOUR = "#99BF9C";
+const REPLACE_COLOUR = "#009688";
 const infoContent = {
   raw_text: {
     title: "Corpus",

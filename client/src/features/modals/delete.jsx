@@ -5,7 +5,7 @@ import { setActiveModal } from "../../features/project/projectSlice";
 import {
   selectDeletingProject,
   deleteProject,
-} from "../../features/project/feedSlice";
+} from "../feed/feedSlice";
 import "./Modals.css";
 
 export const Delete = ({ projectId, projectName }) => {

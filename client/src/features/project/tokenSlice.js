@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, current } from "@reduxjs/toolkit";
 import ReduxUndo from "redux-undo";
 
 import axios from "../utils/api-interceptor";
@@ -50,7 +50,46 @@ const getTokenClf = (tokenInfo, bgColourMap) => {
     colour = bgColourMap["ua"];
   }
 
-  return { ...tokenInfo, clf: clf, colour: colour };
+
+  // Get token contrast ratio (tests white against colour) if < 4.5 then sets font color to black
+  const hexToRgb = hex =>
+  hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i
+             ,(m, r, g, b) => '#' + r + r + g + g + b + b)
+    .substring(1).match(/.{2}/g)
+    .map(x => parseInt(x, 16))
+
+  const luminance = (r, g, b) => {
+    let a = [r, g, b].map(v => {
+      v /= 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v+0.055) / 1.055, 2.4);
+    });
+    return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+  }
+
+  const contrast = (rgb1, rgb2) => {
+    let lum1 = luminance(rgb1[0], rgb1[1], rgb1[2]);
+    let lum2 = luminance(rgb2[0], rgb2[1], rgb2[2]);
+    let brightest = Math.max(lum1, lum2);
+    let darkest = Math.min(lum1, lum2);
+    return (brightest + 0.05)
+         / (darkest + 0.05);
+  }
+
+  const ratioWhite = contrast(hexToRgb(colour), [255,255,255])
+  const ratioBlack = contrast(hexToRgb(colour), [0,0,0])
+
+  const fontColour = ratioWhite > ratioBlack ? 'white' : 'black';
+
+  // Add width to tokens that have been updated
+  const width = getTokenWidth(
+    tokenInfo.replacement
+      ? tokenInfo.replacement
+      : tokenInfo.suggested_replacement
+      ? tokenInfo.suggested_replacement
+      : tokenInfo.value
+  );
+
+  return { ...tokenInfo, clf: clf, colour: colour, width: width, fontColour: fontColour };
 };
 
 export const fetchTokens = createAsyncThunk(
@@ -89,7 +128,6 @@ export const patchSingleReplacement = createAsyncThunk(
   }
 );
 
-// TODO: integrate single replace + cascade suggest into single api end-point
 export const patchAllReplacements = createAsyncThunk(
   "/token/add/replace/many",
   async ({
@@ -328,13 +366,11 @@ export const patchAllMetaTags = createAsyncThunk(
 );
 
 export const patchSingleTokenization = createAsyncThunk(
-  "/text/tokenize/single",
-  async ({ textId, projectId, indexGroupsTC, indexesTK }) => {
-    const response = await axios.patch("/api/text/tokenize", {
-      text_id: textId,
+  "/token/tokenize/single",
+  async ({ textId, projectId, indexGroupsTC, bgColourMap }) => {
+    const response = await axios.patch(`/api/text/tokenize/${textId}`, {
       project_id: projectId,
       index_groups_tc: indexGroupsTC,
-      indexes_tk: indexesTK,
     });
     return {
       response: response.data,
@@ -342,7 +378,23 @@ export const patchSingleTokenization = createAsyncThunk(
         textId: textId,
         projectId: projectId,
         indexGroupsTC: indexGroupsTC,
-        indexesTK: indexesTK,
+        bgColourMap: bgColourMap,
+      },
+    };
+  }
+);
+
+export const patchSingleAnnotationState = createAsyncThunk(
+  "/token/patchSingleAnnotationState",
+  async ({ textId, value }) => {
+    const response = await axios.patch(`/api/text/save/annotation/${textId}`, {
+      value: value,
+    });
+    return {
+      response: response.data,
+      details: {
+        textId: textId,
+        value: value,
       },
     };
   }
@@ -353,7 +405,6 @@ export const tokenSlice = createSlice({
   initialState: initialState,
   reducers: {
     setIdle: (state, action) => {
-      // TODO: rename to 'refresh'
       state.status = "idle";
     },
     setShowToast: (state, action) => {
@@ -398,141 +449,6 @@ export const tokenSlice = createSlice({
         currentValue: action.payload.value,
         width: getTokenWidth(action.payload.value),
       };
-    },
-    applySingleTokenization: (state, action) => {
-      // Applies tokenization to text
-      // This logic is derived from applyTokens() in Tokenize.js
-      // TODO: integrate with api
-
-      const values = state.values;
-
-      const originalTokenIds = action.payload.originalTokenIds;
-      const tokenIndexes = action.payload.tokenIndexes;
-      const tokenIndexGroups = action.payload.tokenIndexGroups;
-      const newTokenIds = action.payload.newTokenIds;
-      console.log("nanoids", newTokenIds);
-
-      console.log("original token ids", originalTokenIds);
-      console.log("token indexes", tokenIndexes);
-      console.log("token index groups", tokenIndexGroups);
-
-      // Get tokens to change (tc) and to keep (tk)
-      const textIndexes = new Set(
-        Object.values(originalTokenIds).map(
-          (token_id) => values[token_id].index
-        )
-      );
-
-      console.log("original token indexes", textIndexes);
-
-      const tokenIndexesTK = Array.from(
-        new Set([...textIndexes].filter((i) => !tokenIndexes.has(i)))
-      );
-      console.log("original tokens to keep (tk)", tokenIndexesTK);
-
-      // !Here is where some of the server process is brought to the client
-
-      // Combine tokens to change (tc) and get their positions
-      const tokenIndexesGroupsTC = Array.from(tokenIndexGroups);
-      console.log("token index groups to change (tc)", tokenIndexesGroupsTC);
-
-      // Get the first index of each tokenization pieces group
-      // This is used to insert the new token from pieces.
-      const tokenIndexesTC = tokenIndexesGroupsTC.map((group) => group[0]);
-      // Get values associated with indexes of token pieces in piece groups
-      let tokenValuesTC = tokenIndexesGroupsTC.map((group) =>
-        group.map((index) => values[originalTokenIds[index]].value)
-      );
-
-      console.log("token piece groups with values", tokenValuesTC);
-
-      // We want to combine the tokens into one for each group of
-      // token pieces.
-      tokenValuesTC = tokenValuesTC.map((group) => group.join(""));
-      console.log("token piece groups after joins", tokenValuesTC);
-
-      // Create new token objects to add to values state
-      // TODO: Cannot do the en map mapping on client side as enMap isn't available
-
-      const newTokenList = tokenValuesTC.map((token, index) => {
-        return {
-          _id: newTokenIds[index],
-          value: token,
-          meta_tags: { en: true }, // TODO: need to find resolution
-          replacement: null, // TODO: maybe there are replacements available?
-          suggested_replacement: null,
-          project_id: null, //TODO: is this even necessary anymore?
-          currentValue: token,
-          index: tokenIndexesTC[index],
-          width: "60px", // TODO: make this based off of value
-        };
-      });
-
-      console.log("list of new token objects", newTokenList);
-
-      // Build token array, assign indices and update text
-      // - these are original tokens that remain unchanged, filtered by their
-      //   index
-      const oTokenIds = Object.values(originalTokenIds).filter((_, index) =>
-        tokenIndexesTK.includes(index)
-      );
-      const oTokens = oTokenIds.map((token_id) => values[token_id]);
-      console.log("original tokens", oTokens);
-
-      // Add new tokens
-      // ....
-
-      console.log(tokenIndexesTK, tokenIndexesTC);
-
-      // Combine token information into single array
-      let allTokens = [...oTokens, ...newTokenList];
-
-      console.log("combined tokens", allTokens);
-
-      // Sort array in order of index
-      allTokens = allTokens.sort((a, b) => a.index - b.index);
-
-      console.log("sorted tokens", allTokens);
-
-      // Update indexes based on current ordering
-      allTokens = allTokens.map((token, newIndex) => ({
-        ...token,
-        index: newIndex,
-      }));
-
-      console.log("arranged index tokens", allTokens);
-
-      // Update values and textTokenMap
-      const updatedValues = Object.assign(
-        {},
-        ...allTokens.map((token) => ({
-          [token._id]: {
-            ...token,
-          },
-        }))
-      );
-
-      console.log(updatedValues);
-
-      // Update token values state
-      state.values = { ...state.values, ...updatedValues };
-
-      // Insert textToToken map back into state in the correct
-      // index as it originall way...
-
-      const textTokenMapIndex = state.textTokenMap.findIndex(
-        (item) => item.text_id === action.payload.textId
-      );
-      console.log("textTokenMapIndex", textTokenMapIndex);
-
-      state.textTokenMap[textTokenMapIndex] = state.textTokenMap
-        .filter((item) => item.text_id === action.payload.textId)
-        .map((item) => ({
-          ...item,
-          token_ids: allTokens.map((token) => token._id),
-        }))[0];
-
-      // Update tokenization history...
     },
   },
   extraReducers: (builder) => {
@@ -1026,141 +942,70 @@ export const tokenSlice = createSlice({
       })
       .addCase(patchSingleTokenization.fulfilled, (state, action) => {
         // Tokenizes a set of token pieces for a single text
-
+        console.log("state tokenized!");
         const details = action.payload.details;
 
-        // This logic is derived from applyTokens() in Tokenize.js
-        // TODO: integrate with api
+        const oldTokenIds = action.payload.response.old_token_ids;
+        const newTokenIds = action.payload.response.new_token_ids;
+        const tokenValues = action.payload.response.tokens;
 
-        const values = state.values;
+        // Update values
+        // Firstly remove old token Ids (cant figure it out atm; TODO: remove)
+        // let values = Object.values(state.values);
+        // console.log(values);
+        // console.log(values.length);
+        // values = values.filter((value) => !oldTokenIds.includes(value._id));
 
-        const originalTokenIds = action.payload.originalTokenIds;
-        const tokenIndexes = action.payload.tokenIndexes;
-        const tokenIndexGroups = action.payload.tokenIndexGroups;
-        const newTokenIds = action.payload.newTokenIds;
-        console.log("nanoids", newTokenIds);
+        // console.log(values);
 
-        console.log("original token ids", originalTokenIds);
-        console.log("token indexes", tokenIndexes);
-        console.log("token index groups", tokenIndexGroups);
+        // const filteredValues = Object.assign(
+        //   {},
+        //   ...values.map((token) => {
+        //     return {
+        //       [token._id]: token,
+        //     };
+        //   })
+        // );
+        // console.log(filteredValues);
 
-        // Get tokens to change (tc) and to keep (tk)
-        const textIndexes = new Set(
-          Object.values(originalTokenIds).map(
-            (token_id) => values[token_id].index
-          )
-        );
-
-        console.log("original token indexes", textIndexes);
-
-        const tokenIndexesTK = Array.from(
-          new Set([...textIndexes].filter((i) => !tokenIndexes.has(i)))
-        );
-        console.log("original tokens to keep (tk)", tokenIndexesTK);
-
-        // !Here is where some of the server process is brought to the client
-
-        // Combine tokens to change (tc) and get their positions
-        const tokenIndexesGroupsTC = Array.from(tokenIndexGroups);
-        console.log("token index groups to change (tc)", tokenIndexesGroupsTC);
-
-        // Get the first index of each tokenization pieces group
-        // This is used to insert the new token from pieces.
-        const tokenIndexesTC = tokenIndexesGroupsTC.map((group) => group[0]);
-        // Get values associated with indexes of token pieces in piece groups
-        let tokenValuesTC = tokenIndexesGroupsTC.map((group) =>
-          group.map((index) => values[originalTokenIds[index]].value)
-        );
-
-        console.log("token piece groups with values", tokenValuesTC);
-
-        // We want to combine the tokens into one for each group of
-        // token pieces.
-        tokenValuesTC = tokenValuesTC.map((group) => group.join(""));
-        console.log("token piece groups after joins", tokenValuesTC);
-
-        // Create new token objects to add to values state
-        // TODO: Cannot do the en map mapping on client side as enMap isn't available
-
-        const newTokenList = tokenValuesTC.map((token, index) => {
-          return {
-            _id: newTokenIds[index],
-            value: token,
-            meta_tags: { en: true }, // TODO: need to find resolution
-            replacement: null, // TODO: maybe there are replacements available?
-            suggested_replacement: null,
-            project_id: null, //TODO: is this even necessary anymore?
-            currentValue: token,
-            index: tokenIndexesTC[index],
-            width: "60px", // TODO: make this based off of value
-          };
-        });
-
-        console.log("list of new token objects", newTokenList);
-
-        // Build token array, assign indices and update text
-        // - these are original tokens that remain unchanged, filtered by their
-        //   index
-        const oTokenIds = Object.values(originalTokenIds).filter((_, index) =>
-          tokenIndexesTK.includes(index)
-        );
-        const oTokens = oTokenIds.map((token_id) => values[token_id]);
-        console.log("original tokens", oTokens);
-
-        // Add new tokens
-        // ....
-
-        console.log(tokenIndexesTK, tokenIndexesTC);
-
-        // Combine token information into single array
-        let allTokens = [...oTokens, ...newTokenList];
-
-        console.log("combined tokens", allTokens);
-
-        // Sort array in order of index
-        allTokens = allTokens.sort((a, b) => a.index - b.index);
-
-        console.log("sorted tokens", allTokens);
-
-        // Update indexes based on current ordering
-        allTokens = allTokens.map((token, newIndex) => ({
-          ...token,
-          index: newIndex,
-        }));
-
-        console.log("arranged index tokens", allTokens);
-
-        // Update values and textTokenMap
-        const updatedValues = Object.assign(
+        // Add new values to token values
+        const newValues = Object.assign(
           {},
-          ...allTokens.map((token) => ({
-            [token._id]: {
-              ...token,
-            },
-          }))
+          ...newTokenIds.map((id) => {
+            return {
+              [id]: getTokenClf(
+                tokenValues.filter((token) => token._id === id)[0],
+                details.bgColourMap
+              ),
+            };
+          })
         );
+        state.values = { ...state.values, ...newValues };
 
-        console.log(updatedValues);
+        // Update textTokenMap
+        // Find textId and replace it's token_ids
+        let text = state.textTokenMap.filter(
+          (text) => text._id === details.textId
+        )[0];
+        text = { ...text, token_ids: tokenValues.map((token) => token._id) };
+        console.log(text);
 
-        // Update token values state
-        state.values = { ...state.values, ...updatedValues };
-
-        // Insert textToToken map back into state in the correct
-        // index as it originall way...
-
-        const textTokenMapIndex = state.textTokenMap.findIndex(
-          (item) => item.text_id === action.payload.textId
-        );
-        console.log("textTokenMapIndex", textTokenMapIndex);
-
-        state.textTokenMap[textTokenMapIndex] = state.textTokenMap
-          .filter((item) => item.text_id === action.payload.textId)
-          .map((item) => ({
-            ...item,
-            token_ids: allTokens.map((token) => token._id),
-          }))[0];
-
-        // Update tokenization history...
+        // Update text in array, making sure it's the correct position!
+        const textTokenMap = state.textTokenMap;
+        state.textTokenMap = [
+          ...textTokenMap.filter((text) => text._id !== details.textId),
+          text,
+        ].sort((a, b) => a.rank - b.rank);
+      })
+      .addCase(patchSingleAnnotationState.fulfilled, (state, action) => {
+        const details = action.payload.details;
+        state.textTokenMap = state.textTokenMap.map((text) => {
+          if (text._id === details.textId) {
+            return { ...text, annotated: details.value };
+          } else {
+            return text;
+          }
+        });
       });
   },
 });
