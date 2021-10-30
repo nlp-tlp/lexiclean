@@ -3,7 +3,6 @@ html {
 }
 
 .landing {
-  margin-bottom: 5em;
   text-align: left;
 }
 
@@ -18,6 +17,7 @@ html {
   top: 0;
   width: 100%;
   height: 100vh;
+  mask-image: linear-gradient(rgba(0, 0, 0, 1.0) 50%, transparent 100%);
 }
 
 .landing #details {
@@ -41,11 +41,6 @@ html {
   font-size: 4rem;
 }
 
-@media (max-width: 600px) {
-  #title-icon {
-    display: none;
-  }
-}
 .landing #title-container h1 {
   letter-spacing: 0.1rem;
   font-weight: bold;
@@ -61,6 +56,19 @@ html {
 .landing #row-description h3 {
   font-size: 1.5rem;
   margin-left: 3rem;
+}
+
+@media (max-width: 600px) {
+  #title-icon {
+    display: none;
+  }
+  .landing #row-title {
+    margin-left: 0;
+    justify-content: center;
+  }
+  .landing #row-description h3 {
+    justify-content: center;
+  }
 }
 
 .landing #row-signup {
@@ -153,6 +161,29 @@ html {
   color: white;
 }
 
+@media (max-width: 600px) {
+  .landing #details {
+    padding-top: 2vh;
+  }
+
+  .landing #row-details #box {
+    height: 15vh;
+    min-height: 0;
+  }
+  .landing #row-details #icon {
+    display: none;
+  }
+  .landing #row-details #box h3 {
+    font-size: 1.25rem;
+    padding: 0;
+    margin: 0;
+  }
+
+  .landing #row-details #box p {
+    font-size: 0.75rem;
+  }
+}
+
 .landing #row-details #icon {
   font-size: 4rem;
 }
@@ -167,7 +198,6 @@ html {
 }
 .landing #row-details #box p {
   padding: 0rem 2rem 0rem 2rem;
-  font-size: 1rem;
 }
 
 /* Scroll buttons */

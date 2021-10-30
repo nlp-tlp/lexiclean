@@ -1,21 +1,26 @@
 .navbar {
-    background-color:#eceff1;
+  background-color: #f8f9fa;
+  border-bottom: 0.5px solid #cfd8dc;
 }
 
 #logo {
-    font-size: 22px;
-    margin-right: 1em;
-}
-
-#auth-button {
-    margin: 0em;
-    padding: 0em;
+  font-size: 22px;
+  margin-right: 1em;
 }
 
 #menu {
-    z-index: 10000;
+  z-index: 10000;
 }
 
 #brand {
-    font-size: 40px;
+  font-size: 40px;
+  color: #263238;
+}
+
+.nav-link {
+  color: #263238;
+}
+
+.nav-link:hover {
+  color: #607d8b;
 }

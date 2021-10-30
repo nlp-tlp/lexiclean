@@ -65,11 +65,10 @@ export const Tokenize = ({ tokenIds, textId }) => {
         {tokenIds &&
           Object.values(tokenIds).map((token_id, token_index) => {
             const token = tokenValues[token_id];
-            // console.log(token);
             const value = token.replacement ? token.replacement : token.value;
             const colour = tokenIndexes.has(token_index)
-              ? "#BFE3BF"
-              : "#fdfd96";
+              ? "#43a047"
+              : "#ffeb3b";
             // TODO: Integrate into utlity function that is shared across components
             // 60 is MIN_TOKEN_WIDTH
             const width =

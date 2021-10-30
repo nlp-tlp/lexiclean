@@ -47,6 +47,12 @@ export const SignUp = () => {
 
   return (
     <>
+      <img
+        className="main-bg"
+        src="https://images.unsplash.com/photo-1517816743773-6e0fd518b4a6?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
+        alt="main-background"
+        style={{ opacity: "0.5" }}
+      />
       {showAlert ? (
         <Alert variant="danger" onClose={() => setShowAlert(false)} dismissible>
           <Alert.Heading>Oops!</Alert.Heading>
@@ -147,4 +153,4 @@ export const SignUp = () => {
       </Card>
     </>
   );
-}
+};

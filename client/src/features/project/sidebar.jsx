@@ -6,6 +6,9 @@ import {
   InputGroup,
   Nav,
   Spinner,
+  Container,
+  Row,
+  Col,
 } from "react-bootstrap";
 import {
   FaArrowAltCircleLeft,
@@ -17,6 +20,8 @@ import {
   FaUserCircle,
 } from "react-icons/fa";
 import { ImSearch } from "react-icons/im";
+
+import { IoChevronForward, IoChevronBack } from "react-icons/io5";
 
 import { BsGearFill } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
@@ -47,24 +52,17 @@ export const Sidebar = () => {
     }
   }, [projectStatus, dispatch]);
 
-  const menuItems = [
-    {
-      name: "Legend",
-      trigger: () => dispatch(setActiveModal("legend")),
-      icon: <FaGripVertical id="icon" />,
-    },
-    // {
-    //   name: "Modify Schema",
-    //   trigger: ,
-    //   icon: <FaEdit id="icon" />,
-    // },
-  ];
-
   return (
     <div className="sidebar">
       <Nav className="d-none d-md-block sidebar">
         <div className="sidebar-header">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <FaArrowAltCircleLeft
               id="icon"
               onClick={() => history.push("/feed")}
@@ -73,7 +71,6 @@ export const Sidebar = () => {
             {/* {username} */}
             <p id="avatar-icon">TB</p>
           </div>
-          <div style={{ textAlign: "right" }}></div>
 
           <div>
             <h3>{project.name}</h3>
@@ -237,16 +234,62 @@ const TextSearch = () => {
   );
 };
 
-const FilterAnnotated = () => {
+const FilterAnnotated = ({ min }) => {
   return (
     <ButtonGroup size="sm" className="mb-2">
       <Button variant="secondary">All</Button>
       <Button disabled variant="secondary">
-        Annotated
+        {min ? "A" : "Annotated"}
       </Button>
       <Button disabled variant="secondary">
-        Unannotated
+        {min ? "UA" : "Unannotated"}
       </Button>
     </ButtonGroup>
+  );
+};
+
+export const SidebarMin = () => {
+  const dispatch = useDispatch();
+
+  return (
+    <div className="sidebar-min">
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          textAlign: "center",
+          height: "100%",
+        }}
+      >
+        <div id="sidebar-tray">
+          <IoChevronForward id="icon" />
+          <FaArrowAltCircleLeft
+            id="icon"
+            onClick={() => history.push("/feed")}
+          />
+          <FaInfoCircle
+            id="icon"
+            onClick={() => dispatch(setActiveModal("help"))}
+          />
+          <BsGearFill
+            id="icon"
+            onClick={() => dispatch(setActiveModal("settings"))}
+          />
+          <FaDownload
+            id="icon"
+            onClick={() => dispatch(setActiveModal("downloads"))}
+          />
+
+          <FaEdit
+            id="icon"
+            onClick={() => dispatch(setActiveModal("schema"))}
+          />
+          <FaGripVertical
+            id="icon"
+            onClick={() => dispatch(setActiveModal("legend"))}
+          />
+        </div>
+      </div>
+    </div>
   );
 };

@@ -5,7 +5,7 @@ import history from "../utils/history";
 import { logout } from "./userSlice";
 import { useDispatch } from "react-redux";
 
-export const AuthButton = ({ style }) => {
+export const AuthButton = ({ style, variant }) => {
   const dispatch = useDispatch();
   const [isAuthenticated, setIsAuthenticated] = useContext(AuthContext);
 
@@ -21,9 +21,20 @@ export const AuthButton = ({ style }) => {
     history.push("/login");
   };
 
+  let textLogin;
+  let textLogout;
+  if (variant && isAuthenticated) {
+    textLogout = variant;
+  } else if (variant && !isAuthenticated) {
+    textLogin = variant;
+  } else {
+    textLogin = "login";
+    textLogout = "logout";
+  }
+
   return (
     <p onClick={isAuthenticated ? logoutHandler : loginHandler} style={style}>
-      {isAuthenticated ? "Log out" : "Log in"}
+      {isAuthenticated ? textLogout : textLogin}
     </p>
   );
 };

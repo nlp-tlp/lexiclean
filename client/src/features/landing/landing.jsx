@@ -46,7 +46,7 @@ export const Landing = () => {
               </div>
             </Row>
             <Row id="row-description">
-              <Col xs={8}>
+              <Col xs={12} md={8} lg={8} xl={8}>
                 <h3>
                   An annotation tool for rapid multi-task annotation of noisy
                   corpora for the task of lexical normalisation
@@ -54,22 +54,35 @@ export const Landing = () => {
               </Col>
             </Row>
             <Row id="row-signup">
-              <Button
-                id="signup-button"
-                onClick={
-                  isAuthenticated
-                    ? () => history.push("/feed")
-                    : () => history.push("/signup")
-                }
-              >
-                {isAuthenticated ? (
-                  <div>
-                    Enter <IoEnter />
-                  </div>
-                ) : (
-                  "Sign Up"
+              <div id="button-group">
+                <Button
+                  id="signup-button"
+                  onClick={
+                    isAuthenticated
+                      ? () => history.push("/feed")
+                      : () => history.push("/signup")
+                  }
+                >
+                  {isAuthenticated ? (
+                    <div>
+                      Enter <IoEnter />
+                    </div>
+                  ) : (
+                    "Sign Up"
+                  )}
+                </Button>
+                {isAuthenticated ? null : (
+                  <p
+                    style={{
+                      textAlign: "right",
+                      marginRight: "0.5rem",
+                    }}
+                    onClick={() => history.push("/login")}
+                  >
+                    or <strong style={{ cursor: "pointer" }}>login</strong>
+                  </p>
                 )}
-              </Button>
+              </div>
             </Row>
             <Row style={{ justifyContent: "center" }}>
               <a href="#details">
@@ -82,7 +95,7 @@ export const Landing = () => {
         <Row id="details">
           <Col>
             <Row id="row-details">
-              <Col xs={6} xl={4}>
+              <Col xs={12} md={4} lg={4} xl={4}>
                 <div id="box">
                   <IoSpeedometer id="icon" />
                   <h3>Rapid</h3>
@@ -92,7 +105,7 @@ export const Landing = () => {
                   </p>
                 </div>
               </Col>
-              <Col xs={6} xl={4}>
+              <Col xs={12} md={4} lg={4} xl={4}>
                 <div id="box">
                   <IoExpand id="icon" />
                   <h3>Flexible</h3>
@@ -104,7 +117,7 @@ export const Landing = () => {
               </Col>
             </Row>
             <Row id="row-details">
-              <Col xs={6} xl={4}>
+              <Col xs={12} md={4} lg={4} xl={4}>
                 <div id="box">
                   <BiSmile id="icon" />
                   <h3>Intuitive</h3>
@@ -114,7 +127,7 @@ export const Landing = () => {
                   </p>
                 </div>
               </Col>
-              <Col xs={6} xl={4}>
+              <Col xs={12} md={4} lg={4} xl={4}>
                 <div id="box">
                   <IoTrophy id="icon" />
                   <h3>Dynamic</h3>
@@ -148,7 +161,7 @@ export const Landing = () => {
                     alt="github repository"
                     style={{
                       color: "#263238",
-                      fontWeight: "bold"
+                      fontWeight: "bold",
                     }}
                   >
                     4theKnowledge

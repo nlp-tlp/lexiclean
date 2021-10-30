@@ -21,9 +21,9 @@ import { useDispatch } from "react-redux";
 import { setActiveModal } from "../../features/project/projectSlice";
 import { setIdle } from "../feed/feedSlice";
 
-// ua: "#ff5722", st: "#2196f3", en: "#cfd8dc" 
+// ua: "#ff5722", st: "#2196f3", en: #607d8b
 
-const DEFAULT_COLOUR = "#9B9B9B";
+const DEFAULT_COLOUR = "#607d8b";
 const REPLACE_COLOUR = "#009688";
 const infoContent = {
   raw_text: {

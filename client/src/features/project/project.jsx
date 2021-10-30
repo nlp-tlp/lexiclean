@@ -19,7 +19,7 @@ import {
   selectSearchTerm,
 } from "./projectSlice";
 import { SaveButton } from "./savebutton";
-import { Sidebar } from "./sidebar";
+import { Sidebar, SidebarMin } from "./sidebar";
 import { Text } from "./text";
 import {
   getTotalPages,
@@ -120,70 +120,76 @@ export const Project = () => {
         {textTokenMap &&
           textTokenMap.map((text, id) => {
             return (
-              <div id="container">
+              <div id="container"
+              tokenize={tokenizeTextId === text._id && "true"}
+              waiting={(tokenizeTextId !== text._id && tokenizeTextId) && "true" }
+              >
                 <div id="index-column" annotated={text.annotated && "true"}>
                   <div id="icon">{id + 1 + (page - 1) * pageLimit}</div>
                 </div>
-                <div id="actions">
-                  {text.annotated ? (
-                    <IoCheckmarkCircleSharp
-                      id="icon"
-                      annotated="true"
-                      onClick={() => {
-                        dispatch(
-                          patchSingleAnnotationState({
-                            textId: text._id,
-                            value: false,
-                          })
-                        );
-                      }}
-                    />
-                  ) : (
-                    <IoCloseCircle
-                      id="icon"
-                      onClick={() => {
-                        dispatch(
-                          patchSingleAnnotationState({
-                            textId: text._id,
-                            value: true,
-                          })
-                        );
-                      }}
-                    />
-                  )}
-                  {tokenizeTextId === text._id ? (
-                    <IoEllipsisVerticalCircleSharp
-                      id="icon-tokenize"
-                      active="true"
-                      title="Go to replacement view"
-                      onClick={() =>
-                        dispatch(
-                          setTokenizeTextId(
-                            tokenizeTextId === text._id ? null : text._id
-                          )
-                        )
-                      }
-                    />
-                  ) : (
-                    <RiEditCircleFill
-                      id="icon-tokenize"
-                      title="Go to tokenization view"
-                      onClick={() =>
-                        dispatch(
-                          setTokenizeTextId(
-                            tokenizeTextId === text._id ? null : text._id
-                          )
-                        )
-                      }
-                    />
-                  )}
-                </div>
                 <div id="row" key={id} annotated={text.annotated && "true"}>
-                  <div id="text-column">
+                  <div id="text-column"
+                  
+                  
+                  >
                     {tokenizeTextId === text._id ? (
                       <Tokenize tokenIds={text.token_ids} textId={text._id} />
                     ) : (
                       <Text tokenIds={text.token_ids} textId={text._id} />
+                    )}
+                  </div>
+                  <div id="actions">
+                    {text.annotated ? (
+                      <IoCheckmarkCircleSharp
+                        id="icon"
+                        annotated="true"
+                        onClick={() => {
+                          dispatch(
+                            patchSingleAnnotationState({
+                              textId: text._id,
+                              value: false,
+                            })
+                          );
+                        }}
+                      />
+                    ) : (
+                      <IoCloseCircle
+                        id="icon"
+                        onClick={() => {
+                          dispatch(
+                            patchSingleAnnotationState({
+                              textId: text._id,
+                              value: true,
+                            })
+                          );
+                        }}
+                      />
+                    )}
+                    {tokenizeTextId === text._id ? (
+                      <IoEllipsisVerticalCircleSharp
+                        id="icon-tokenize"
+                        active="true"
+                        title="Go to replacement view"
+                        onClick={() =>
+                          dispatch(
+                            setTokenizeTextId(
+                              tokenizeTextId === text._id ? null : text._id
+                            )
+                          )
+                        }
+                      />
+                    ) : (
+                      <RiEditCircleFill
+                        id="icon-tokenize"
+                        title="Go to tokenization view"
+                        onClick={() =>
+                          dispatch(
+                            setTokenizeTextId(
+                              tokenizeTextId === text._id ? null : text._id
+                            )
+                          )
+                        }
+                      />
                     )}
                   </div>
                 </div>
@@ -200,11 +206,18 @@ export const Project = () => {
     <>
       {showToast && <ContextToast />}
       <Container fluid>
-        <Row>
+        <Row style={{ backgroundColor: "#ecedef" }}>
           <Col id="sidebar-wrapper">
             <Sidebar />
           </Col>
-          <Col>
+          <Col xs={12} id="sidebar-min-wrapper">
+            <Row>
+              <Col>
+                <SidebarMin />
+              </Col>
+            </Row>
+          </Col>
+          <Col id="main-wrapper">
             {tokensStatus === "loading" ? (
               <div
                 style={{

@@ -55,7 +55,10 @@ function App() {
             </Helmet>
             <SignUp />
           </Route>
-          <Route exact path="/">
+          <Route path="/">
+            <Helmet>
+              <title>LexiClean | Multi-task Lexnorm Annotation</title>
+            </Helmet>
             <Landing />
           </Route>
         </Switch>

@@ -1,5 +1,6 @@
 .footer {
-    background-color: #eceff1;
+    border-top: 0.5px solid #cfd8dc;
+    background-color: #f8f9fa;
     color: black;
     height: 4rem;
 }
