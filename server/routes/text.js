@@ -41,11 +41,12 @@ router.post("/filter", async (req, res) => {
             { route: "/api/text/filter" }
           );
 
+          // Search is case-insensitive, non-exact matching
           const tokenResponse = await Token.find({
             project_id: req.body.project_id,
             $or: [
-              { value: { $regex: req.body.search_term } },
-              { replacement: { $regex: req.body.search_term } },
+              { value: { $regex: req.body.search_term, $options: "i" } },
+              { replacement: { $regex: req.body.search_term, $options: "i" } },
             ],
           }).lean();
           const tokenIds = new Set(tokenResponse.map((token) => token._id));

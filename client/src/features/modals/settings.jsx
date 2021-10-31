@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Form, Col, Button } from "react-bootstrap";
+import history from "../utils/history";
+import { Form, Button } from "react-bootstrap";
 import { useSelector, useDispatch } from "react-redux";
 import {
   selectPageLimit,
@@ -8,6 +9,7 @@ import {
 import { setIdle } from "../../features/project/tokenSlice";
 import { selectProject } from "../../features/project/projectSlice";
 import { IoCheckmarkCircleSharp, IoCloseCircle } from "react-icons/io5";
+import { useParams } from "react-router";
 
 const MAPPING = {
   lower_case: "Lower cased",
@@ -21,12 +23,17 @@ export const Settings = () => {
   const pageLimit = useSelector(selectPageLimit);
   const project = useSelector(selectProject);
   const [tempPageLimit, setTempPageLimit] = useState(10);
-
-  console.log(tempPageLimit);
+  const { pageNumber } = useParams();
 
   return (
     <div>
-      <p style={{ fontWeight: "bold" }}>Annotation Settings</p>
+      <p style={{ fontWeight: "bold", padding: "0", margin: "0" }}>
+        Annotation Settings
+      </p>
+      <p style={{ fontSize: "0.75rem" }}>
+        <strong>Tip:</strong> If you have a large project, use smaller page
+        sizes to improve latency.
+      </p>
       <Form>
         <Form.Group style={{ marginLeft: " 0.25em", width: "10em" }}>
           <Form.Label style={{ fontSize: "0.9em" }}>
@@ -49,7 +56,11 @@ export const Settings = () => {
           style={{ marginLeft: "0.25em", marginBottom: "1em" }}
           onClick={() => {
             dispatch(setPageLimit(Number(tempPageLimit)));
-            dispatch(setIdle());
+            if (Number(pageNumber) === 1) {
+              dispatch(setIdle());
+            } else {
+              history.push(`/project/${project._id}/page/1`);
+            }
           }}
           disabled={tempPageLimit == pageLimit}
         >
@@ -57,16 +68,14 @@ export const Settings = () => {
         </Button>
       </Form>
 
-      <p style={{ fontWeight: "bold" }}>Project Settings</p>
+      <p style={{ fontWeight: "bold" }}>Project Preprocessing Operations</p>
       {project &&
         Object.keys(project.preprocessing).map((measure) => (
           <div style={{ display: "flex", marginLeft: "0.5em" }}>
             {project.preprocessing[measure] ? (
-              <IoCheckmarkCircleSharp
-                style={{ color: "rgba(153,191,156,1)" }}
-              />
+              <IoCheckmarkCircleSharp style={{ color: "#1b5e20" }} />
             ) : (
-              <IoCloseCircle />
+              <IoCloseCircle style={{ color: "#f44336" }} />
             )}
             <p style={{ fontSize: "0.9em", marginLeft: "0.25em" }}>
               {MAPPING[measure]}

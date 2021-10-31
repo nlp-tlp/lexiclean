@@ -77,6 +77,7 @@ export const Create = () => {
   );
   const [corpusSize, setCorpusSize] = useState();
   const [vocabSize, setVocabSize] = useState();
+  const [tokenSize, setTokenSize] = useState();
   const [lowerCase, setLowerCase] = useState(false);
   const [removeDuplicates, setRemoveDuplicates] = useState(false);
   const [removeChars, setRemoveChars] = useState(false);
@@ -265,6 +266,7 @@ export const Create = () => {
 
       setCorpusSize(corpus.length);
       setVocabSize(new Set(corpus.map((text) => text.split(" ")).flat()).size);
+      setTokenSize(corpus.map((text) => text.split(" ")).flat().length);
     }
   }, [fileData, lowerCase, removeDuplicates, removeChars, removeCharSet]);
 
@@ -451,8 +453,17 @@ export const Create = () => {
               {previewContent !== "Upload texts to preview" && (
                 <>
                   <p id="section-subtitle">Measures</p>
-                  <p>Corpus Size: {corpusSize}</p>
-                  <p>Vocabulary Size: {vocabSize}</p>
+                  <div style={{ fontSize: "14px", margin: "0", padding: "0" }}>
+                    <li style={{ margin: "0.5rem 0", padding: "0" }}>
+                      Corpus Size: {corpusSize}
+                    </li>
+                    <li style={{ margin: "0.5rem 0", padding: "0" }}>
+                      Vocabulary Size: {vocabSize}
+                    </li>
+                    <li style={{ margin: "0.5rem 0", padding: "0" }}>
+                      Token Count: {tokenSize}
+                    </li>
+                  </div>
                 </>
               )}
             </Col>
@@ -484,17 +495,43 @@ export const Create = () => {
 
           <p id="section-title">Automatic Labelling Settings</p>
           <Row style={{ margin: "0rem 0.25rem 0rem 0.25rem" }}>
-            <Col md="4">
+            <Col md="6">
               <p id="section-subtitle">Actions</p>
               <Form.Check
                 type="checkbox"
                 label="Label digits as in-vocabulary"
+                title="Labels digits as in-vocabulary. Examples such as 001 and 21/2 will be excluded from automatic OOV classification"
                 name="detectDigitsCheck"
                 style={{ fontSize: "14px" }}
                 checked={values.detectDigits}
                 onChange={(e) =>
                   setFieldValue("detectDigits", e.target.checked)
                 }
+              />
+              <Form.Check
+                type="checkbox"
+                label="Exclude tokens as out-of-vocabulary"
+                name="detectSpecialTokensCheck"
+                style={{ fontSize: "14px" }}
+                disabled
+                // checked={values.detectDigits}
+                // onChange={(e) =>
+                //   setFieldValue("detectDigits", e.target.checked)
+                // }
+              />
+              <Form.Control
+                type="text"
+                disabled={true}
+                // {!values.removeCharacters}
+                placeholder={""}
+                // name="charsRemove"
+                // value={values.charsRemove}
+                // onChange={(e) => {
+                //   setFieldValue("charsRemove", e.target.value);
+                //   setRemoveCharSet(e.target.value);
+                // }}
+                autoComplete="off"
+                style={{ fontSize: "14px", marginBottom: "0.5rem" }}
               />
             </Col>
           </Row>

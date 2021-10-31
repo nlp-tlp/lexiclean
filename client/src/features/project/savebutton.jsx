@@ -74,10 +74,40 @@ export const SaveButton = () => {
         >
           Save Replacements
         </Dropdown.Item>
-        {/* <Dropdown.Item title="Undo the last action performed" disabled>
-            Undo
-          </Dropdown.Item> */}
       </Dropdown.Menu>
     </Dropdown>
+  );
+};
+
+export const SaveIconBtn = () => {
+  const project = useSelector(selectProject);
+  const textTokenMap = useSelector(selectTextTokenMap);
+  const dispatch = useDispatch();
+  const [savePending, setSavePending] = useState(false);
+
+  useEffect(() => {
+    const textsNotAnnotated =
+      textTokenMap &&
+      textTokenMap.filter((text) => text.annotated).length !==
+        textTokenMap.length;
+    setSavePending(textsNotAnnotated);
+  }, [textTokenMap, dispatch]);
+
+  return (
+    <FaSave
+      id="icon"
+      pending={savePending && "true"}
+      onClick={() => {
+        dispatch(
+          updateAnnotationStates({
+            textIds: textTokenMap.map((text) => text._id),
+            saveReplacementsOnly: false,
+          })
+        );
+        dispatch(setIdle());
+        dispatch(fetchMetrics({ projectId: project._id }));
+      }}
+      title="Click to save the current pages suggested replacements and to mark all documents as annotated"
+    />
   );
 };

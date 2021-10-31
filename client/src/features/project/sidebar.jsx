@@ -39,13 +39,15 @@ import {
 import { setPage } from "./textSlice";
 import { setIdle } from "./tokenSlice";
 
-export const SidebarExp = () => {
+import { SaveIconBtn } from "../project/savebutton";
+
+export const Sidebar = () => {
   const dispatch = useDispatch();
   const project = useSelector(selectProject);
   const metrics = useSelector(selectProjectMetrics);
   const projectStatus = useSelector((state) => state.project.status);
   const username = useSelector(selectUsername);
-
+  const searchTerm = useSelector(selectSearchTerm);
   const [showMetricDetail, setShowMetricDetail] = useState(false);
 
   useEffect(() => {
@@ -55,12 +57,24 @@ export const SidebarExp = () => {
     }
   }, [projectStatus, dispatch]);
 
+  const resetFilters = () => {
+    dispatch(setSearchTerm(""));
+    dispatch(setIdle());
+  };
+
+  const applyFilters = () => {
+    // Apply filter and take user to first page
+    dispatch(setPage(1));
+    history.push(`/project/${project._id}/page/1`);
+    dispatch(setIdle());
+  };
+
   return (
     <>
       <Row>
         <Col
           style={{
-            height: "20vh",
+            minHeight: "20vh",
             backgroundColor: "white",
             border: "1px solid rgba(0, 0, 0, 0.125)",
             borderRadius: "0.25rem",
@@ -77,14 +91,21 @@ export const SidebarExp = () => {
               <FilterAnnotated />
             </Col>
           </Row>
-          <Row style={{ textAlign: "right", marginTop: "1rem" }}>
+          <Row
+            style={{
+              textAlign: "right",
+              marginTop: "1rem",
+              marginBottom: "0.5rem",
+            }}
+          >
             <Col>
               <Button
                 style={{ margin: "0.25rem" }}
                 id="button"
                 size="sm"
                 variant="secondary"
-                disabled
+                disabled={searchTerm === ""}
+                onClick={() => resetFilters()}
               >
                 Reset
               </Button>
@@ -93,6 +114,8 @@ export const SidebarExp = () => {
                 id="button"
                 size="sm"
                 variant="dark"
+                disabled={searchTerm === ""}
+                onClick={() => applyFilters()}
               >
                 Apply
               </Button>
@@ -175,8 +198,6 @@ export const SidebarExp = () => {
 const TextSearch = () => {
   const dispatch = useDispatch();
   const searchTerm = useSelector(selectSearchTerm);
-  const project = useSelector(selectProject);
-
   return (
     <InputGroup className="sidebar-textsearch">
       <InputGroup>
@@ -187,35 +208,7 @@ const TextSearch = () => {
           value={searchTerm}
           onChange={(e) => dispatch(setSearchTerm(e.target.value))}
         />
-        {/* <InputGroup.Text>
-          <ImSearch />
-        </InputGroup.Text> */}
       </InputGroup>
-      {/* <InputGroup.Append>
-        <Button
-          size="sm"
-          variant="secondary"
-          disabled={searchTerm === ""}
-          onClick={() => {
-            // Take user back to first page if searching.
-            dispatch(setPage(1));
-            history.push(`/project/${project._id}/page/1`);
-            dispatch(setIdle());
-          }}
-        >
-          Search
-        </Button>
-        <Button
-          size="sm"
-          variant="outline-secondary"
-          onClick={() => {
-            dispatch(setSearchTerm(""));
-            dispatch(setIdle());
-          }}
-        >
-          Reset
-        </Button>
-      </InputGroup.Append> */}
     </InputGroup>
   );
 };
@@ -253,29 +246,36 @@ export const SidebarMin = () => {
           <IoChevronForward id="icon" />
           <FaArrowAltCircleLeft
             id="icon"
+            title="Click to return to the project feed"
             onClick={() => history.push("/feed")}
           />
           <FaInfoCircle
             id="icon"
+            title="Click to view the quick reference guide"
             onClick={() => dispatch(setActiveModal("help"))}
           />
           <BsGearFill
             id="icon"
+            title="Click to view project settings"
             onClick={() => dispatch(setActiveModal("settings"))}
           />
           <FaDownload
             id="icon"
+            title="Click to view project downloads"
             onClick={() => dispatch(setActiveModal("downloads"))}
           />
 
           <FaEdit
             id="icon"
+            title="Click to view or modify the project schema"
             onClick={() => dispatch(setActiveModal("schema"))}
           />
           <FaGripVertical
             id="icon"
+            title="Click to view project legend"
             onClick={() => dispatch(setActiveModal("legend"))}
           />
+          <SaveIconBtn />
         </div>
       </div>
     </div>

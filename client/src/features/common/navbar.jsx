@@ -77,7 +77,7 @@ export const NavBar = () => {
     );
   } else {
     return (
-      <Navbar collapseOnSelect expand="lg" variant="light" sticky="top">
+      <Navbar collapseOnSelect expand="lg" variant="light" sticky="top" id="project-navbar">
         <Container fluid>
           <Navbar.Brand href="/feed">
             <div

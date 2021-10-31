@@ -4,6 +4,7 @@ import {
   IoCheckmarkCircleSharp,
   IoCloseCircle,
   IoEllipsisVerticalCircleSharp,
+  IoSearch,
 } from "react-icons/io5";
 import { RiEditCircleFill } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,7 +20,7 @@ import {
   selectSearchTerm,
 } from "./projectSlice";
 import { SaveButton } from "./savebutton";
-import { Sidebar, SidebarMin, SidebarExp } from "./sidebar";
+import { Sidebar, SidebarMin } from "./sidebar";
 import { Text } from "./text";
 import {
   getTotalPages,
@@ -114,88 +115,106 @@ export const Project = () => {
   let textsContent;
   if (tokensStatus === "loading") {
     textsContent = <Spinner />;
+  } else if (tokensStatus === "succeeded" && textTokenMap.length === 0) {
+    textsContent = (
+      <div
+        style={{
+          marginTop: "25vh",
+          textAlign: "center",
+          fontSize: "2rem",
+          fontWeight: "bold",
+          color: "#607d8b",
+        }}
+      >
+        <IoSearch style={{ fontSize: "5rem", textAlign: "center" }} />
+        <p>Sorry, no results were found</p>
+      </div>
+    );
   } else if (tokensStatus === "succeeded") {
     textsContent = (
-      <div className="annotation-table">
-        {textTokenMap &&
-          textTokenMap.map((text, id) => {
-            return (
-              <div
-                id="container"
-                tokenize={tokenizeTextId === text._id && "true"}
-                waiting={
-                  tokenizeTextId !== text._id && tokenizeTextId && "true"
-                }
-              >
-                <div id="index-column" annotated={text.annotated && "true"}>
-                  <div id="icon">{id + 1 + (page - 1) * pageLimit}</div>
-                </div>
-                <div id="row" key={id} annotated={text.annotated && "true"}>
-                  <div id="text-column">
-                    {tokenizeTextId === text._id ? (
-                      <Tokenize tokenIds={text.token_ids} textId={text._id} />
-                    ) : (
-                      <Text tokenIds={text.token_ids} textId={text._id} />
-                    )}
+      <div>
+        <div className="annotation-table">
+          {textTokenMap &&
+            textTokenMap.map((text, id) => {
+              return (
+                <div
+                  id="container"
+                  tokenize={tokenizeTextId === text._id && "true"}
+                  waiting={
+                    tokenizeTextId !== text._id && tokenizeTextId && "true"
+                  }
+                >
+                  <div id="index-column" annotated={text.annotated && "true"}>
+                    <div id="icon">{id + 1 + (page - 1) * pageLimit}</div>
                   </div>
-                  <div id="actions">
-                    {text.annotated ? (
-                      <IoCheckmarkCircleSharp
-                        id="icon"
-                        annotated="true"
-                        onClick={() => {
-                          dispatch(
-                            patchSingleAnnotationState({
-                              textId: text._id,
-                              value: false,
-                            })
-                          );
-                        }}
-                      />
-                    ) : (
-                      <IoCloseCircle
-                        id="icon"
-                        onClick={() => {
-                          dispatch(
-                            patchSingleAnnotationState({
-                              textId: text._id,
-                              value: true,
-                            })
-                          );
-                        }}
-                      />
-                    )}
-                    {tokenizeTextId === text._id ? (
-                      <IoEllipsisVerticalCircleSharp
-                        id="icon-tokenize"
-                        active="true"
-                        title="Go to replacement view"
-                        onClick={() =>
-                          dispatch(
-                            setTokenizeTextId(
-                              tokenizeTextId === text._id ? null : text._id
+                  <div id="row" key={id} annotated={text.annotated && "true"}>
+                    <div id="text-column">
+                      {tokenizeTextId === text._id ? (
+                        <Tokenize tokenIds={text.token_ids} textId={text._id} />
+                      ) : (
+                        <Text tokenIds={text.token_ids} textId={text._id} />
+                      )}
+                    </div>
+                    <div id="actions">
+                      {text.annotated ? (
+                        <IoCheckmarkCircleSharp
+                          id="icon"
+                          annotated="true"
+                          onClick={() => {
+                            dispatch(
+                              patchSingleAnnotationState({
+                                textId: text._id,
+                                value: false,
+                              })
+                            );
+                          }}
+                        />
+                      ) : (
+                        <IoCloseCircle
+                          id="icon"
+                          onClick={() => {
+                            dispatch(
+                              patchSingleAnnotationState({
+                                textId: text._id,
+                                value: true,
+                              })
+                            );
+                          }}
+                        />
+                      )}
+                      {tokenizeTextId === text._id ? (
+                        <IoEllipsisVerticalCircleSharp
+                          id="icon-tokenize"
+                          active="true"
+                          title="Go to replacement view"
+                          onClick={() =>
+                            dispatch(
+                              setTokenizeTextId(
+                                tokenizeTextId === text._id ? null : text._id
+                              )
                             )
-                          )
-                        }
-                      />
-                    ) : (
-                      <RiEditCircleFill
-                        id="icon-tokenize"
-                        title="Go to tokenization view"
-                        onClick={() =>
-                          dispatch(
-                            setTokenizeTextId(
-                              tokenizeTextId === text._id ? null : text._id
+                          }
+                        />
+                      ) : (
+                        <RiEditCircleFill
+                          id="icon-tokenize"
+                          title="Go to tokenization view"
+                          onClick={() =>
+                            dispatch(
+                              setTokenizeTextId(
+                                tokenizeTextId === text._id ? null : text._id
+                              )
                             )
-                          )
-                        }
-                      />
-                    )}
+                          }
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+        </div>
+        <Paginator />
       </div>
     );
   } else if (tokensStatus === "failed") {
@@ -210,8 +229,8 @@ export const Project = () => {
         alt="main-background"
       />
       {showToast && <ContextToast />}
-      <Container fluid>
-        <Row style={{ marginTop: "0rem" }}>
+      <Container fluid style={{margin: "auto"}}>
+        <Row style={{ marginTop: "0rem", justifyContent: "center" }}>
           <Col xs={12} id="sidebar-min-wrapper">
             <Row>
               <Col>
@@ -221,13 +240,17 @@ export const Project = () => {
           </Col>
           <Col
             md={2}
+            lg={2}
+            xl={2}
             id="side-container"
             style={{ margin: "1rem 1rem 1rem 1rem" }}
           >
-            <SidebarExp />
+            <Sidebar />
           </Col>
           <Col
             md={9}
+            lg={9}
+            xl={6}
             id="main-wrapper"
             style={{
               backgroundColor: "white",
@@ -248,10 +271,7 @@ export const Project = () => {
                     <Spinner animation="border" style={{ marginTop: "50vh" }} />
                   </div>
                 ) : (
-                  <>
-                    {textsContent}
-                    <Paginator />
-                  </>
+                  <>{textsContent}</>
                 )}
               </Col>
             </Row>
