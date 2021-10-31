@@ -12,6 +12,8 @@ import {
   Popover,
   Spinner,
 } from "react-bootstrap";
+import { IoBrush, IoCheckmark, IoClose } from "react-icons/io5";
+
 import { Formik } from "formik";
 import * as yup from "yup";
 import { MdAddCircle, MdRemoveCircle, MdBrush } from "react-icons/md";
@@ -309,47 +311,51 @@ export const Create = () => {
             methodology used when creating the project.
           </p>
           <p id="section-title">Project Details</p>
-          <Form.Row>
-            <Form.Group as={Col} md="4" controlId="validationFormik01">
-              <p id="section-subtitle">Name</p>
-              <Form.Control
-                type="text"
-                placeholder="Enter Name"
-                name="projectName"
-                value={values.projectName}
-                onChange={handleChange}
-                autoComplete="off"
-                isValid={touched.projectName && !errors.projectName}
-                isInvalid={touched.projectName && errors.projectName}
-              />
-              <Form.Control.Feedback type="invalid">
-                {errors.projectName}
-              </Form.Control.Feedback>
-            </Form.Group>
-            <Form.Group as={Col} md="8" controlId="validationFormik02">
-              <p id="section-subtitle">Description</p>
-              <Form.Control
-                type="text"
-                placeholder="Enter Description"
-                name="projectDescription"
-                value={values.projectDescription}
-                onChange={handleChange}
-                autoComplete="off"
-                isValid={
-                  touched.projectDescription && !errors.projectDescription
-                }
-                isInvalid={
-                  touched.projectDescription && errors.projectDescription
-                }
-              />
-              <Form.Control.Feedback type="invalid">
-                {errors.projectDescription}
-              </Form.Control.Feedback>
-            </Form.Group>
-          </Form.Row>
+          <Row style={{ margin: "0rem 0.25rem 0rem 0.25rem" }}>
+            <Col sm={4} md={4}>
+              <Form.Group controlId="validationFormik01">
+                <p id="section-subtitle">Name</p>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter name..."
+                  name="projectName"
+                  value={values.projectName}
+                  onChange={handleChange}
+                  autoComplete="off"
+                  isValid={touched.projectName && !errors.projectName}
+                  isInvalid={touched.projectName && errors.projectName}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.projectName}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col sm={8} md={8}>
+              <Form.Group controlId="validationFormik02">
+                <p id="section-subtitle">Description</p>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter description..."
+                  name="projectDescription"
+                  value={values.projectDescription}
+                  onChange={handleChange}
+                  autoComplete="off"
+                  isValid={
+                    touched.projectDescription && !errors.projectDescription
+                  }
+                  isInvalid={
+                    touched.projectDescription && errors.projectDescription
+                  }
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.projectDescription}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
 
           <p id="section-title">Uploads</p>
-          <Form.Group as={Row}>
+          <Row style={{ margin: "0rem 0.25rem 0rem 0.25rem" }}>
             <Col>
               {infoOverlay(infoContent["raw_text"])}
               <Form.File
@@ -386,18 +392,18 @@ export const Create = () => {
                 File format (.csv or .json)
               </Form.Text>
             </Col>
-          </Form.Group>
+          </Row>
 
           <p id="section-title">Text Preprocessing</p>
-          <Form.Group as={Row}>
-            <Col md="4">
+          <Form.Group as={Row} style={{ margin: "0rem 0.25rem 0rem 0.25rem" }}>
+            <Col sm={12} md={4}>
               <p id="section-subtitle">Actions</p>
               <Form.Check
                 type="checkbox"
                 label="Lower case"
                 name="lowerCaseCheck"
                 title="Removes casing from characters. This can reduce annotation effort."
-                style={{ fontSize: "14px" }}
+                style={{ fontSize: "14px", marginBottom: "0.5rem" }}
                 checked={values.lowerCase}
                 onChange={(e) => {
                   setFieldValue("lowerCase", e.target.checked);
@@ -410,7 +416,7 @@ export const Create = () => {
                 label="Remove characters"
                 name="removeCharactersCheck"
                 title="Removes special characters from corpus. This can reduce annotation effort."
-                style={{ fontSize: "14px" }}
+                style={{ fontSize: "14px", marginBottom: "0.5rem" }}
                 checked={values.removeCharacters}
                 onChange={(e) => {
                   setFieldValue("removeCharacters", e.target.checked);
@@ -428,14 +434,14 @@ export const Create = () => {
                   setRemoveCharSet(e.target.value);
                 }}
                 autoComplete="off"
-                style={{ fontSize: "14px" }}
+                style={{ fontSize: "14px", marginBottom: "0.5rem" }}
               />
               <Form.Check
                 type="checkbox"
                 label="Remove duplicates"
                 title="Removes duplicate documents from your corpus. This can reduce annotation effort."
                 name="removeDuplicatesCheck"
-                style={{ fontSize: "14px" }}
+                style={{ fontSize: "14px", marginBottom: "0.5rem" }}
                 checked={values.removeDuplicates}
                 onChange={(e) => {
                   setFieldValue("removeDuplicates", e.target.checked);
@@ -450,7 +456,7 @@ export const Create = () => {
                 </>
               )}
             </Col>
-            <Col md="8">
+            <Col sm={12} md={8}>
               <p id="section-subtitle">Preview</p>
               <div className="preview-container">
                 <pre>{previewContent}</pre>
@@ -459,13 +465,25 @@ export const Create = () => {
           </Form.Group>
 
           <p id="section-title">Schema</p>
-          <Form.Group>
-            {infoOverlay(infoContent["meta_tags"])}
-            <MetaTagTable {...metaTagTableProps} />
-          </Form.Group>
+          <Row style={{ margin: "0rem 0.25rem 0rem 0.25rem" }}>
+            <Col>
+              {infoOverlay(infoContent["meta_tags"])}
+              <p
+                style={{
+                  fontSize: "10px",
+                  color: "grey",
+                  marginBottom: "0.5em",
+                }}
+              >
+                Note: Tag names must have underscores instead of white space and
+                gazetteers must be in .txt file format
+              </p>
+              <TagContainer {...metaTagTableProps} />
+            </Col>
+          </Row>
 
           <p id="section-title">Automatic Labelling Settings</p>
-          <Form.Group as={Row}>
+          <Row style={{ margin: "0rem 0.25rem 0rem 0.25rem" }}>
             <Col md="4">
               <p id="section-subtitle">Actions</p>
               <Form.Check
@@ -479,7 +497,7 @@ export const Create = () => {
                 }
               />
             </Col>
-          </Form.Group>
+          </Row>
 
           <div
             style={{
@@ -512,7 +530,7 @@ export const Create = () => {
   );
 };
 
-const MetaTagTable = ({
+const TagContainer = ({
   tempColour,
   setTempColour,
   tempMetaTag,
@@ -523,14 +541,14 @@ const MetaTagTable = ({
   setMetaTags,
   readFile,
 }) => {
-  const popover = (
+  const popover = (key) => (
     <Popover id="popover-colour">
       <Popover.Title>Select Colour</Popover.Title>
       <Popover.Content>
         <CompactPicker
           color={tempColour}
-          onChange={(color) => setTempColour(color.hex)}
-          onChangeComplete={(color) => setTempColour(color.hex)}
+          onChange={(color) => editMetaTag(key, color.hex)}
+          onChangeComplete={(color) => editMetaTag(key, color.hex)}
         />
       </Popover.Content>
     </Popover>
@@ -564,119 +582,174 @@ const MetaTagTable = ({
     );
   };
 
+  const editMetaTag = (tagName, colour) => {
+    setMetaTags((prevState) => ({
+      ...prevState,
+      [tagName]: { ...prevState[tagName], colour: colour },
+    }));
+  };
+
+  const getFontColour = (colour) => {
+    // Get token contrast ratio (tests white against colour) if < 4.5 then sets font color to black
+    const hexToRgb = (hex) =>
+      hex
+        .replace(
+          /^#?([a-f\d])([a-f\d])([a-f\d])$/i,
+          (m, r, g, b) => "#" + r + r + g + g + b + b
+        )
+        .substring(1)
+        .match(/.{2}/g)
+        .map((x) => parseInt(x, 16));
+
+    const luminance = (r, g, b) => {
+      let a = [r, g, b].map((v) => {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      });
+      return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+    };
+
+    const contrast = (rgb1, rgb2) => {
+      let lum1 = luminance(rgb1[0], rgb1[1], rgb1[2]);
+      let lum2 = luminance(rgb2[0], rgb2[1], rgb2[2]);
+      let brightest = Math.max(lum1, lum2);
+      let darkest = Math.min(lum1, lum2);
+      return (brightest + 0.05) / (darkest + 0.05);
+    };
+
+    const ratioWhite = contrast(hexToRgb(colour), [255, 255, 255]);
+    const ratioBlack = contrast(hexToRgb(colour), [0, 0, 0]);
+
+    return ratioWhite > ratioBlack ? "white" : "black";
+  };
+
   return (
     <>
-      <Table
-        striped
-        bordered
-        hover
-        size="sm"
-        style={{ fontSize: "14px", marginBottom: "0em" }}
-      >
-        <thead style={{ textAlign: "center" }}>
-          <tr>
-            <th>Tag Name</th>
-            <th>Gazetteer</th>
-            <th>Colour</th>
-            <th>Add</th>
-          </tr>
-        </thead>
-        <tbody
-          style={{
-            textAlign: "center",
-            height: "5vh",
-            overflow: "auto",
-          }}
-        >
-          <tr>
-            <td>
-              <input
-                type="text"
-                style={{ width: "8em" }}
-                value={tempMetaTag}
-                onChange={(e) => setTempMetaTag(e.target.value)}
-              />
-            </td>
-            <td>
-              <Form.File
-                id="formControlTempMetaTag"
-                onChange={(e) =>
-                  setTempData({
-                    [tempMetaTag]: {
-                      meta: e.target.files[0],
-                      data: readFile(tempMetaTag, e.target.files[0]),
-                    },
-                  })
-                }
-              />
-            </td>
-            <td>
-              <OverlayTrigger
-                trigger="click"
-                placement="left"
-                overlay={popover}
-              >
-                <Button
-                  style={{
-                    borderColor: tempColour,
-                    backgroundColor: tempColour,
-                    padding: "0.2em",
-                  }}
-                >
-                  <MdBrush />
-                </Button>
-              </OverlayTrigger>
-            </td>
-            <td>
-              {tempMetaTag !== "" ? (
-                <MdAddCircle
-                  style={{ fontSize: "22px", color: "#28a745" }}
-                  onClick={() => addMetaTag()}
-                />
-              ) : null}
-            </td>
-          </tr>
-          {Object.keys(metaTags).length > 0
-            ? Object.keys(metaTags).map((key) => (
-                <tr>
-                  <td>{key}</td>
-                  <td>
-                    {metaTags[key].meta
-                      ? metaTags[key].meta.name
-                      : "No data uploaded"}
-                  </td>
-                  <td>
-                    <Button
-                      style={{
-                        borderColor: metaTags[key].colour,
-                        backgroundColor: metaTags[key].colour,
-                        padding: "0.2em",
-                      }}
+      <Row className="schema">
+        <Col>
+          <Row id="input-row">
+            <Col>
+              <Form>
+                <Form.Group>
+                  <Row>
+                    <Col sm={4} md={4}>
+                      <Form.Control
+                        type="text"
+                        size="sm"
+                        style={{ width: "100%" }}
+                        placeholder="Enter a tag name"
+                        value={tempMetaTag}
+                        onChange={(e) => setTempMetaTag(e.target.value)}
+                      />
+                    </Col>
+                    <Col
+                      sm={4}
+                      md={4}
+                      style={{ display: "flex", justifyContent: "center" }}
                     >
-                      <MdBrush style={{ color: "white" }} />
-                    </Button>
-                  </td>
-                  <td>
-                    <MdRemoveCircle
-                      style={{ fontSize: "22px", color: "#dc3545" }}
-                      onClick={() => removeMetaTag(key)}
-                    />
-                  </td>
-                </tr>
-              ))
-            : null}
-        </tbody>
-      </Table>
-      <p
-        style={{
-          fontSize: "10px",
-          color: "grey",
-          marginBottom: "0.5em",
-        }}
-      >
-        Note: Tag names must have underscores instead of white space and
-        gazetteers must be in .txt file format
-      </p>
+                      <Form.File
+                        id="formControlTempMetaTag"
+                        size="sm"
+                        onChange={(e) =>
+                          setTempData({
+                            [tempMetaTag]: {
+                              meta: e.target.files[0],
+                              data: readFile(tempMetaTag, e.target.files[0]),
+                            },
+                          })
+                        }
+                      />
+                    </Col>
+                    <Col
+                      sm={2}
+                      md={2}
+                      style={{ display: "flex", justifyContent: "center" }}
+                    >
+                      <Form.Control
+                        type="color"
+                        size="sm"
+                        id="exampleColorInput"
+                        defaultValue={DEFAULT_COLOUR}
+                        title="Choose your color"
+                        style={{ width: "50px" }}
+                        onChange={(e) => setTempColour(e.target.value)}
+                      />
+                    </Col>
+                    <Col
+                      sm={2}
+                      md={2}
+                      style={{ display: "flex", justifyContent: "right" }}
+                    >
+                      <Button
+                        size="sm"
+                        variant="dark"
+                        disabled={tempMetaTag === ""}
+                        onClick={() => addMetaTag()}
+                      >
+                        Create
+                      </Button>
+                    </Col>
+                  </Row>
+                </Form.Group>
+              </Form>
+            </Col>
+          </Row>
+
+          <Row id="preview-row">
+            <Col>
+              {Object.keys(metaTags).length > 0 &&
+                Object.keys(metaTags).map((key) => (
+                  <Row>
+                    <Col sm={12} md={4}>
+                      <Row>
+                        <div
+                          id="create-tag-preview"
+                          style={{
+                            backgroundColor: metaTags[key].colour,
+                            color: getFontColour(metaTags[key].colour),
+                          }}
+                        >
+                          {key[0]}
+                        </div>
+                        <div id="create-tag-text">{key}</div>
+                      </Row>
+                    </Col>
+                    <Col
+                      sm={12}
+                      md={4}
+                      style={{ padding: "0.5rem", justifyContent: "center" }}
+                    >
+                      {metaTags[key].meta
+                        ? metaTags[key].meta.name
+                        : "No data uploaded"}
+                    </Col>
+                    <Col sm={12} md={4}>
+                      <Row
+                        style={{
+                          display: "flex",
+                          justifyContent: "right",
+                        }}
+                      >
+                        <OverlayTrigger
+                          trigger="click"
+                          placement="left"
+                          overlay={popover(key)}
+                        >
+                          <div id="edit-button">
+                            <IoBrush />
+                          </div>
+                        </OverlayTrigger>
+                        <div id="create-tag-remove-button">
+                          <IoClose onClick={() => removeMetaTag(key)} />
+                        </div>
+                      </Row>
+                    </Col>
+                  </Row>
+                ))}
+            </Col>
+          </Row>
+        </Col>
+      </Row>
     </>
   );
 };

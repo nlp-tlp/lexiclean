@@ -104,11 +104,7 @@ export const Tokenize = ({ tokenIds, textId }) => {
                 bgColourMap: bgColourMap,
               })
             );
-            dispatch(
-              setTokenizeTextId({
-                tokenizeTextId: null,
-              })
-            );
+            dispatch(setTokenizeTextId(null));
             dispatch(setIdle());
           }}
         >

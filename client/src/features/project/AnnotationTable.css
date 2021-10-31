@@ -13,7 +13,7 @@
 }
 
 .annotation-table #container[tokenize="true"] {
-  opacity: 1.0;
+  opacity: 1;
 }
 
 .annotation-table #container[waiting] {
@@ -75,15 +75,7 @@
 
 .annotation-table #actions {
   padding-top: 1rem;
-
-  /* display: flex;
-  flex-direction: column;
-  background-color: #b0bec5;
-  margin-top: 1rem;
-  padding: 0rem 0.5rem;
-  min-height: 2rem;
-  border: 1px solid #90a4ae; */
-  /* border-bottom: 1px solid #90a4ae; */
+  width: 3rem;
 }
 
 .annotation-table #actions #icon {

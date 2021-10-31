@@ -63,8 +63,8 @@
   opacity: 0.5;
 }
 
-.schema #tag-preview[active]{
-  opacity: 1.0;
+.schema #tag-preview[active] {
+  opacity: 1;
 }
 
 .schema #tag-text {
@@ -76,7 +76,7 @@
 }
 
 .schema #tag-text[active] {
-  opacity: 1.0;
+  opacity: 1;
 }
 
 .schema #status-button {
@@ -178,11 +178,53 @@ tbody {
 }
 
 .create #section-title {
-  font-size: 1.2em;
+  font-size: 1.2rem;
   font-weight: bold;
-  margin-top: 0.5em;
-  background-color: rgba(0, 0, 0, 0.1);
-  padding: 0.2em;
+  margin-top: 0.5rem;
+  background-color: #cfd8dc;
+  padding: 0.25rem 0.25rem 0.25rem 0.5rem;
+}
+
+.create .schema #input-row {
+  justify-content: center;
+  margin: 1rem 0rem 0.5rem 0rem;
+}
+
+.create .schema #preview-row {
+  max-height: 10vh;
+  overflow-y: auto;
+  margin: 0rem 1rem 0rem 1rem;
+}
+
+.create .schema #preview-row #create-tag-preview {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 2rem;
+  width: 2rem;
+  border-radius: 0.2rem;
+  font-weight: bold;
+}
+
+.create .schema #preview-row #create-tag-text {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 1rem;
+}
+
+.create .schema #preview-row #create-tag-remove-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  color: white;
+  background-color: #f44336;
+  cursor: pointer;
+  height: 2rem;
+  width: 2rem;
+  border-radius: 0.2rem;
+  margin: 0rem 0rem 0rem 0rem;
 }
 
 .create .custom-file-label {

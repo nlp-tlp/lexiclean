@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./Modals.css";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -10,8 +10,6 @@ import {
   Row,
   Col,
 } from "react-bootstrap";
-import { MdAddCircle, MdAirplanemodeInactive, MdBrush } from "react-icons/md";
-import { CompactPicker } from "react-color";
 import { IoBrush, IoCheckmark, IoClose } from "react-icons/io5";
 import {
   selectProjectSchema,

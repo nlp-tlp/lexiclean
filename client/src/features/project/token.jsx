@@ -92,7 +92,7 @@ const TokenInput = ({ token, textId, showContextMenu }) => {
         style={{
           backgroundColor: bgColourChoice,
           width: token.width,
-          color: token.fontColour
+          color: token.fontColour,
         }}
         autoComplete="off"
         title={`original: ${token.value}\nClass: ${token.clf}`}
