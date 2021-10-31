@@ -19,7 +19,7 @@ import {
   selectSearchTerm,
 } from "./projectSlice";
 import { SaveButton } from "./savebutton";
-import { Sidebar, SidebarMin } from "./sidebar";
+import { Sidebar, SidebarMin, SidebarExp } from "./sidebar";
 import { Text } from "./text";
 import {
   getTotalPages,
@@ -120,18 +120,18 @@ export const Project = () => {
         {textTokenMap &&
           textTokenMap.map((text, id) => {
             return (
-              <div id="container"
-              tokenize={tokenizeTextId === text._id && "true"}
-              waiting={(tokenizeTextId !== text._id && tokenizeTextId) && "true" }
+              <div
+                id="container"
+                tokenize={tokenizeTextId === text._id && "true"}
+                waiting={
+                  tokenizeTextId !== text._id && tokenizeTextId && "true"
+                }
               >
                 <div id="index-column" annotated={text.annotated && "true"}>
                   <div id="icon">{id + 1 + (page - 1) * pageLimit}</div>
                 </div>
                 <div id="row" key={id} annotated={text.annotated && "true"}>
-                  <div id="text-column"
-                  
-                  
-                  >
+                  <div id="text-column">
                     {tokenizeTextId === text._id ? (
                       <Tokenize tokenIds={text.token_ids} textId={text._id} />
                     ) : (
@@ -204,12 +204,14 @@ export const Project = () => {
 
   return (
     <>
+      <img
+        className="main-bg"
+        src="https://images.unsplash.com/photo-1517816743773-6e0fd518b4a6?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
+        alt="main-background"
+      />
       {showToast && <ContextToast />}
       <Container fluid>
-        <Row style={{ backgroundColor: "#ecedef" }}>
-          <Col id="sidebar-wrapper">
-            <Sidebar />
-          </Col>
+        <Row style={{ marginTop: "0rem" }}>
           <Col xs={12} id="sidebar-min-wrapper">
             <Row>
               <Col>
@@ -217,22 +219,42 @@ export const Project = () => {
               </Col>
             </Row>
           </Col>
-          <Col id="main-wrapper">
-            {tokensStatus === "loading" ? (
-              <div
-                style={{
-                  textAlign: "center",
-                }}
-              >
-                <Spinner animation="border" style={{ marginTop: "50vh" }} />
-              </div>
-            ) : (
-              <>
-                <SaveButton />
-                {textsContent}
-                <Paginator />
-              </>
-            )}
+          <Col
+            md={2}
+            id="side-container"
+            style={{ margin: "1rem 1rem 1rem 1rem" }}
+          >
+            <SidebarExp />
+          </Col>
+          <Col
+            md={9}
+            id="main-wrapper"
+            style={{
+              backgroundColor: "white",
+              border: "1px solid rgba(0, 0, 0, 0.125)",
+              borderRadius: "0.25rem",
+              margin: "1rem 1rem 1rem 1rem",
+              boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.2)",
+            }}
+          >
+            <Row>
+              <Col className="annotation-col">
+                {tokensStatus === "loading" ? (
+                  <div
+                    style={{
+                      textAlign: "center",
+                    }}
+                  >
+                    <Spinner animation="border" style={{ marginTop: "50vh" }} />
+                  </div>
+                ) : (
+                  <>
+                    {textsContent}
+                    <Paginator />
+                  </>
+                )}
+              </Col>
+            </Row>
           </Col>
         </Row>
       </Container>

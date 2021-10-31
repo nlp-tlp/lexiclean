@@ -29,7 +29,7 @@ services:
   mongo:
     image: mongo:4.4.8
     ports:
-      - "27017:27017"
+      - "27018:27017"
     networks:
       - lexiclean-app
     volumes:

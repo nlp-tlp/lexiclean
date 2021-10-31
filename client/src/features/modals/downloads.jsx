@@ -178,9 +178,10 @@ export const Downloads = ({ projectId, projectName }) => {
             label="Annotated Only"
             className="download"
             id="checkbox"
-            checked={!annotated}
+            checked={annotated}
             onChange={() => {
               setAnnotated(!annotated);
+              console.log(!annotated);
               previewResults();
             }}
           />

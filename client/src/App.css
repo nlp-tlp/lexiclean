@@ -79,12 +79,9 @@ body {
 }
 
 #control-tray {
-  background-color: #cfd8dc;
   display: flex;
   padding: 0.5rem;
   justify-content: space-evenly;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 #icon {
@@ -109,32 +106,6 @@ body {
   font-size: 1.25rem;
 }
 
-.metrics {
-  padding: 1rem 0rem 1rem 0rem;
-}
-
-.metrics #metric {
-  text-align: center;
-  padding: 0px;
-  margin: 0px;
-}
-
-.metrics #value {
-  font-size: 1.75rem;
-  font-weight: bold;
-  margin-top: 0.75rem;
-}
-
-.metrics #detail {
-  font-size: 0.75rem;
-}
-
-.metrics #description {
-  font-size: 1rem;
-  font-weight: bold;
-  margin-bottom: 0.75rem;
-}
-
 .metrics-min {
   padding: 1rem 0rem 1rem 0rem;
 }
@@ -147,7 +118,7 @@ body {
 }
 
 .filters {
-  padding: 1rem 2rem 1rem 2rem;
+  /* padding: 1rem 2rem 1rem 2rem; */
   font-size: 1.2rem;
 }
 
@@ -167,7 +138,7 @@ body {
 
 .sidebar-textsearch {
   margin: 1rem 0rem 0rem 0rem;
-  width: 100%;
+  width: auto;
   height: 2rem;
   padding: 0em;
 }
@@ -216,40 +187,26 @@ body {
   cursor: "pointer";
 }
 
-/* Project Save button group */
-.save-button {
-  position: fixed;
-  right: 0;
-  top: 0;
-  margin: 1em 2em;
-  opacity: 0.95;
-}
-
-#save-page {
-  background-color: #cfd8dc;
-  border-color: #b0bec5;
-}
-
-#save-page[pending] {
-  background-color: #607d8b;
-  border-color: #455a64;
-}
-
-.save-button :hover {
-  opacity: 0.9;
-}
-
-.save-button .dropdown-item {
-  font-size: 0.8rem;
-}
 
 @media (max-width: 900px) {
   #sidebar-wrapper {
     display: none;
   }
+  #side-container {
+    display: none;
+  }
 
   #main-wrapper {
-    margin-left: 70px;
+    margin-left: 5rem !important;
+    margin-top: 1rem !important;
+  }
+
+  .annotation-col {
+    height: 95vh !important;
+  }
+
+  .navbar {
+    display: none;
   }
 
   .sidebar-min #sidebar-tray #icon {

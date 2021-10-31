@@ -1,32 +1,40 @@
 .paginator {
-    display: flex;
-    justify-content: center;
-    margin-top: 1em;
-    margin-bottom: 4em;
+  display: flex;
+  justify-content: center;
+  margin: 1rem;
 }
 
 .paginator #action-btn {
-    display: inline-block;
-    padding: 0.1em 1em;
-    margin: 0.1em;
-    border: 0.1em solid lightgrey;
-    box-sizing: border-box;
-    text-decoration: none;
-    text-align: center;
-    color: white;
-    background-color: grey;
+  display: inline-block;
+  padding: 0.1rem 1rem;
+  margin: 0.1rem;
+  border: 0.1rem solid lightgrey;
+  box-sizing: border-box;
+  text-decoration: none;
+  text-align: center;
+  color: white;
+  background-color: grey;
 }
 
 .paginator #action-btn:hover {
-    opacity: 0.8;
-    color: white;
-    background-color: grey;
-    border: 0.1em solid lightgrey;
+  opacity: 0.8;
+  color: white;
+  background-color: grey;
+  border: 0.1rem solid lightgrey;
 }
 
 .paginator #action-btn:disabled {
-    opacity: 0.2;
-    color: grey;
-    background-color: lightgrey;
-    border: 0.1em solid grey;
+  opacity: 0.2;
+  color: grey;
+  background-color: lightgrey;
+  border: 0.1rem solid grey;
+}
+
+.pagination > li > span {
+  background-color: #607d8b !important;
+  border-color: #546e7a !important;
+}
+
+.page-link {
+  border: 1px solid #cfd8dc;
 }

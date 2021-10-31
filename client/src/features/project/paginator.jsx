@@ -33,7 +33,7 @@ export const Paginator = () => {
           <Popover.Content>
             <div style={{ display: "flex", margin: "auto" }}>
               <input
-                style={{ maxWidth: "100%" }}
+                style={{ maxWidth: "100%", marginRight: "0.5rem" }}
                 type="number"
                 min="1"
                 max={totalPages}
@@ -44,6 +44,7 @@ export const Paginator = () => {
               <Button
                 id="action-btn"
                 size="sm"
+                variant="secondary"
                 onClick={() => routeChange(pageSelected)}
               >
                 Go

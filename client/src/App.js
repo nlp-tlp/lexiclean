@@ -28,7 +28,9 @@ function App() {
             <Helmet>
               <title>Annotation | LexiClean</title>
             </Helmet>
+            <NavBar />
             <Project />
+            <Footer />
             <PortalModal />
           </ProtectedRoute>
           <ProtectedRoute path="/feed">

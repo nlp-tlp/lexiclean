@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   FormControl,
@@ -7,6 +7,7 @@ import {
   Nav,
   Spinner,
   Container,
+  Form,
   Row,
   Col,
 } from "react-bootstrap";
@@ -38,12 +39,14 @@ import {
 import { setPage } from "./textSlice";
 import { setIdle } from "./tokenSlice";
 
-export const Sidebar = () => {
+export const SidebarExp = () => {
   const dispatch = useDispatch();
   const project = useSelector(selectProject);
   const metrics = useSelector(selectProjectMetrics);
   const projectStatus = useSelector((state) => state.project.status);
   const username = useSelector(selectUsername);
+
+  const [showMetricDetail, setShowMetricDetail] = useState(false);
 
   useEffect(() => {
     // TOOD: make this update with side effects
@@ -53,65 +56,96 @@ export const Sidebar = () => {
   }, [projectStatus, dispatch]);
 
   return (
-    <div className="sidebar">
-      <Nav className="d-none d-md-block sidebar">
-        <div className="sidebar-header">
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <FaArrowAltCircleLeft
-              id="icon"
-              onClick={() => history.push("/feed")}
-            />
-            {/* TODO: Make dynamic! */}
-            {/* {username} */}
-            <p id="avatar-icon">TB</p>
-          </div>
-
-          <div>
-            <h3>{project.name}</h3>
-            <p id="description">{project.description}</p>
-          </div>
-          <p>© UWA NLP-TLP Group 2021.</p>
-        </div>
-
-        <div id="control-tray">
-          <FaInfoCircle
-            id="icon"
-            onClick={() => dispatch(setActiveModal("help"))}
-          />
-          <BsGearFill
-            id="icon"
-            onClick={() => dispatch(setActiveModal("settings"))}
-          />
-          <FaDownload
-            id="icon"
-            onClick={() => dispatch(setActiveModal("downloads"))}
-          />
-        </div>
-
-        <div className="metrics">
+    <>
+      <Row>
+        <Col
+          style={{
+            height: "20vh",
+            backgroundColor: "white",
+            border: "1px solid rgba(0, 0, 0, 0.125)",
+            borderRadius: "0.25rem",
+            boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.2)",
+          }}
+        >
+          <Row style={{ marginBottom: "0.5rem" }}>
+            <Col>
+              <TextSearch />
+            </Col>
+          </Row>
+          <Row style={{ justifyContent: "left", marginBottom: "0.5rem" }}>
+            <Col>
+              <FilterAnnotated />
+            </Col>
+          </Row>
+          <Row style={{ textAlign: "right", marginTop: "1rem" }}>
+            <Col>
+              <Button
+                style={{ margin: "0.25rem" }}
+                id="button"
+                size="sm"
+                variant="secondary"
+                disabled
+              >
+                Reset
+              </Button>
+              <Button
+                style={{ margin: "0.25rem" }}
+                id="button"
+                size="sm"
+                variant="dark"
+              >
+                Apply
+              </Button>
+            </Col>
+          </Row>
+        </Col>
+      </Row>
+      <Row
+        style={{
+          marginTop: "2rem",
+        }}
+      >
+        <Col>
           {metrics ? (
             metrics.map((metric) => (
-              <div id="metric" title={metric.title}>
-                <div
-                  style={{
-                    backgroundColor: "#607d8b",
-                    marginLeft: "3rem",
-                    marginRight: "3rem",
-                    color: "white",
-                    borderRadius: "0.5rem",
-                  }}
-                >
-                  <div id="value">{metric.value}</div>
-                  <div id="detail">({metric.detail})</div>
-                  <div id="description">{metric.description}</div>
-                </div>
-              </div>
+              <Row
+                style={{
+                  backgroundColor: "white",
+                  border: "1px solid rgba(0, 0, 0, 0.125)",
+                  borderRadius: "0.25rem",
+                  textAlign: "center",
+                  marginBottom: "2rem",
+                  boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.2)",
+                }}
+              >
+                <Col>
+                  <div
+                    className="metric"
+                    style={{
+                      padding: "0.5rem",
+                    }}
+                    onMouseEnter={() => setShowMetricDetail(true)}
+                    onMouseLeave={() => setShowMetricDetail(false)}
+                    title={metric.title}
+                  >
+                    <div
+                      style={{
+                        fontWeight: "bold",
+                        fontSize: "2rem",
+                      }}
+                    >
+                      {showMetricDetail ? metric.detail : metric.value}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "1rem",
+                      }}
+                    >
+                      {metric.description}
+                    </div>
+                  </div>
+                </Col>
+              </Row>
             ))
           ) : (
             <div style={{ display: "flex", justifyContent: "center" }}>
@@ -132,57 +166,9 @@ export const Sidebar = () => {
               />
             </div>
           )}
-        </div>
-
-        <div
-          style={{
-            backgroundColor: "#cfd8dc",
-            display: "flex",
-            justifyContent: "space-evenly",
-            borderBottom: "1px solid rgba(0, 0, 0, 0.1)",
-            borderTop: "1px solid rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          <div
-            style={{
-              textAlign: "center",
-            }}
-            id="icon"
-            onClick={() => dispatch(setActiveModal("schema"))}
-          >
-            <FaEdit />
-            <p style={{ fontSize: "0.75rem", fontWeight: "bold" }}>Schema</p>
-          </div>
-          <div
-            style={{
-              textAlign: "center",
-            }}
-            id="icon"
-            onClick={() => dispatch(setActiveModal("legend"))}
-          >
-            <FaGripVertical />
-            <p style={{ fontSize: "0.75rem", fontWeight: "bold" }}>Legend</p>
-          </div>
-        </div>
-
-        <div className="filters">
-          <div id="filter">
-            <TextSearch />
-          </div>
-          <div id="filter">
-            <FilterAnnotated />
-          </div>
-          <div id="button-group">
-            <Button id="button" size="sm" variant="secondary" disabled>
-              Reset
-            </Button>
-            <Button id="button" size="sm" variant="dark">
-              Apply
-            </Button>
-          </div>
-        </div>
-      </Nav>
-    </div>
+        </Col>
+      </Row>
+    </>
   );
 };
 
@@ -234,17 +220,19 @@ const TextSearch = () => {
   );
 };
 
-const FilterAnnotated = ({ min }) => {
+const FilterAnnotated = () => {
   return (
-    <ButtonGroup size="sm" className="mb-2">
-      <Button variant="secondary">All</Button>
-      <Button disabled variant="secondary">
-        {min ? "A" : "Annotated"}
-      </Button>
-      <Button disabled variant="secondary">
-        {min ? "UA" : "Unannotated"}
-      </Button>
-    </ButtonGroup>
+    <Form
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "left",
+      }}
+    >
+      <Form.Check label="All" type="radio" name="group1" />
+      <Form.Check label="Annotated" type="radio" name="group1" />
+      <Form.Check label="Unannotated" type="radio" name="group1" />
+    </Form>
   );
 };
 
