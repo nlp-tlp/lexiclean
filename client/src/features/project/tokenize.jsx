@@ -5,10 +5,10 @@ import { Button, OverlayTrigger, Popover } from "react-bootstrap";
 import { IoInformationCircleSharp } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import TokenizeGif from "../../media/tokenize.gif";
-import { setTokenizeTextId } from "./textSlice";
 import {
   patchSingleTokenization,
   selectTokenValues,
+  setTokenizeTextId,
   setIdle,
   updateCurrentValue,
 } from "./tokenSlice";
@@ -104,7 +104,7 @@ export const Tokenize = ({ tokenIds, textId }) => {
                 bgColourMap: bgColourMap,
               })
             );
-            dispatch(setTokenizeTextId(null));
+            // dispatch(setTokenizeTextId(null));
             // dispatch(setIdle());
           }}
         >

@@ -10,6 +10,7 @@ const initialState = {
   textTokenMap: null,
   showToast: false,
   toastInfo: { type: null, content: null },
+  tokenizeTextId: null,
 };
 
 const getTokenWidth = (value) => {
@@ -27,9 +28,9 @@ const getTokenWidth = (value) => {
 
 const getTokenClf = (tokenInfo, bgColourMap) => {
   // Determines the classification and colour of a given token
-  // based on its meta tags and a background colour map
-  // TODO: update to account for replacement and suggestions...
 
+  // Check if token has a meta-tag assigned, if so (and no suggested or replacement),
+  // then assign latest tag colour
   const bgColourKey = Object.keys(tokenInfo.meta_tags).filter(
     (tag) => tokenInfo.meta_tags[tag]
   );
@@ -41,21 +42,25 @@ const getTokenClf = (tokenInfo, bgColourMap) => {
 
   let clf;
   let colour;
-
-  if (keyIntersect.size > 0) {
-    clf = keyIntersect.values().next().value;
+  if (bgColourKey.length === 0) {
+    // No meta-tags, figure out what clf currently exists
+    clf = tokenInfo.replacement
+      ? "rp"
+      : tokenInfo.suggested_replacement
+      ? "st"
+      : tokenInfo.meta_tags["en"]
+      ? "en"
+      : "ua";
     colour = bgColourMap[clf];
   } else {
-    clf = "ua";
-    colour = bgColourMap["ua"];
+    clf = keyIntersect.values().next().value;
+    colour = bgColourMap[clf];
   }
 
   // Get token contrast ratio (tests white against colour) if < 4.5 then sets font color to black
   let fontColour;
 
-  if (clf === "en") {
-    fontColour = "black";
-  } else {
+  if (!["en", "rp", "ua", "st"].includes(clf)) {
     const hexToRgb = (hex) =>
       hex
         .replace(
@@ -414,6 +419,25 @@ export const patchSingleAnnotationState = createAsyncThunk(
   }
 );
 
+export const patchSingleTokenSplit = createAsyncThunk(
+  "/token/patchSingleTokenSplit",
+  async ({ textId, tokenId, currentValue, bgColourMap }) => {
+    const response = await axios.patch(`/api/text/split/${textId}`, {
+      token_id: tokenId,
+      current_value: currentValue,
+    });
+    return {
+      response: response.data,
+      details: {
+        textId: textId,
+        tokenId: tokenId,
+        currentValue: currentValue,
+        bgColourMap: bgColourMap,
+      },
+    };
+  }
+);
+
 export const tokenSlice = createSlice({
   name: "tokens",
   initialState: initialState,
@@ -463,6 +487,9 @@ export const tokenSlice = createSlice({
         currentValue: action.payload.value,
         width: getTokenWidth(action.payload.value),
       };
+    },
+    setTokenizeTextId: (state, action) => {
+      state.tokenizeTextId = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -982,15 +1009,20 @@ export const tokenSlice = createSlice({
         // );
         // console.log(filteredValues);
 
-        // Add new values to token values
+        // Add new values to token values; also adds currentValue to token value object (this
+        // enables the UI to rerender correctly)
         const newValues = Object.assign(
           {},
           ...newTokenIds.map((id) => {
             return {
-              [id]: getTokenClf(
-                tokenValues.filter((token) => token._id === id)[0],
-                details.bgColourMap
-              ),
+              [id]: {
+                ...getTokenClf(
+                  tokenValues.filter((token) => token._id === id)[0],
+                  details.bgColourMap
+                ),
+                currentValue: tokenValues.filter((token) => token._id === id)[0]
+                  .value,
+              },
             };
           })
         );
@@ -1002,7 +1034,7 @@ export const tokenSlice = createSlice({
           (text) => text._id === details.textId
         )[0];
         text = { ...text, token_ids: tokenValues.map((token) => token._id) };
-        console.log(text);
+        // console.log(text);
 
         // Update text in array, making sure it's the correct position!
         const textTokenMap = state.textTokenMap;
@@ -1010,6 +1042,9 @@ export const tokenSlice = createSlice({
           ...textTokenMap.filter((text) => text._id !== details.textId),
           text,
         ].sort((a, b) => a.rank - b.rank);
+
+        // Set tokenized text to null (after operations complete)
+        state.tokenizeTextId = null;
       })
       .addCase(patchSingleAnnotationState.fulfilled, (state, action) => {
         const details = action.payload.details;
@@ -1020,6 +1055,41 @@ export const tokenSlice = createSlice({
             return text;
           }
         });
+      })
+      .addCase(patchSingleTokenSplit.fulfilled, (state, action) => {
+        const details = action.payload.details; // tokenId, textId, currentValue
+        const response = action.payload.response; // new_tokens
+
+        // Remove old value from values state
+        delete state.values[details.tokenId];
+
+        // Update values with new tokens information
+        const newValues = Object.assign(
+          {},
+          ...response.new_tokens.map((token) => {
+            return {
+              [token._id]: {
+                ...getTokenClf(token, details.bgColourMap),
+                currentValue: token.value,
+              },
+            };
+          })
+        );
+        state.values = { ...state.values, ...newValues };
+
+        // Update textTokenMap with new token set
+        const newTextTokenMapItem = {
+          ...state.textTokenMap.filter((text) => text._id === details.textId)[0],
+          token_ids: response.token_ids,
+        };
+        // console.log(text);
+
+        // Update text in array, making sure it's the correct position!
+        const textTokenMap = state.textTokenMap;
+        state.textTokenMap = [
+          ...textTokenMap.filter((text) => text._id !== details.textId),
+          newTextTokenMapItem,
+        ].sort((a, b) => a.rank - b.rank);
       });
   },
 });
@@ -1027,6 +1097,7 @@ export const tokenSlice = createSlice({
 export const {
   setIdle,
   setShowToast,
+  setTokenizeTextId,
   addTokens,
   addSingleReplacement,
   addAllReplacements,
@@ -1046,5 +1117,6 @@ export const selectTextTokenMap = (state) => state.tokens.textTokenMap;
 export const selectTokenValues = (state) => state.tokens.values;
 export const selectToastInfo = (state) => state.tokens.toastInfo;
 export const selectShowToast = (state) => state.tokens.showToast;
+export const selectTokenizeTextId = (state) => state.tokens.tokenizeTextId;
 
 export default tokenSlice.reducer;

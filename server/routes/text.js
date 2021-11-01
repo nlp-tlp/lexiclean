@@ -605,4 +605,87 @@ router.patch("/tokenize/all", async (req, res) => {
   }
 });
 
+router.patch("/split/:textId", async (req, res) => {
+  // Given a text and token id, this method splits the token on all white space in the current value
+  // a user has applied to the input field. n new tokens are created and the old one deactivated.
+  try {
+    // console.log(req.body);
+
+    const text = await Text.findById({ _id: req.params.textId }).lean();
+    // console.log(text);
+    const project_id = text.project_id;
+
+    // Get token index (this could be sent from UI, but easier on server)
+    // Note: token.token is the token _id in the text's token array (each array element has the _id key)
+    const tokenIndex = text.tokens.filter(
+      (token) => token.token == req.body.token_id
+    )[0].index;
+    // console.log(tokenIndex);
+
+    // Create new tokens...
+    const enMap = await Map.findOne({ type: "en" }).lean();
+    const enMapSet = new Set(enMap.tokens);
+
+    // Here all historical info will be stripped from new tokens; however they will
+    // be checked if they are in the English lexicon
+    const newTokenList = req.body.current_value.split(" ").map((token) => {
+      return {
+        value: token,
+        active: true,
+        meta_tags: { en: enMapSet.has(token) },
+        replacement: null,
+        suggested_replacement: null,
+        project_id: project_id,
+      };
+    });
+
+    // console.log(newTokenList);
+    // Add tokens into token collection
+    const tokenListRes = await Token.insertMany(newTokenList);
+
+    // console.log(tokenListRes);
+
+    // Deactivate old token...
+    await Token.findByIdAndUpdate(
+      { _id: req.body.token_id },
+      { active: false }
+    );
+
+    // update old and new token indexes
+    const tokensToAdd = tokenListRes.map((token, index) => ({
+      token: token._id,
+      index: tokenIndex + index, // give new tokens index which is offset by the original tokens index
+    })); // Convert into form required by text object
+    // console.log(tokensToAdd);
+
+    // This operation happens in-situ, is assigned back to text object
+    text.tokens.splice(tokenIndex, 1, ...tokensToAdd);
+    
+    // Reassign indexes based on current ordering
+    text.tokens = text.tokens.map((token, newIndex) => ({
+      ...token,
+      index: newIndex,
+    }));
+    console.log(text);
+
+    // console.log(text);
+
+    // Update text object in collection
+    // Update text tokens array with new tokens
+    await Text.findByIdAndUpdate(
+      { _id: req.params.textId },
+      { tokens: text.tokens },
+      {
+        new: true,
+      }
+    );
+
+    console.log(tokenListRes);
+
+    res.json({new_tokens: tokenListRes, token_ids: text.tokens.map(token => token.token)}); // token.token is the token _id in the text tokens array...
+  } catch (err) {
+    res.json({ message: err });
+  }
+});
+
 module.exports = router;

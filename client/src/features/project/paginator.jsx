@@ -4,12 +4,18 @@ import { Button, OverlayTrigger, Pagination, Popover } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import history from "../utils/history";
 import { selectProject } from "./projectSlice";
-import { selectPage, selectTotalPages, setPage } from "./textSlice";
+import {
+  selectPage,
+  selectTotalPages,
+  selectPageLimit,
+  setPage,
+} from "./textSlice";
 
 export const Paginator = () => {
   const project = useSelector(selectProject);
   const totalPages = useSelector(selectTotalPages);
   const page = useSelector(selectPage);
+  const pageLimit = useSelector(selectPageLimit);
 
   const [pageSelected, setPageSelected] = useState("");
 
@@ -59,64 +65,72 @@ export const Paginator = () => {
   );
 
   return (
-    <div className="paginator">
-      <Pagination>
-        {page > 4 ? (
-          <>
-            <Pagination.First onClick={() => routeChange(1)} />
-            <Pagination.Prev onClick={() => routeChange(page - 1)} />
-            {ellipsisGo}
-          </>
-        ) : null}
-        {page <= 4
-          ? [...Array(totalPages < 5 ? totalPages : 5).keys()].map((number) => {
-              return (
-                <Pagination.Item
-                  key={number + 1}
-                  active={number + 1 === page}
-                  onClick={() => routeChange(number + 1)}
-                >
-                  {number + 1}
-                </Pagination.Item>
-              );
-            })
-          : page < totalPages - 4
-          ? [page - 3, page - 2, page - 1, page, page + 1].map((number) => {
-              return (
-                <Pagination.Item
-                  key={number + 1}
-                  active={number + 1 === page}
-                  onClick={() => routeChange(number + 1)}
-                >
-                  {number + 1}
-                </Pagination.Item>
-              );
-            })
-          : [
-              totalPages - 5,
-              totalPages - 4,
-              totalPages - 3,
-              totalPages - 2,
-              totalPages - 1,
-            ].map((number) => {
-              return (
-                <Pagination.Item
-                  key={number + 1}
-                  active={number + 1 === page}
-                  onClick={() => routeChange(number + 1)}
-                >
-                  {number + 1}
-                </Pagination.Item>
-              );
-            })}
-        {page < totalPages - 4 ? (
-          <>
-            {ellipsisGo}
-            <Pagination.Next onClick={() => routeChange(page + 1)} />
-            <Pagination.Last onClick={() => routeChange(totalPages)} />
-          </>
-        ) : null}
-      </Pagination>
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <div className="paginator">
+        <Pagination>
+          {page > 4 && (
+            <>
+              <Pagination.First onClick={() => routeChange(1)} />
+              <Pagination.Prev onClick={() => routeChange(page - 1)} />
+              {ellipsisGo}
+            </>
+          )}
+          {page <= 4
+            ? [...Array(totalPages < 5 ? totalPages : 5).keys()].map(
+                (number) => {
+                  return (
+                    <Pagination.Item
+                      key={number + 1}
+                      active={number + 1 === page}
+                      onClick={() => routeChange(number + 1)}
+                    >
+                      {number + 1}
+                    </Pagination.Item>
+                  );
+                }
+              )
+            : page < totalPages - 4
+            ? [page - 3, page - 2, page - 1, page, page + 1].map((number) => {
+                return (
+                  <Pagination.Item
+                    key={number + 1}
+                    active={number + 1 === page}
+                    onClick={() => routeChange(number + 1)}
+                  >
+                    {number + 1}
+                  </Pagination.Item>
+                );
+              })
+            : [
+                totalPages - 5,
+                totalPages - 4,
+                totalPages - 3,
+                totalPages - 2,
+                totalPages - 1,
+              ].map((number) => {
+                return (
+                  <Pagination.Item
+                    key={number + 1}
+                    active={number + 1 === page}
+                    onClick={() => routeChange(number + 1)}
+                  >
+                    {number + 1}
+                  </Pagination.Item>
+                );
+              })}
+          {page < totalPages - 4 && (
+            <>
+              {ellipsisGo}
+              <Pagination.Next onClick={() => routeChange(page + 1)} />
+              <Pagination.Last onClick={() => routeChange(totalPages)} />
+            </>
+          )}
+        </Pagination>
+      </div>
+      <p id="paginator-detail">
+        Showing {(page - 1) * pageLimit + 1} to {page * pageLimit} of{" "}
+        {pageLimit * totalPages} documents
+      </p>
     </div>
   );
 };

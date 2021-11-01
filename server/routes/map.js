@@ -7,7 +7,8 @@ const Text = require("../models/Text");
 const Token = require("../models/Token");
 const Project = require("../models/Project");
 
-// Create map
+const DEFAULT_COLOURS = { ua: "#ff7043", st: "#2196f3", en: "#eceff1" };
+
 router.post("/", async (req, res) => {
   logger.info("Creating map", { route: "/api/map/" });
   try {
@@ -31,7 +32,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Get Mapping using project id and mapping type
 router.post("/one/:projectId", async (req, res) => {
   console.log(req.params, req.body);
   try {
@@ -63,7 +63,6 @@ router.post("/static/", async (req, res) => {
   }
 });
 
-// Download map
 router.post("/download", async (req, res) => {
   try {
     logger.info(`Downloading ${req.body.mapName} mapping`, {
@@ -153,7 +152,6 @@ router.post("/download", async (req, res) => {
   }
 });
 
-// Get maps associated to project
 router.get("/:projectId", async (req, res) => {
   // Here additional classes and colours are defined. TODO: integrate into front-end so the user is aware of these decisions.
   logger.info("Fetching project maps", {
@@ -176,7 +174,7 @@ router.get("/:projectId", async (req, res) => {
         .filter((map) => map.active)
         .map((map) => ({ [map.type]: map.colour }))
     ); // Filters for active maps
-    colourMap = { ...colourMap, ua: "#ff7043", st: "#2196f3", en: "#607d8b" };
+    colourMap = { ...colourMap, ...DEFAULT_COLOURS };
     res.json({
       contents: mapsRestructured,
       map_keys: mapKeys,
@@ -190,8 +188,8 @@ router.get("/:projectId", async (req, res) => {
   }
 });
 
-// Modify active state of map
 router.post("/status/:mapId", async (req, res) => {
+  // Modify active state of map
   logger.info("Updating map status", {
     route: `/api/map/status/${req.params.mapId}`,
   });

@@ -72,6 +72,7 @@ const TokenInput = ({ token, textId, showContextMenu }) => {
     bgColourMap,
     textId,
     projectId: project._id,
+    currentValue: token.currentValue
   };
 
   return (
@@ -86,6 +87,7 @@ const TokenInput = ({ token, textId, showContextMenu }) => {
         className="token-input"
         type="text"
         name="token"
+        clf={token.clf}
         placeholder={token.currentValue}
         value={token.currentValue}
         onChange={(e) => modifyToken(e.target.value)}

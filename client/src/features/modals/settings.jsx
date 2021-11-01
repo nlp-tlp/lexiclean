@@ -25,7 +25,7 @@ export const Settings = () => {
   const [tempPageLimit, setTempPageLimit] = useState(1);
   const { pageNumber } = useParams();
 
-  console.log(pageLimit, tempPageLimit)
+  console.log(pageLimit, tempPageLimit);
 
   return (
     <div>

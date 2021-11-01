@@ -26,15 +26,15 @@ import {
   getTotalPages,
   selectPage,
   selectPageLimit,
-  selectTokenizeTextId,
   setPage,
-  setTokenizeTextId,
 } from "./textSlice";
 import { Tokenize } from "./tokenize";
 import {
   fetchTokens,
   selectShowToast,
   selectTextTokenMap,
+  selectTokenizeTextId,
+  setTokenizeTextId,
   setIdle,
   updateAllTokenDetails,
   patchSingleAnnotationState,

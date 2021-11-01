@@ -1,7 +1,7 @@
 import React from "react";
 import { Popover } from "react-bootstrap";
 import { BsArrowRightShort } from "react-icons/bs";
-import { MdBookmark, MdBrush, MdDelete } from "react-icons/md";
+import { MdBookmark, MdBrush, MdDelete, MdCallSplit } from "react-icons/md";
 import "./Token.css";
 import {
   deleteAllReplacements,
@@ -12,6 +12,7 @@ import {
   patchAllSuggestedReplacements,
   patchSingleReplacement,
   patchSingleSuggestedReplacement,
+  patchSingleTokenSplit,
   updateCurrentValue,
 } from "./tokenSlice";
 import { fetchMetrics } from "./projectSlice";
@@ -79,6 +80,22 @@ export const PopoverManager = (props) => {
               })
             );
           }
+          props.setShowTokenPopover(false);
+        },
+      },
+      {
+        name: "Split",
+        icon: <MdCallSplit />,
+        function: () => {
+          props.dispatch(
+            patchSingleTokenSplit({
+              textId: props.textId,
+              tokenId: props.token._id,
+              currentValue: props.currentValue,
+              bgColourMap: props.bgColourMap
+            })
+          );
+          props.dispatch(fetchMetrics({ projectId: props.projectId }));
           props.setShowTokenPopover(false);
         },
       },
@@ -191,14 +208,35 @@ export const PopoverManager = (props) => {
           <p id="suggested-text">{props.token.currentValue}</p>
         </div>
         <div id="action-container">
-          {popoverData[props.type].map((action) => (
-            <div id="action-btn" onClick={action.function}>
-              <p id="action-text">
-                {action.icon}
-                {action.name}
-              </p>
-            </div>
-          ))}
+          {popoverData[props.type].map((action) => {
+            if (
+              action.name.toLowerCase() === "split" &&
+              props.token.currentValue &&
+              props.token.currentValue.indexOf(" ") >= 0
+            ) {
+              return (
+                <div
+                  id="action-btn"
+                  onClick={action.function}
+                  style={{ borderTop: "1px solid lightgrey" }}
+                >
+                  <p id="action-text">
+                    {action.icon}
+                    {action.name}
+                  </p>
+                </div>
+              );
+            } else if (action.name.toLowerCase() !== "split") {
+              return (
+                <div id="action-btn" onClick={action.function}>
+                  <p id="action-text">
+                    {action.icon}
+                    {action.name}
+                  </p>
+                </div>
+              );
+            }
+          })}
         </div>
       </div>
     </Popover>

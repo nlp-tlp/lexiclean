@@ -31,7 +31,6 @@ router.patch("/replace/add/single/", async (req, res) => {
   }
 });
 
-// Remove replacement on one token
 router.delete("/replace/remove/single/:tokenId", async (req, res) => {
   try {
     logger.info("Removing replacement on single token", {

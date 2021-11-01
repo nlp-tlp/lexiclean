@@ -8,7 +8,6 @@ const initialState = {
   pageLimit: 10,
   totalPages: null,
   saveReplacementsOnly: false,
-  tokenizeTextId: null,
 };
 
 export const getTotalPages = createAsyncThunk(
@@ -53,9 +52,6 @@ export const textSlice = createSlice({
     setPage: (state, action) => {
       state.page = Number(action.payload);
     },
-    setTokenizeTextId: (state, action) => {
-      state.tokenizeTextId = action.payload;
-    },
   },
   extraReducers: (builder) => {
     builder.addCase(getTotalPages.fulfilled, (state, action) => {
@@ -64,12 +60,11 @@ export const textSlice = createSlice({
   },
 });
 
-export const { setIdle, setPageLimit, setPage, setTokenizeTextId } =
+export const { setIdle, setPageLimit, setPage } =
   textSlice.actions;
 
 export const selectPageLimit = (state) => state.texts.pageLimit;
 export const selectPage = (state) => state.texts.page;
-export const selectTokenizeTextId = (state) => state.texts.tokenizeTextId;
 export const selectTotalPages = (state) => state.texts.totalPages;
 
 export default textSlice.reducer;

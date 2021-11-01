@@ -157,6 +157,9 @@ export const Sidebar = () => {
                       style={{
                         fontWeight: "bold",
                         fontSize: "2rem",
+                        "&:hover": {
+                          fontSize: "1.5rem",
+                        },
                       }}
                     >
                       {showMetricDetail ? metric.detail : metric.value}

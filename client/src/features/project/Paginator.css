@@ -1,7 +1,7 @@
 .paginator {
   display: flex;
   justify-content: center;
-  margin: 1rem;
+  margin: 1rem 0rem 0rem 0rem;
 }
 
 .paginator #action-btn {
@@ -19,7 +19,7 @@
 .paginator #action-btn:hover {
   opacity: 0.8;
   color: white;
-  background-color: grey;
+  background-color: #cfd8dc;
   border: 0.1rem solid lightgrey;
 }
 
@@ -37,4 +37,12 @@
 
 .page-link {
   border: 1px solid #cfd8dc;
+}
+
+#paginator-detail {
+  text-align: center;
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+  padding: 0;
+  color: #546e7a;
 }
