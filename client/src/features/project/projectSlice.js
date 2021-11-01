@@ -11,6 +11,7 @@ const initialState = {
   activeMaps: null,
   savePending: false,
   metrics: null,
+  metricsStatus: "idle",
   activeModal: null,
   modalInfo: null,
   schema: null,
@@ -90,8 +91,8 @@ export const projectSlice = createSlice({
     },
     setProject: (state, action) => {
       state.metrics = null;
-      state.details = action.payload; 
-    }
+      state.details = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -115,9 +116,16 @@ export const projectSlice = createSlice({
         );
         state.schema = action.payload; // Entire maps object
       })
+      .addCase(fetchMetrics.pending, (state, action) => {
+        state.metricsStatus = "loading";
+      })
       .addCase(fetchMetrics.fulfilled, (state, action) => {
         // Fetches aggregate metrics of project progess
+        state.metricsStatus = "succeeded";
         state.metrics = action.payload;
+      })
+      .addCase(fetchMetrics.rejected, (state, action) => {
+        state.metricsStatus = "failed";
       })
       .addCase(patchProjectSchema.fulfilled, (state, action) => {
         // Adds a new meta tag to the project schema
@@ -193,6 +201,7 @@ export const selectSearchTerm = (state) => state.project.searchTerm;
 export const selectBgColourMap = (state) => state.project.bgColourMap;
 export const selectActiveMaps = (state) => state.project.activeMaps;
 export const selectProjectMetrics = (state) => state.project.metrics;
+export const selectProjectMetricsStatus = (state) => state.project.metricsStatus;
 export const selectActiveModal = (state) => state.project.activeModal;
 export const selectProjectSchema = (state) => state.project.schema;
 

@@ -14,6 +14,7 @@ import {
   patchSingleSuggestedReplacement,
   updateCurrentValue,
 } from "./tokenSlice";
+import { fetchMetrics } from "./projectSlice";
 
 export const PopoverManager = (props) => {
   const popoverData = {
@@ -30,6 +31,7 @@ export const PopoverManager = (props) => {
               bgColourMap: props.bgColourMap,
             })
           );
+          props.dispatch(fetchMetrics({ projectId: props.projectId }));
           props.setShowTokenPopover(false);
         },
       },
@@ -47,6 +49,7 @@ export const PopoverManager = (props) => {
               projectId: props.projectId,
             })
           );
+          props.dispatch(fetchMetrics({ projectId: props.projectId }));
           props.setShowTokenPopover(false);
         },
       },
@@ -91,6 +94,7 @@ export const PopoverManager = (props) => {
               bgColourMap: props.bgColourMap,
             })
           );
+          props.dispatch(fetchMetrics({ projectId: props.projectId }));
           props.setShowPopover(false);
         },
       },
@@ -106,6 +110,7 @@ export const PopoverManager = (props) => {
               projectId: props.projectId,
             })
           );
+          props.dispatch(fetchMetrics({ projectId: props.projectId }));
           props.setShowPopover(false);
         },
       },
@@ -123,6 +128,7 @@ export const PopoverManager = (props) => {
               projectId: props.projectId,
             })
           );
+          props.dispatch(fetchMetrics({ projectId: props.projectId }));
           props.setShowPopover(false);
         },
       },
@@ -137,6 +143,7 @@ export const PopoverManager = (props) => {
               suggestedReplacement: props.token.currentValue,
             })
           );
+          props.dispatch(fetchMetrics({ projectId: props.projectId }));
           props.setShowPopover(false);
         },
       },
@@ -150,6 +157,7 @@ export const PopoverManager = (props) => {
               value: props.token.value,
             })
           );
+          props.dispatch(fetchMetrics({ projectId: props.projectId }));
           props.setShowPopover(false);
         },
       },
@@ -165,6 +173,7 @@ export const PopoverManager = (props) => {
               projectId: props.projectId,
             })
           );
+          props.dispatch(fetchMetrics({ projectId: props.projectId }));
           props.setShowPopover(false);
         },
       },

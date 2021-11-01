@@ -7,6 +7,7 @@ import {
   selectActiveMaps,
   selectBgColourMap,
   selectProject,
+  fetchMetrics,
 } from "./projectSlice";
 import {
   deleteAllMetaTags,
@@ -32,6 +33,7 @@ export const ContextMenu = ({ menuId, token, textId }) => {
         bgColourMap: bgColourMap,
       })
     );
+    dispatch(fetchMetrics({ projectId: project._id }));
   };
 
   const applyAll = (field) => {
@@ -43,6 +45,7 @@ export const ContextMenu = ({ menuId, token, textId }) => {
         bgColourMap: bgColourMap,
       })
     );
+    dispatch(fetchMetrics({ projectId: project._id }));
   };
 
   const removeSingle = (field) => {
@@ -53,6 +56,7 @@ export const ContextMenu = ({ menuId, token, textId }) => {
         bgColourMap: bgColourMap,
       })
     );
+    dispatch(fetchMetrics({ projectId: project._id }));
   };
 
   const removeAll = (field) => {
@@ -64,6 +68,7 @@ export const ContextMenu = ({ menuId, token, textId }) => {
         bgColourMap: bgColourMap,
       })
     );
+    dispatch(fetchMetrics({ projectId: project._id }));
   };
 
   return (

@@ -35,6 +35,7 @@ import {
   selectSearchTerm,
   setActiveModal,
   setSearchTerm,
+  selectProjectMetricsStatus,
 } from "./projectSlice";
 import { setPage } from "./textSlice";
 import { setIdle } from "./tokenSlice";
@@ -44,6 +45,7 @@ import { SaveIconBtn } from "../project/savebutton";
 export const Sidebar = () => {
   const dispatch = useDispatch();
   const project = useSelector(selectProject);
+  const metricStatus = useSelector(selectProjectMetricsStatus);
   const metrics = useSelector(selectProjectMetrics);
   const projectStatus = useSelector((state) => state.project.status);
   const username = useSelector(selectUsername);

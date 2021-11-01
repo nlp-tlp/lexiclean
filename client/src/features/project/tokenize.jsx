@@ -105,7 +105,7 @@ export const Tokenize = ({ tokenIds, textId }) => {
               })
             );
             dispatch(setTokenizeTextId(null));
-            dispatch(setIdle());
+            // dispatch(setIdle());
           }}
         >
           Apply

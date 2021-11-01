@@ -22,8 +22,10 @@ export const Settings = () => {
   const dispatch = useDispatch();
   const pageLimit = useSelector(selectPageLimit);
   const project = useSelector(selectProject);
-  const [tempPageLimit, setTempPageLimit] = useState(10);
+  const [tempPageLimit, setTempPageLimit] = useState(1);
   const { pageNumber } = useParams();
+
+  console.log(pageLimit, tempPageLimit)
 
   return (
     <div>
@@ -45,7 +47,7 @@ export const Settings = () => {
             size="sm"
             onChange={(e) => setTempPageLimit(e.target.value)}
           >
-            {[10, 20, 30, 40, 50].map((limit) => (
+            {[1, 2, 5, 10, 20, 30, 40, 50].map((limit) => (
               <option value={limit}>{limit}</option>
             ))}
           </Form.Control>
@@ -62,7 +64,7 @@ export const Settings = () => {
               history.push(`/project/${project._id}/page/1`);
             }
           }}
-          disabled={tempPageLimit == pageLimit}
+          disabled={Number(tempPageLimit) === Number(pageLimit)}
         >
           Apply
         </Button>

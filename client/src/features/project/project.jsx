@@ -18,8 +18,8 @@ import {
   selectBgColourMap,
   selectProject,
   selectSearchTerm,
+  fetchMetrics,
 } from "./projectSlice";
-import { SaveButton } from "./savebutton";
 import { Sidebar, SidebarMin } from "./sidebar";
 import { Text } from "./text";
 import {
@@ -167,6 +167,7 @@ export const Project = () => {
                                 value: false,
                               })
                             );
+                            dispatch(fetchMetrics({ projectId: project._id }));
                           }}
                         />
                       ) : (
@@ -179,6 +180,7 @@ export const Project = () => {
                                 value: true,
                               })
                             );
+                            dispatch(fetchMetrics({ projectId: project._id }));
                           }}
                         />
                       )}
@@ -187,25 +189,25 @@ export const Project = () => {
                           id="icon-tokenize"
                           active="true"
                           title="Go to replacement view"
-                          onClick={() =>
+                          onClick={() => {
                             dispatch(
                               setTokenizeTextId(
                                 tokenizeTextId === text._id ? null : text._id
                               )
-                            )
-                          }
+                            );
+                          }}
                         />
                       ) : (
                         <RiEditCircleFill
                           id="icon-tokenize"
                           title="Go to tokenization view"
-                          onClick={() =>
+                          onClick={() => {
                             dispatch(
                               setTokenizeTextId(
                                 tokenizeTextId === text._id ? null : text._id
                               )
-                            )
-                          }
+                            );
+                          }}
                         />
                       )}
                     </div>
@@ -229,7 +231,7 @@ export const Project = () => {
         alt="main-background"
       />
       {showToast && <ContextToast />}
-      <Container fluid style={{margin: "auto"}}>
+      <Container fluid style={{ margin: "auto" }}>
         <Row style={{ marginTop: "0rem", justifyContent: "center" }}>
           <Col xs={12} id="sidebar-min-wrapper">
             <Row>
