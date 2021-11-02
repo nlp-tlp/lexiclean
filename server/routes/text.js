@@ -660,13 +660,13 @@ router.patch("/split/:textId", async (req, res) => {
 
     // This operation happens in-situ, is assigned back to text object
     text.tokens.splice(tokenIndex, 1, ...tokensToAdd);
-    
+
     // Reassign indexes based on current ordering
     text.tokens = text.tokens.map((token, newIndex) => ({
       ...token,
       index: newIndex,
     }));
-    console.log(text);
+    // console.log(text);
 
     // console.log(text);
 
@@ -680,9 +680,12 @@ router.patch("/split/:textId", async (req, res) => {
       }
     );
 
-    console.log(tokenListRes);
+    // console.log(tokenListRes);
 
-    res.json({new_tokens: tokenListRes, token_ids: text.tokens.map(token => token.token)}); // token.token is the token _id in the text tokens array...
+    res.json({
+      new_tokens: tokenListRes,
+      token_ids: text.tokens.map((token) => token.token),
+    }); // token.token is the token _id in the text tokens array...
   } catch (err) {
     res.json({ message: err });
   }

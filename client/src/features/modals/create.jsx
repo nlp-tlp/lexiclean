@@ -7,16 +7,13 @@ import {
   Form,
   Col,
   Row,
-  Table,
   OverlayTrigger,
   Popover,
   Spinner,
 } from "react-bootstrap";
 import { IoBrush, IoCheckmark, IoClose } from "react-icons/io5";
-
 import { Formik } from "formik";
 import * as yup from "yup";
-import { MdAddCircle, MdRemoveCircle, MdBrush } from "react-icons/md";
 import { IoInformationCircleSharp } from "react-icons/io5";
 import { CompactPicker } from "react-color";
 import { useDispatch } from "react-redux";
@@ -24,7 +21,6 @@ import { setActiveModal } from "../../features/project/projectSlice";
 import { setIdle } from "../feed/feedSlice";
 
 // ua: "#ff5722", st: "#2196f3", en: #eceff1
-
 const DEFAULT_COLOUR = "#eceff1";
 const REPLACE_COLOUR = "#009688";
 const infoContent = {
@@ -71,6 +67,8 @@ export const Create = () => {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [corpus, setCorpus] = useState();
+
   // Preprocessing
   const [previewContent, setPreviewContent] = useState(
     "Upload texts to preview"
@@ -98,6 +96,7 @@ export const Create = () => {
         };
         setFileData((prevState) => ({ ...prevState, [fileKey]: newFileData }));
         if (fileKey === "textFile") {
+          setCorpus(null);
           setDataFileLoaded(true);
         }
 
@@ -224,16 +223,22 @@ export const Create = () => {
   useEffect(() => {
     // Update preview data whenever a text file is uploaded and the pre-processing
     // actions are changed
-    if (fileData["textFile"].data) {
-      let corpus = fileData["textFile"].data;
+    if (fileData["textFile"].data && !corpus) {
+      // On change of fileData set corpus
+      // TOOD: make it so when file is uploaded corpus is reset...
+      setCorpus(fileData["textFile"].data);
+      console.log(fileData);
+    }
+
+    if (corpus) {
       // Remove multiple white space and trim
-      corpus = corpus.map((text) => text.replace(/\s+/g, " ").trim());
+      let preCorpus = corpus.map((text) => text.replace(/\s+/g, " ").trim());
 
       if (lowerCase) {
-        corpus = corpus.map((text) => text.toLowerCase());
+        preCorpus = preCorpus.map((text) => text.toLowerCase());
       }
       if (removeDuplicates) {
-        corpus = [...new Set(corpus)];
+        preCorpus = [...new Set(preCorpus)];
       }
       if (removeChars) {
         const escapedChars = [
@@ -257,18 +262,45 @@ export const Create = () => {
           .split("")
           .map((char) => (escapedChars.includes(char) ? `\\${char}` : char));
         const regex = new RegExp("[" + regexCharsEscaped + "]", "g");
-        corpus = corpus.map((text) => text.replace(regex, " "));
+        preCorpus = preCorpus.map((text) => text.replace(regex, " "));
         // Remove multiple white space and trim
-        corpus = corpus.map((text) => text.replace(/\s+/g, " ").trim());
+        preCorpus = preCorpus.map((text) => text.replace(/\s+/g, " ").trim());
       }
-      // Add data uploaded to preview content
-      setPreviewContent(corpus.slice(0, 1000).join("\n"));
 
-      setCorpusSize(corpus.length);
-      setVocabSize(new Set(corpus.map((text) => text.split(" ")).flat()).size);
-      setTokenSize(corpus.map((text) => text.split(" ")).flat().length);
+      // Add data uploaded to preview content
+      setPreviewContent(preCorpus.slice(0, 1000).join("\n"));
+
+      setCorpusSize(preCorpus.length);
+      setVocabSize(
+        new Set(preCorpus.map((text) => text.split(" ")).flat()).size
+      );
+      setTokenSize(preCorpus.map((text) => text.split(" ")).flat().length);
     }
-  }, [fileData, lowerCase, removeDuplicates, removeChars, removeCharSet]);
+  }, [
+    corpus,
+    setCorpus,
+    fileData,
+    lowerCase,
+    removeDuplicates,
+    removeChars,
+    removeCharSet,
+  ]);
+
+  useEffect(() => {
+    if (corpus && corpus[0] === "") {
+      console.log("erased corpus paste bin");
+
+      // Reset corpus
+      setCorpus(null);
+      // Erase textfile meta data if user erases all contents of corpus paste bin
+      setFileData((prevState) => ({
+        ...prevState,
+        textFile: { meta: null, data: null },
+      }));
+      // Reset preview content
+      setPreviewContent("Upload texts to preview");
+    }
+  }, [corpus]);
 
   const metaTagTableProps = {
     tempColour,
@@ -359,40 +391,97 @@ export const Create = () => {
           <p id="section-title">Uploads</p>
           <Row style={{ margin: "0rem 0.25rem 0rem 0.25rem" }}>
             <Col>
-              {infoOverlay(infoContent["raw_text"])}
-              <Form.File
-                id="exampleFormControlFile1"
-                onChange={(e) =>
-                  setFileData((prevState) => ({
-                    ...prevState,
-                    textFile: {
-                      meta: e.target.files[0],
-                      data: readFile("textFile", e.target.files[0]),
-                    },
-                  }))
-                }
-              />
-              <Form.Text id="rawtextHelpBlock" muted>
-                File format (.txt)
-              </Form.Text>
+              <Row>
+                <Col>{infoOverlay(infoContent["raw_text"])}</Col>
+                <Col
+                  style={{
+                    display: "flex",
+                    justifyContent: "right",
+                    marginRight: "0.25rem",
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  {fileData["textFile"].meta && fileData["textFile"].meta.name}
+                </Col>
+              </Row>
+              <Row>
+                <Col>
+                  <textarea
+                    className="preview-container-editable"
+                    placeholder="Paste or upload corpus (.txt format)"
+                    onChange={(e) => setCorpus(e.target.value.split("\n"))}
+                    value={corpus && corpus.join("\n")}
+                    wrap="off"
+                  />
+                </Col>
+              </Row>
+              <Row>
+                <Col>
+                  <p id="upload-text-muted">File format (.txt)</p>
+                </Col>
+                <Col>
+                  <div style={{ display: "flex", justifyContent: "right" }}>
+                    <label id="upload-btn">
+                      <input
+                        id="corpus"
+                        type="file"
+                        onChange={(e) => {
+                          setFileData((prevState) => ({
+                            ...prevState,
+                            textFile: {
+                              meta: e.target.files[0],
+                              data: readFile("textFile", e.target.files[0]),
+                            },
+                          }));
+                        }}
+                      />
+                      Upload File
+                    </label>
+                  </div>
+                </Col>
+              </Row>
             </Col>
+          </Row>
+
+          <Row style={{ margin: "0rem 0.25rem 0rem 0.25rem" }}>
             <Col>
               {infoOverlay(infoContent["replacements"])}
-              <Form.File
-                id="exampleFormControlFile3"
-                onChange={(e) =>
-                  setFileData((prevState) => ({
-                    ...prevState,
-                    rpFile: {
-                      meta: e.target.files[0],
-                      data: readFile("rpFile", e.target.files[0]),
-                    },
-                  }))
-                }
-              />
-              <Form.Text id="replacementHelpBlock" muted>
-                File format (.csv or .json)
-              </Form.Text>
+              <Row>
+                <Col>
+                  <textarea
+                    className="preview-container-editable"
+                    placeholder="Paste or upload replacements (.csv or .json format)"
+                    // onChange={(e) => setCorpus(e.target.value.split("\n"))}
+                    // value={corpus && corpus.join("\n")}
+                    wrap="off"
+                  />
+                </Col>
+              </Row>
+              <Row>
+                <Col>
+                  <p id="upload-text-muted">File format (.csv or .json)</p>
+                </Col>
+                <Col>
+                  <div style={{ display: "flex", justifyContent: "right" }}>
+                    <label id="upload-btn">
+                      <input
+                        id="replacements"
+                        type="file"
+                        onChange={(e) =>
+                          setFileData((prevState) => ({
+                            ...prevState,
+                            rpFile: {
+                              meta: e.target.files[0],
+                              data: readFile("rpFile", e.target.files[0]),
+                            },
+                          }))
+                        }
+                      />
+                      Upload File
+                    </label>
+                  </div>
+                </Col>
+              </Row>
             </Col>
           </Row>
 
@@ -508,7 +597,7 @@ export const Create = () => {
                   setFieldValue("detectDigits", e.target.checked)
                 }
               />
-              <Form.Check
+              {/* <Form.Check
                 type="checkbox"
                 label="Exclude tokens as out-of-vocabulary"
                 name="detectSpecialTokensCheck"
@@ -518,8 +607,8 @@ export const Create = () => {
                 // onChange={(e) =>
                 //   setFieldValue("detectDigits", e.target.checked)
                 // }
-              />
-              <Form.Control
+              /> */}
+              {/* <Form.Control
                 type="text"
                 disabled={true}
                 // {!values.removeCharacters}
@@ -532,7 +621,7 @@ export const Create = () => {
                 // }}
                 autoComplete="off"
                 style={{ fontSize: "14px", marginBottom: "0.5rem" }}
-              />
+              /> */}
             </Col>
           </Row>
 
@@ -684,18 +773,26 @@ const TagContainer = ({
                       md={4}
                       style={{ display: "flex", justifyContent: "center" }}
                     >
-                      <Form.File
-                        id="formControlTempMetaTag"
-                        size="sm"
-                        onChange={(e) =>
-                          setTempData({
-                            [tempMetaTag]: {
-                              meta: e.target.files[0],
-                              data: readFile(tempMetaTag, e.target.files[0]),
-                            },
-                          })
-                        }
-                      />
+                      <div style={{ display: "flex", justifyContent: "right" }}>
+                        <label id="upload-btn">
+                          <input
+                            id="meta-tag-resource"
+                            type="file"
+                            onChange={(e) =>
+                              setTempData({
+                                [tempMetaTag]: {
+                                  meta: e.target.files[0],
+                                  data: readFile(
+                                    tempMetaTag,
+                                    e.target.files[0]
+                                  ),
+                                },
+                              })
+                            }
+                          />
+                          Upload
+                        </label>
+                      </div>
                     </Col>
                     <Col
                       sm={2}

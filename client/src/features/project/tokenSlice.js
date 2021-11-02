@@ -39,11 +39,14 @@ const getTokenClf = (tokenInfo, bgColourMap) => {
   const keyIntersect = new Set(
     [...bgColourMapKeySet].filter((x) => tokenBgColourKeySet.has(x))
   );
+  console.log("bgColourKey", bgColourKey);
+
+  console.log("tokenclf", tokenInfo);
 
   let clf;
   let colour;
-  if (bgColourKey.length === 0) {
-    // No meta-tags, figure out what clf currently exists
+  if (bgColourKey.length <= 1) {
+    // No meta-tags or only en (applied automatically), figure out what clf currently exists
     clf = tokenInfo.replacement
       ? "rp"
       : tokenInfo.suggested_replacement
@@ -56,6 +59,8 @@ const getTokenClf = (tokenInfo, bgColourMap) => {
     clf = keyIntersect.values().next().value;
     colour = bgColourMap[clf];
   }
+
+  console.log(clf, colour);
 
   // Get token contrast ratio (tests white against colour) if < 4.5 then sets font color to black
   let fontColour;
@@ -1079,7 +1084,9 @@ export const tokenSlice = createSlice({
 
         // Update textTokenMap with new token set
         const newTextTokenMapItem = {
-          ...state.textTokenMap.filter((text) => text._id === details.textId)[0],
+          ...state.textTokenMap.filter(
+            (text) => text._id === details.textId
+          )[0],
           token_ids: response.token_ids,
         };
         // console.log(text);

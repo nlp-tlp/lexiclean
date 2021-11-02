@@ -227,12 +227,9 @@ tbody {
   margin: 0rem 0rem 0rem 0rem;
 }
 
-.create .custom-file-label {
-}
-
 .create #section-subtitle {
   font-weight: bold;
-  color: rgba(0, 0, 0, 0.75);
+  color: #455a64;
   margin: 0em 0em 0.25em 0em;
 }
 
@@ -243,14 +240,63 @@ tbody {
 
 .create .preview-container {
   background-color: rgba(0, 0, 0, 0.025);
-  padding: 0.5em;
-  overflow-y: scroll;
-  max-height: 20vh;
-  height: 20vh;
+  padding: 0.5rem;
+  overflow-y: auto;
+  max-height: 15rem;
+  min-height: 10rem;
+}
+
+.create .preview-container-editable {
+  background-color: rgba(0, 0, 0, 0.025);
+  padding: 0.5rem;
+  overflow-y: auto;
+  max-height: 10vh;
+  min-height: 2rem;
+  width: 100%;
+  outline: none;
+  resize: none;
+  overflow: auto;
+}
+
+.create .preview-container-editable:focus {
+  outline: 1px solid #cfd8dc;
+}
+
+input[type="file"] {
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.create #upload-btn {
+  cursor: pointer;
+  border-radius: 0.2rem;
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+  line-height: 1.5;
+  border: 1px solid #78909c;
+  padding: 0.25rem;
+  background-color: #607d8b;
+  color: white;
+  opacity: 0.9;
+  user-select: none;
+}
+
+.create #upload-btn:hover {
+  opacity: 1;
+}
+
+.create #upload-text-muted {
+  font-size: 0.75rem;
+  margin: 0;
+  margin-top: -0.25rem;
+  padding: 0;
+  color: #607d8b;
+  margin-left: 0.25rem;
 }
 
 /* DELETE PROJECT */
-
 .delete-loading {
   text-align: center;
   margin: auto;

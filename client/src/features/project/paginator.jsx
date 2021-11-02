@@ -10,12 +10,14 @@ import {
   selectPageLimit,
   setPage,
 } from "./textSlice";
+import { selectTextTokenMap } from "./tokenSlice";
 
 export const Paginator = () => {
   const project = useSelector(selectProject);
   const totalPages = useSelector(selectTotalPages);
   const page = useSelector(selectPage);
   const pageLimit = useSelector(selectPageLimit);
+  const textTokenMap = useSelector(selectTextTokenMap);
 
   const [pageSelected, setPageSelected] = useState("");
 
@@ -128,8 +130,13 @@ export const Paginator = () => {
         </Pagination>
       </div>
       <p id="paginator-detail">
-        Showing {(page - 1) * pageLimit + 1} to {page * pageLimit} of{" "}
-        {pageLimit * totalPages} documents
+        {totalPages === 1 && textTokenMap.length === 1
+          ? "Showing 1 of 1"
+          : totalPages === 1
+          ? `Showing 1 to ${textTokenMap.length} documents`
+          : `Showing ${(page - 1) * pageLimit + 1} to ${page * pageLimit} of ${
+              pageLimit * totalPages
+            } documents`}
       </p>
     </div>
   );

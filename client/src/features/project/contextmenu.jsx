@@ -1,9 +1,12 @@
 import React from "react";
-import { Item, Menu, Submenu, theme } from "react-contexify";
+import history from "../utils/history";
+import { Item, Menu, Submenu, theme, Separator } from "react-contexify";
 import "react-contexify/dist/ReactContexify.css";
-import { IoMdArrowDropright } from "react-icons/io";
+import "./ContextMenu.css";
+import { IoMdArrowDropright, IoMdSearch } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  setSearchTerm,
   selectActiveMaps,
   selectBgColourMap,
   selectProject,
@@ -14,7 +17,9 @@ import {
   deleteSingleMetaTag,
   patchAllMetaTags,
   patchSingleMetaTag,
+  setIdle,
 } from "./tokenSlice";
+import { setPage } from "./textSlice";
 
 export const ContextMenu = ({ menuId, token, textId }) => {
   const dispatch = useDispatch();
@@ -71,8 +76,19 @@ export const ContextMenu = ({ menuId, token, textId }) => {
     dispatch(fetchMetrics({ projectId: project._id }));
   };
 
+  const quickSearch = (value) => {
+    dispatch(setSearchTerm(value));
+    // Apply filter and take user to first page
+    dispatch(setPage(1));
+    history.push(`/project/${project._id}/page/1`);
+    dispatch(setIdle());
+  };
+
   return (
-    <Menu id={menuId}>
+    <Menu id={menuId} style={{
+      // maxHeight: "10vh"
+    }}>
+      <Item disabled>Tags</Item>
       {Object.keys(bgColourMap)
         .filter(
           (key) =>
@@ -102,6 +118,10 @@ export const ContextMenu = ({ menuId, token, textId }) => {
             <Item onClick={() => removeAll(item)}>Remove all</Item>
           </Submenu>
         ))}
+      <Separator />
+      <Item onClick={() => quickSearch(token.currentValue)}>
+        <IoMdSearch /> Quick Search
+      </Item>
     </Menu>
   );
 };
