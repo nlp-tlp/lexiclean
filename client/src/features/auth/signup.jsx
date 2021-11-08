@@ -13,8 +13,7 @@ const schema = yup.object().shape({
   password: yup
     .string()
     .required()
-    .min(5, "Password must be at least 5 characters long"),
-  email: yup.string().email().required(),
+    .min(5, "Password must be at least 5 characters long")
 });
 
 export const SignUp = () => {
@@ -101,27 +100,7 @@ export const SignUp = () => {
                     </Form.Control.Feedback>
                   </Form.Group>
                 </Form.Row>
-                <Form.Row>
-                  <Form.Group as={Col} md="12" controlId="validationFormik02">
-                    <Form.Label>Email</Form.Label>
-                    <Form.Control
-                      type="email"
-                      placeholder="Enter Email Address"
-                      name="email"
-                      value={values.email}
-                      onChange={handleChange}
-                      autoComplete="off"
-                      isValid={touched.email && !errors.email}
-                      isInvalid={touched.email && errors.email}
-                    />
-                    <Form.Text className="text-muted">
-                      We'll never share your email with anyone else.
-                    </Form.Text>
-                    <Form.Control.Feedback type="invalid">
-                      {errors.email}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Form.Row>
+
                 <Form.Row>
                   <Form.Group as={Col} md="12" controlId="validationFormik03">
                     <Form.Label>Password</Form.Label>
@@ -137,6 +116,27 @@ export const SignUp = () => {
                     />
                     <Form.Control.Feedback type="invalid">
                       {errors.password}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Form.Row>
+                <Form.Row>
+                  <Form.Group as={Col} md="12" controlId="validationFormik02">
+                    <Form.Label>Email</Form.Label>
+                    <Form.Control
+                      type="email"
+                      placeholder="Email Address (Optional)"
+                      name="email"
+                      value={values.email}
+                      onChange={handleChange}
+                      autoComplete="off"
+                      isValid={touched.email && !errors.email}
+                      isInvalid={touched.email && errors.email}
+                    />
+                    <Form.Text className="text-muted">
+                      We'll never share your email with anyone else.
+                    </Form.Text>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.email}
                     </Form.Control.Feedback>
                   </Form.Group>
                 </Form.Row>

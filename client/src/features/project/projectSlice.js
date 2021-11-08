@@ -6,7 +6,7 @@ const initialState = {
   id: null,
   status: "idle",
   error: null,
-  searchTerm: "",
+  filter: { searchTerm: "", annotated: "all", candidates: "all" },
   bgColourMap: null,
   activeMaps: null,
   savePending: false,
@@ -80,8 +80,11 @@ export const projectSlice = createSlice({
   name: "project",
   initialState: initialState,
   reducers: {
-    setSearchTerm: (state, action) => {
-      state.searchTerm = action.payload;
+    setFilter: (state, action) => {
+      state.filter = action.payload;
+    },
+    resetFilter: (state, action) => {
+      state.filter = initialState.filter;
     },
     setActiveModal: (state, action) => {
       state.activeModal = action.payload;
@@ -193,16 +196,22 @@ export const projectSlice = createSlice({
   },
 });
 
-export const { setSearchTerm, setActiveModal, setModalInfo, setProject } =
-  projectSlice.actions;
+export const {
+  setActiveModal,
+  setModalInfo,
+  setProject,
+  setFilter,
+  resetFilter,
+} = projectSlice.actions;
 
 export const selectProject = (state) => state.project.details;
-export const selectSearchTerm = (state) => state.project.searchTerm;
 export const selectBgColourMap = (state) => state.project.bgColourMap;
 export const selectActiveMaps = (state) => state.project.activeMaps;
 export const selectProjectMetrics = (state) => state.project.metrics;
-export const selectProjectMetricsStatus = (state) => state.project.metricsStatus;
+export const selectProjectMetricsStatus = (state) =>
+  state.project.metricsStatus;
 export const selectActiveModal = (state) => state.project.activeModal;
 export const selectProjectSchema = (state) => state.project.schema;
+export const selectFilter = (state) => state.project.filter;
 
 export default projectSlice.reducer;

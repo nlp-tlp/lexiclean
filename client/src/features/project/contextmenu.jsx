@@ -6,7 +6,8 @@ import "./ContextMenu.css";
 import { IoMdArrowDropright, IoMdSearch } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  setSearchTerm,
+  setFilter,
+  selectFilter,
   selectActiveMaps,
   selectBgColourMap,
   selectProject,
@@ -26,6 +27,7 @@ export const ContextMenu = ({ menuId, token, textId }) => {
   const bgColourMap = useSelector(selectBgColourMap);
   const activeMaps = useSelector(selectActiveMaps);
   const project = useSelector(selectProject);
+  const filter = useSelector(selectFilter);
 
   const DEFAULT_MAPS = ["ua", "rp", "st"]; // Note: This excludes 'en'
 
@@ -77,7 +79,8 @@ export const ContextMenu = ({ menuId, token, textId }) => {
   };
 
   const quickSearch = (value) => {
-    dispatch(setSearchTerm(value));
+    dispatch(setFilter({...filter, searchTerm: value}));
+
     // Apply filter and take user to first page
     dispatch(setPage(1));
     history.push(`/project/${project._id}/page/1`);
@@ -85,10 +88,17 @@ export const ContextMenu = ({ menuId, token, textId }) => {
   };
 
   return (
-    <Menu id={menuId} style={{
-      // maxHeight: "10vh"
-    }}>
-      <Item disabled>Tags</Item>
+    <Menu
+      id={menuId}
+      style={
+        {
+          // maxHeight: "10vh"
+        }
+      }
+    >
+      <Item disabled style={{ fontWeight: "bold" }}>
+        Tags
+      </Item>
       {Object.keys(bgColourMap)
         .filter(
           (key) =>

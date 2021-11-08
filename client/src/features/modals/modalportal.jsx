@@ -15,7 +15,6 @@ import { Help } from "./help";
 import { Settings } from "./settings";
 import { Schema } from "./schema";
 import { Downloads } from "./downloads";
-import { Create } from "./create";
 import { Delete } from "./delete";
 import { Annotate } from "./annotate";
 
@@ -51,11 +50,6 @@ export const PortalModal = () => {
         />
       ),
       // backdrop: "static",
-      modalSize: "modal-wide",
-    },
-    create: {
-      title: "Create New Project",
-      body: <Create />,
       modalSize: "modal-wide",
     },
     delete: {

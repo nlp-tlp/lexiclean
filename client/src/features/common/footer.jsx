@@ -13,7 +13,7 @@ export const Footer = () => {
     >
       <p>© UWA NLP-TLP Group 2021.</p>
       <p style={{ fontSize: "0.75rem" }}>
-        Developer: Tyler Bikaun (
+        Developed by Tyler Bikaun (
         <a
           href="https://github.com/4theKnowledge"
           target="_blank"

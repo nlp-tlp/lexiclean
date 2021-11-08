@@ -203,8 +203,8 @@ router.patch("/suggest/remove/many/:projectId", async (req, res) => {
   }
 });
 
-// Accept suggested replacements as actual replacements for n texts
 router.patch("/suggest/accept/:projectId", async (req, res) => {
+  // Accept suggested replacements as actual replacements for n textsx
   try {
     logger.info("Accepting suggested replacements on n texts", {
       route: `/api/token/suggest/accept/${req.params.projectId}`,
@@ -253,8 +253,8 @@ router.patch("/suggest/accept/:projectId", async (req, res) => {
   }
 });
 
-// Concerts single suggested replacement type to replacement for all tokens matched
 router.patch("/suggest/accept/many/:projectId", async (req, res) => {
+  // Concerts single suggested replacement type to replacement for all tokens matched
   try {
     logger.info(
       "Accepting single suggested replacement for all matched tokens",
@@ -285,7 +285,7 @@ router.patch("/suggest/accept/many/:projectId", async (req, res) => {
       }))
     );
 
-    res.json({matches: tokenResponse.length});
+    res.json({ matches: tokenResponse.length });
   } catch (err) {
     res.json({ message: err });
   }
@@ -293,17 +293,19 @@ router.patch("/suggest/accept/many/:projectId", async (req, res) => {
 
 // --- Meta Tags ---
 
-// Patch meta-tag on one token
 router.patch("/meta/add/single/", async (req, res) => {
+  // Patch meta-tag on one token
   // Takes in field, value pair where the field is the axuiliary information key
   try {
     const tokenResponse = await Token.findById({
       _id: req.body.token_id,
     }).lean();
+
     const updatedMetaTags = {
       ...tokenResponse.meta_tags,
       [req.body.field]: req.body.value,
     };
+
     const updatedReponse = await Token.findByIdAndUpdate(
       { _id: req.body.token_id },
       {

@@ -18,7 +18,7 @@ export const getTotalPages = createAsyncThunk(
       {
         project_id: payload.project_id,
         get_pages: payload.get_pages,
-        search_term: payload.search_term !== "" ? payload.search_term : null,
+        filter: payload.filter,
       },
       {
         params: { limit: payload.page_limit },
@@ -60,8 +60,7 @@ export const textSlice = createSlice({
   },
 });
 
-export const { setIdle, setPageLimit, setPage } =
-  textSlice.actions;
+export const { setIdle, setPageLimit, setPage } = textSlice.actions;
 
 export const selectPageLimit = (state) => state.texts.pageLimit;
 export const selectPage = (state) => state.texts.page;

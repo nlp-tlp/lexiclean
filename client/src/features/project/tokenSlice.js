@@ -31,21 +31,21 @@ const getTokenClf = (tokenInfo, bgColourMap) => {
 
   // Check if token has a meta-tag assigned, if so (and no suggested or replacement),
   // then assign latest tag colour
-  const bgColourKey = Object.keys(tokenInfo.meta_tags).filter(
-    (tag) => tokenInfo.meta_tags[tag]
-  );
+  const bgColourKey = Object.keys(tokenInfo.meta_tags)
+    .filter((tag) => tag !== "en")
+    .filter((tag) => tokenInfo.meta_tags[tag]);
   const tokenBgColourKeySet = new Set(bgColourKey);
   const bgColourMapKeySet = new Set(Object.keys(bgColourMap));
   const keyIntersect = new Set(
     [...bgColourMapKeySet].filter((x) => tokenBgColourKeySet.has(x))
   );
-  console.log("bgColourKey", bgColourKey);
 
-  console.log("tokenclf", tokenInfo);
+  // console.log("bgColourKey", bgColourKey);
+  // console.log("tokenclf", tokenInfo);
 
   let clf;
   let colour;
-  if (bgColourKey.length <= 1) {
+  if (bgColourKey.length === 0) {
     // No meta-tags or only en (applied automatically), figure out what clf currently exists
     clf = tokenInfo.replacement
       ? "rp"
@@ -60,7 +60,7 @@ const getTokenClf = (tokenInfo, bgColourMap) => {
     colour = bgColourMap[clf];
   }
 
-  console.log(clf, colour);
+  // console.log(clf, colour);
 
   // Get token contrast ratio (tests white against colour) if < 4.5 then sets font color to black
   let fontColour;
@@ -123,7 +123,7 @@ export const fetchTokens = createAsyncThunk(
       "/api/text/filter",
       {
         project_id: payload.project_id,
-        search_term: payload.search_term !== "" ? payload.search_term : null,
+        filter: payload.filter,
       },
       {
         params: { page: payload.page, limit: payload.page_limit },
@@ -843,7 +843,10 @@ export const tokenSlice = createSlice({
 
         // Update meta tag object by setting field to FALSE.
         const tokenInfo = state.values[details.tokenId];
-        const metaTagUpdate = { ...tokenInfo.meta_tag, [details.field]: false };
+        const metaTagUpdate = {
+          ...tokenInfo.meta_tags,
+          [details.field]: false,
+        };
 
         // Update token state
         state.values[details.tokenId] = {
@@ -918,7 +921,7 @@ export const tokenSlice = createSlice({
 
         // Update meta tag object by setting field to TRUE.
         const tokenInfo = state.values[details.tokenId];
-        const metaTagUpdate = { ...tokenInfo.meta_tag, [details.field]: true };
+        const metaTagUpdate = { ...tokenInfo.meta_tags, [details.field]: true };
 
         // Update token state
         state.values[details.tokenId] = {

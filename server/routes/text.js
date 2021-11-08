@@ -31,132 +31,125 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/filter", async (req, res) => {
+  //
+  console.log("text filter body", req.body);
+
   try {
     if (req.body.get_pages) {
       // Returns total pages instead of page of results
       try {
-        if (req.body.search_term && req.body.search_term !== "") {
-          logger.info(
-            "Getting number of pages for paginator (search filtered)",
-            { route: "/api/text/filter" }
-          );
+        logger.info("Getting number of pages for paginator (search filtered)", {
+          route: "/api/text/filter",
+        });
 
+        const filter = req.body.filter;
+
+        let textsCount;
+        if (filter.searchTerm !== "" || filter.annotated !== "all") {
           // Search is case-insensitive, non-exact matching
           const tokenResponse = await Token.find({
             project_id: req.body.project_id,
             $or: [
-              { value: { $regex: req.body.search_term, $options: "i" } },
-              { replacement: { $regex: req.body.search_term, $options: "i" } },
+              { value: { $regex: filter.searchTerm, $options: "i" } },
+              { replacement: { $regex: filter.searchTerm, $options: "i" } },
             ],
           }).lean();
+
           const tokenIds = new Set(tokenResponse.map((token) => token._id));
+
           const textResponse = await Text.find({
             project_id: req.body.project_id,
             "tokens.token": { $in: Array.from(tokenIds) },
           }).lean();
+
           const textIds = new Set(textResponse.map((text) => text._id));
-          const textsCount = await Text.find({
+
+          textsCount = await Text.find({
             project_id: req.body.project_id,
             _id: { $in: Array.from(textIds) },
+            annotated:
+              filter.annotated === "annotated"
+                ? true
+                : filter.annotated === "unannotated"
+                ? false
+                : { $in: [true, false] },
           }).count();
-          const pages = Math.ceil(textsCount / req.query.limit);
-          res.json({ totalPages: pages });
         } else {
-          logger.info("Getting number of pages for paginator", {
-            route: "/api/text/filter",
-          });
-
-          const textsCount = await Text.find({
+          textsCount = await Text.find({
             project_id: req.body.project_id,
           }).count();
-          const pages = Math.ceil(textsCount / req.query.limit);
-          res.json({ totalPages: pages });
         }
+
+        const pages = Math.ceil(textsCount / req.query.limit);
+
+        res.json({ totalPages: pages });
       } catch (err) {
         res.json({ message: err });
         logger.error("Failed to get number of pages for paginator", {
           route: `/api/text/filter/pages/${req.params.projectId}`,
         });
       }
-    } else if (req.body.search_term && req.body.search_term !== "") {
-      // Pagination with search term filtering
-      // TODO: Fix aggregation so that Text collection is hit directly rather than Token -> Text
-      logger.info("Fetching search filtered results from paginator", {
-        route: "/api/text/filter",
-      });
-
-      const skip = parseInt((req.query.page - 1) * req.query.limit);
-      const limit = parseInt(req.query.limit);
-
-      // Get _id's of texts that have tokens that match search_term
-      const tokenResponse = await Token.find({
-        project_id: req.body.project_id,
-        $or: [
-          { value: { $regex: req.body.search_term } },
-          { replacement: { $regex: req.body.search_term } },
-        ],
-      }).lean();
-      const tokenIds = new Set(tokenResponse.map((token) => token._id));
-
-      const textResponse = await Text.find({
-        project_id: req.body.project_id,
-        "tokens.token": { $in: Array.from(tokenIds) },
-      }).lean();
-      const textIds = new Set(textResponse.map((text) => text._id));
-
-      // Filter results using text Ids for matching.
-      // TODO: remove duplication with code in else block...
-      const textAggregation = await Text.aggregate([
-        {
-          $match: {
-            project_id: mongoose.Types.ObjectId(req.body.project_id),
-            _id: { $in: Array.from(textIds) },
-          },
-        },
-        {
-          $project: {
-            annotated: "$annotated",
-            rank: "$rank",
-            token_ids: "$tokens.token",
-          },
-        },
-        {
-          $sort: { rank: 1 },
-        },
-        {
-          $skip: skip, // equiv to page
-        },
-        {
-          $limit: limit, // same as limit
-        },
-      ])
-        .allowDiskUse(true)
-        .exec();
-
-      // Fetch tokens using ids
-      const tokenIdsAgg = textAggregation.map((text) => text.token_ids).flat();
-      const tokens = await Token.find({ _id: { $in: tokenIdsAgg } }).lean();
-
-      const payload = {
-        textTokenMap: textAggregation,
-        tokens: tokens,
-      };
-
-      res.json(payload);
     } else {
-      // Standard paginator with aggregation
       logger.info("Fetching results from paginator", {
         route: "/api/text/filter",
       });
 
-      const skip = parseInt((req.query.page - 1) * req.query.limit);
-      const limit = parseInt(req.query.limit);
-      const textAggregation = await Text.aggregate([
-        {
-          $match: {
-            project_id: mongoose.Types.ObjectId(req.body.project_id),
-          },
+      const skip = parseInt((req.query.page - 1) * req.query.limit); // equiv to page
+      const limit = parseInt(req.query.limit); // same as limit
+      const filter = req.body.filter;
+
+      let textIds;
+      if (filter.searchTerm !== "" || filter.candidates !== "all") {
+        // Case insensitive filter; filters for all tokens if no term specified
+        const tokenResponse = await Token.find({
+          project_id: req.body.project_id,
+          $or: [
+            { value: { $regex: filter.searchTerm, $options: "i" } },
+            { replacement: { $regex: filter.searchTerm, $options: "i" } },
+          ],
+        }).lean();
+
+        // OOV Candidate search
+        // These are tokens that are non-English, do not have a replacement or meta-tag
+        const candidateTokens = tokenResponse
+          .filter(
+            (token) =>
+              !token.meta_tags["en"] &&
+              Object.keys(token.meta_tags).length <= 1 &&
+              !token.replacement
+          )
+          .map((token) => token._id);
+        console.log("token candidates", candidateTokens);
+
+        const tokenIds = new Set(tokenResponse.map((token) => token._id));
+        const textResponse = await Text.find({
+          project_id: req.body.project_id,
+          "tokens.token": { $in: Array.from(tokenIds) },
+        }).lean();
+
+        textIds = new Set(textResponse.map((text) => text._id));
+      }
+
+      // Craft matchField to be subset based on texts filtered. If no
+      // filters applied then just grab all texts associated with the project
+      // If no search string is supplied, all _ids are returned.
+      const matchField = {
+        $match: {
+          project_id: mongoose.Types.ObjectId(req.body.project_id),
+          _id: filter.searchTerm
+            ? { $in: Array.from(textIds) }
+            : { $exists: true },
+          annotated:
+            filter.annotated === "annotated"
+              ? true
+              : filter.annotated === "unannotated"
+              ? false
+              : { $in: [true, false] },
         },
+      };
+
+      const aggQuery = [
+        matchField,
         {
           $project: {
             annotated: "$annotated",
@@ -168,18 +161,20 @@ router.post("/filter", async (req, res) => {
           $sort: { rank: 1 },
         },
         {
-          $skip: skip, // equiv to page
+          $skip: skip,
         },
         {
-          $limit: limit, // same as limit
+          $limit: limit,
         },
-      ])
+      ];
+
+      const textAggregation = await Text.aggregate(aggQuery)
         .allowDiskUse(true)
         .exec();
 
-      // Fetch tokens using ids
-      const tokenIds = textAggregation.map((text) => text.token_ids).flat();
-      const tokens = await Token.find({ _id: { $in: tokenIds } }).lean();
+      // Prepare payload
+      const tokenIdsAgg = textAggregation.map((text) => text.token_ids).flat();
+      const tokens = await Token.find({ _id: { $in: tokenIdsAgg } }).lean();
 
       const payload = {
         textTokenMap: textAggregation,

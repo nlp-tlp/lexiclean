@@ -4,7 +4,12 @@ import QRG from "../../media/QRG_lexiclean.png";
 export const Help = () => {
   return (
     <div className="help">
-      <img id="qrg-img" src={QRG} alt="LexiClean Quick Reference Guide" />
+      <p>
+        New QRG coming soon! Please contact tyler.bikaun@research.uwa.edu.au if
+        any information is required in the meantime.
+      </p>
+
+      {/* <img id="qrg-img" src={QRG} alt="LexiClean Quick Reference Guide" />
       <p id="description-title">Guide</p>
       <p>
         1. <strong>Project save button</strong>: Changes colour when changes are
@@ -31,7 +36,7 @@ export const Help = () => {
         6. <strong>Text normalisation mode</strong>: Allows tokens to be
         replaced in situ and meta tags to be assigned by right clicking on
         tokens.
-      </p>
+      </p> */}
     </div>
   );
-}
+};

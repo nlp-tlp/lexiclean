@@ -1,23 +1,20 @@
-import "./App.css";
-
 import React from "react";
-import { Router, Switch, Route } from "react-router-dom";
-
-import { Login } from "./features/auth/login";
-import { SignUp } from "./features/auth/signup";
-import { Landing } from "./features/landing/landing";
-import { Project } from "./features/project/project";
-import { Feed } from "./features/feed/feed";
-import { PortalModal } from "./features/modals/modalportal";
-import { NavBar } from "./features/common/navbar";
-import { Footer } from "./features/common/footer";
-
-import { AuthProvider } from "./features/auth/authcontext";
-import { ProtectedRoute } from "./features/auth/protectedroute";
-import { Unauthorized } from "./features/auth/unauthorized";
-import history from "./features/utils/history";
-
 import { Helmet } from "react-helmet";
+import { Route, Router, Switch } from "react-router-dom";
+import "./App.css";
+import { AuthProvider } from "./features/auth/authcontext";
+import { Login } from "./features/auth/login";
+import { ProtectedRoute } from "./features/auth/protectedroute";
+import { SignUp } from "./features/auth/signup";
+import { Unauthorized } from "./features/auth/unauthorized";
+import { Footer } from "./features/common/footer";
+import { NavBar } from "./features/common/navbar";
+import { Feed } from "./features/feed/feed";
+import { Landing } from "./features/landing/landing";
+import { PortalModal } from "./features/modals/modalportal";
+import { Create } from "./features/project/create/create";
+import { Project } from "./features/project/project";
+import history from "./features/utils/history";
 
 function App() {
   return (
@@ -33,6 +30,16 @@ function App() {
             <Footer />
             <PortalModal />
           </ProtectedRoute>
+
+          <ProtectedRoute path="/project/new">
+            <Helmet>
+              <title>New Project | LexiClean</title>
+            </Helmet>
+            <NavBar />
+            <Create />
+            <Footer />
+          </ProtectedRoute>
+
           <ProtectedRoute path="/feed">
             <Helmet>
               <title>Project Feed | LexiClean</title>

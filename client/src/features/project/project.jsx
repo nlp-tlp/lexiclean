@@ -17,8 +17,8 @@ import {
   fetchProjectMaps,
   selectBgColourMap,
   selectProject,
-  selectSearchTerm,
   fetchMetrics,
+  selectFilter,
 } from "./projectSlice";
 import { Sidebar, SidebarMin } from "./sidebar";
 import { Text } from "./text";
@@ -50,8 +50,8 @@ export const Project = () => {
   const projectStatus = useSelector((state) => state.project.status);
   const projectError = useSelector((state) => state.project.error);
   const bgColourMap = useSelector(selectBgColourMap);
-  const searchTerm = useSelector(selectSearchTerm);
   const showToast = useSelector(selectShowToast);
+  const filter = useSelector(selectFilter);
 
   const pageLimit = useSelector(selectPageLimit);
   const page = useSelector(selectPage);
@@ -89,14 +89,14 @@ export const Project = () => {
         getTotalPages({
           project_id: project._id,
           get_pages: true,
-          search_term: searchTerm,
+          filter: filter,
           page_limit: pageLimit,
         })
       );
       dispatch(
         fetchTokens({
           project_id: project._id,
-          search_term: searchTerm,
+          filter: filter,
           page_limit: pageLimit,
           page: page,
         })
@@ -245,7 +245,7 @@ export const Project = () => {
             lg={2}
             xl={2}
             id="side-container"
-            style={{ margin: "1rem 1rem 1rem 1rem" }}
+            style={{ margin: "1rem 1rem 1rem 1rem", maxWidth: "12rem" }}
           >
             <Sidebar />
           </Col>

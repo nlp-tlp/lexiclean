@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
+import "./SaveButton.css";
 import { Button, ButtonGroup, Dropdown } from "react-bootstrap";
-import "react-contexify/dist/ReactContexify.css";
-import { FaSave } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import "./AnnotationTable.css";
 import { fetchMetrics, selectProject } from "./projectSlice";
 import { updateAnnotationStates } from "./textSlice";
 import { selectTextTokenMap, setIdle } from "./tokenSlice";
+import { VscSaveAll, VscSave } from "react-icons/vsc";
 
 export const SaveButton = () => {
   const project = useSelector(selectProject);
@@ -23,9 +22,9 @@ export const SaveButton = () => {
   }, [textTokenMap, dispatch]);
 
   return (
-    <Dropdown as={ButtonGroup} className="save-button">
+    <Dropdown as={ButtonGroup} className="save-button-group">
       <Button
-        id="save-page"
+        id="save-page-button"
         pending={savePending && "true"}
         onClick={() => {
           dispatch(
@@ -40,15 +39,8 @@ export const SaveButton = () => {
         variant="secondary"
         title="Click to save the current pages suggested replacements and to mark all documents as annotated"
       >
-        <div
-          style={{
-            display: "flex",
-            fontWeight: "bold",
-            alignItems: "center",
-            fontSize: "0.8rem",
-          }}
-        >
-          <FaSave style={{ marginRight: "0.5em" }} />
+        <div>
+          <VscSaveAll id="save-page-icon" />
           Save Page
         </div>
       </Button>
@@ -72,7 +64,10 @@ export const SaveButton = () => {
             dispatch(fetchMetrics({ projectId: project._id }));
           }}
         >
-          Save Replacements
+          <div>
+            <VscSave id="save-page-icon" />
+            Save Replacements
+          </div>
         </Dropdown.Item>
       </Dropdown.Menu>
     </Dropdown>
@@ -94,7 +89,7 @@ export const SaveIconBtn = () => {
   }, [textTokenMap, dispatch]);
 
   return (
-    <FaSave
+    <VscSaveAll
       id="icon"
       pending={savePending && "true"}
       onClick={() => {

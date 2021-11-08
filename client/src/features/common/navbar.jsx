@@ -25,11 +25,14 @@ export const NavBar = () => {
   const project = useSelector(selectProject);
 
   const changeNavContext = () => {
-    switch (window.location.pathname.split("/")[1]) {
-      case "feed":
-        return "feed";
-      case "project":
-        return "project";
+    const path = window.location.pathname.split("/").slice(1).join("/");
+
+    if (path.includes("feed")) {
+      return "feed";
+    } else if (path.includes("project/new")) {
+      return "project/new";
+    } else if (path.includes("project/")) {
+      return "project";
     }
   };
   const page = changeNavContext();
@@ -61,10 +64,8 @@ export const NavBar = () => {
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse id="responsive-navbar-nav">
             <Nav className="mr-auto"></Nav>
-            <Nav.Link onClick={() => dispatch(setActiveModal("create"))}>
-              New Project
-            </Nav.Link>
-            <Nav.Link onClick={() => history.push("/")}>Home</Nav.Link>
+            <Nav.Link href="/project/new">New Project</Nav.Link>
+            <Nav.Link href="/">Home</Nav.Link>
             <Nav.Link>
               <AuthButton
                 variant={"Logout"}
@@ -75,9 +76,15 @@ export const NavBar = () => {
         </Container>
       </Navbar>
     );
-  } else {
+  } else if (page === "project") {
     return (
-      <Navbar collapseOnSelect expand="lg" variant="light" sticky="top" id="project-navbar">
+      <Navbar
+        collapseOnSelect
+        expand="lg"
+        variant="light"
+        sticky="top"
+        id="project-navbar"
+      >
         <Container fluid>
           <Navbar.Brand href="/feed">
             <div
@@ -129,9 +136,9 @@ export const NavBar = () => {
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse id="responsive-navbar-nav">
             <Nav className="ml-auto">
-              <Nav>
+              {/* <Nav>
                 <SaveButton />
-              </Nav>
+              </Nav> */}
               <NavDropdown title="Menu" id="collasible-nav-dropdown">
                 <NavDropdown.Item
                   onClick={() => dispatch(setActiveModal("settings"))}
@@ -186,6 +193,66 @@ export const NavBar = () => {
                 </NavDropdown.Item>
               </NavDropdown>
             </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+    );
+  } else if (page === "project/new") {
+    return (
+      <Navbar
+        className="navbar"
+        collapseOnSelect
+        expand="lg"
+        variant="light"
+        sticky="top"
+      >
+        <Container fluid>
+          <Navbar.Brand href="/feed">
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignContent: "center",
+              }}
+            >
+              <FaArrowAltCircleLeft
+                style={{
+                  margin: "auto 0.5rem",
+                  fontSize: "1.5rem",
+                  "&:hover": { opacity: "0.5" },
+                }}
+              />
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  padding: "0",
+                  margin: "0",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: "2rem",
+                    fontWeight: "bold",
+                    color: "#263238",
+                    margin: "-0.5rem 0rem 0rem 0rem",
+                    padding: "0",
+                  }}
+                >
+                  New Project
+                </p>
+              </div>
+            </div>
+          </Navbar.Brand>
+          <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+          <Navbar.Collapse id="responsive-navbar-nav">
+            <Nav className="mr-auto"></Nav>
+            <Nav.Link>
+              <AuthButton
+                variant={"Logout"}
+                style={{ padding: "0", margin: "0" }}
+              />
+            </Nav.Link>
           </Navbar.Collapse>
         </Container>
       </Navbar>

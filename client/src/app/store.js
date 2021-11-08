@@ -4,6 +4,7 @@ import textReducer from "../features/project/textSlice";
 import tokenReducer from "../features/project/tokenSlice";
 import userReducer from "../features/auth/userSlice";
 import feedReducer from "../features/feed/feedSlice";
+import createStepReducer from "../features/project/create/createStepSlice"
 
 const combinedReducer = combineReducers({
   project: projectReducer,
@@ -11,6 +12,7 @@ const combinedReducer = combineReducers({
   tokens: tokenReducer,
   user: userReducer,
   feed: feedReducer,
+  create: createStepReducer,
 });
 
 const rootReducer = (state, action) => {

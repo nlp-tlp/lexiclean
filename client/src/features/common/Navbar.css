@@ -45,26 +45,3 @@
 }
 
 
-/* Project Save button group */
-.save-button {
-  margin: 0em 2em;
-  opacity: 0.95;
-}
-
-#save-page {
-  background-color: #cfd8dc;
-  border-color: ##cfd8dc;
-}
-
-#save-page[pending] {
-  background-color: #607d8b;
-  border-color: #455a64;
-}
-
-.save-button :hover {
-  opacity: 0.9;
-}
-
-.save-button .dropdown-item {
-  font-size: 0.8rem;
-}

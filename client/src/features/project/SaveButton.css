@@ -1,0 +1,47 @@
+/* Project Save button group */
+.save-button-group {
+  margin: 0em 0em;
+  opacity: 0.9;
+  z-index: 100;
+}
+
+#save-page-button {
+  background-color: #b0bec5;
+  border-color: #cfd8dc;
+}
+
+#save-page-button[pending] {
+  background-color: #607d8b;
+  border-color: #455a64;
+}
+
+#save-page-button div {
+  display: flex;
+  font-weight: bold;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+#save-page-icon {
+  margin-right: 0.5rem;
+}
+
+.save-button-group:hover {
+  opacity: 1;
+}
+
+.save-button-group .dropdown-item {
+  font-size: 0.8rem;
+}
+
+.btn-group > .btn-group:not(:first-child),
+.btn-group > .btn:not(:first-child) {
+  background-color: #b0bec5;
+  border-color: #cfd8dc;
+}
+
+.btn-group > .btn-group:not(:first-child),
+.btn-group > .btn:not(:first-child)[pending] {
+  background-color: #607d8b;
+  border-color: #455a64;
+}

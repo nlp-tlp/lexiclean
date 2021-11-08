@@ -17,9 +17,11 @@ import {
   FaSlidersH,
   FaUserCircle,
 } from "react-icons/fa";
-import { ImSearch } from "react-icons/im";
-
-import { IoChevronForward, IoChevronBack } from "react-icons/io5";
+import {
+  IoChevronForward,
+  IoChevronBack,
+  IoFilterCircle,
+} from "react-icons/io5";
 
 import { BsGearFill } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
@@ -29,15 +31,18 @@ import {
   fetchMetrics,
   selectProject,
   selectProjectMetrics,
-  selectSearchTerm,
   setActiveModal,
-  setSearchTerm,
   selectProjectMetricsStatus,
+  setFilter,
+  selectFilter,
+  resetFilter,
 } from "./projectSlice";
 import { setPage } from "./textSlice";
 import { setIdle } from "./tokenSlice";
 
 import { SaveIconBtn } from "../project/savebutton";
+import { SaveButton } from "../project/savebutton";
+import "./SaveButton.css";
 
 export const Sidebar = () => {
   const dispatch = useDispatch();
@@ -46,8 +51,9 @@ export const Sidebar = () => {
   const metrics = useSelector(selectProjectMetrics);
   const projectStatus = useSelector((state) => state.project.status);
   const username = useSelector(selectUsername);
-  const searchTerm = useSelector(selectSearchTerm);
   const [showMetricDetail, setShowMetricDetail] = useState(false);
+
+  const filter = useSelector(selectFilter);
 
   useEffect(() => {
     // TOOD: make this update with side effects
@@ -57,12 +63,13 @@ export const Sidebar = () => {
   }, [projectStatus, dispatch]);
 
   const resetFilters = () => {
-    dispatch(setSearchTerm(""));
+    dispatch(resetFilter());
     dispatch(setIdle());
   };
 
   const applyFilters = () => {
     // Apply filter and take user to first page
+    console.log(filter);
     dispatch(setPage(1));
     history.push(`/project/${project._id}/page/1`);
     dispatch(setIdle());
@@ -71,30 +78,53 @@ export const Sidebar = () => {
   return (
     <>
       <Row>
+        <Col>
+          <SaveButton />
+        </Col>
+      </Row>
+      <Row
+        style={{
+          marginTop: "2rem",
+        }}
+      >
         <Col
           style={{
-            minHeight: "20vh",
+            maxHeight: "100%",
             backgroundColor: "white",
             border: "1px solid rgba(0, 0, 0, 0.125)",
             borderRadius: "0.25rem",
             boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.2)",
           }}
         >
+          <Row>
+            <Col style={{ textAlign: "center", marginTop: "0.25rem" }}>
+              <IoFilterCircle
+                style={{ fontSize: "1.5rem", color: "#78909c" }}
+              />
+            </Col>
+          </Row>
           <Row style={{ marginBottom: "0.5rem" }}>
             <Col>
-              <TextSearch />
+              <TextSearch filter={filter} setFilter={setFilter} />
             </Col>
           </Row>
           <Row style={{ justifyContent: "left", marginBottom: "0.5rem" }}>
             <Col>
-              <FilterAnnotated />
+              <FilterAnnotated filter={filter} setFilter={setFilter} />
+            </Col>
+          </Row>
+          <Row style={{ justifyContent: "left", marginBottom: "0.5rem" }}>
+            <Col>
+              <FilterCandidates filter={filter} setFilter={setFilter} />
             </Col>
           </Row>
           <Row
             style={{
               textAlign: "right",
               marginTop: "1rem",
+              paddingTop: "0.5rem",
               marginBottom: "0.5rem",
+              borderTop: "1px solid #eceff1",
             }}
           >
             <Col>
@@ -103,7 +133,7 @@ export const Sidebar = () => {
                 id="button"
                 size="sm"
                 variant="secondary"
-                disabled={searchTerm === ""}
+                // disabled={filter.searchTerm === ""}
                 onClick={() => resetFilters()}
               >
                 Reset
@@ -112,8 +142,8 @@ export const Sidebar = () => {
                 style={{ margin: "0.25rem" }}
                 id="button"
                 size="sm"
-                variant="dark"
-                disabled={searchTerm === ""}
+                variant="secondary"
+                // disabled={filter.searchTerm === ""}
                 onClick={() => applyFilters()}
               >
                 Apply
@@ -124,7 +154,7 @@ export const Sidebar = () => {
       </Row>
       <Row
         style={{
-          marginTop: "2rem",
+          marginTop: "1rem",
         }}
       >
         <Col>
@@ -136,7 +166,7 @@ export const Sidebar = () => {
                   border: "1px solid rgba(0, 0, 0, 0.125)",
                   borderRadius: "0.25rem",
                   textAlign: "center",
-                  marginBottom: "2rem",
+                  marginBottom: "1rem",
                   boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.2)",
                 }}
               >
@@ -153,7 +183,7 @@ export const Sidebar = () => {
                     <div
                       style={{
                         fontWeight: "bold",
-                        fontSize: "2rem",
+                        fontSize: "1.75rem",
                         "&:hover": {
                           fontSize: "1.5rem",
                         },
@@ -163,7 +193,7 @@ export const Sidebar = () => {
                     </div>
                     <div
                       style={{
-                        fontSize: "1rem",
+                        fontSize: "0.8rem",
                       }}
                     >
                       {metric.description}
@@ -199,7 +229,7 @@ export const Sidebar = () => {
 
 const TextSearch = () => {
   const dispatch = useDispatch();
-  const searchTerm = useSelector(selectSearchTerm);
+  const filter = useSelector(selectFilter);
   return (
     <InputGroup className="sidebar-textsearch">
       <InputGroup>
@@ -207,8 +237,10 @@ const TextSearch = () => {
           size="sm"
           className="input"
           placeholder="Search..."
-          value={searchTerm}
-          onChange={(e) => dispatch(setSearchTerm(e.target.value))}
+          value={filter.searchTerm}
+          onChange={(e) =>
+            dispatch(setFilter({ ...filter, searchTerm: e.target.value }))
+          }
         />
       </InputGroup>
     </InputGroup>
@@ -216,6 +248,9 @@ const TextSearch = () => {
 };
 
 const FilterAnnotated = () => {
+  const dispatch = useDispatch();
+  const filter = useSelector(selectFilter);
+
   return (
     <Form
       style={{
@@ -224,9 +259,67 @@ const FilterAnnotated = () => {
         justifyContent: "left",
       }}
     >
-      <Form.Check label="All" type="radio" name="group1" />
-      <Form.Check label="Annotated" type="radio" name="group1" />
-      <Form.Check label="Unannotated" type="radio" name="group1" />
+      <Form.Check
+        label="All"
+        type="radio"
+        checked={filter.annotated === "all"}
+        onClick={() => dispatch(setFilter({ ...filter, annotated: "all" }))}
+        name="group1"
+      />
+      <Form.Check
+        label="Annotated"
+        type="radio"
+        onClick={() =>
+          dispatch(setFilter({ ...filter, annotated: "annotated" }))
+        }
+        name="group1"
+      />
+      <Form.Check
+        label="Unannotated"
+        type="radio"
+        checked={filter.annotated === "unannotated"}
+        onClick={() =>
+          dispatch(setFilter({ ...filter, annotated: "unannotated" }))
+        }
+        name="group1"
+      />
+    </Form>
+  );
+};
+
+const FilterCandidates = () => {
+  const dispatch = useDispatch();
+  const filter = useSelector(selectFilter);
+
+  return (
+    <Form
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "left",
+      }}
+    >
+      <Form.Check
+        label="All"
+        type="radio"
+        checked={filter.candidates === "all"}
+        onClick={() => dispatch(setFilter({ ...filter, candidates: "all" }))}
+        name="group2"
+      />
+      <Form.Check
+        label="Has Candidates"
+        type="radio"
+        onClick={() => dispatch(setFilter({ ...filter, candidates: "has" }))}
+        checked={filter.candidates === "has"}
+        name="group2"
+      />
+      <Form.Check
+        label="No Candidates"
+        type="radio"
+        checked={filter.candidates === "none"}
+        onClick={() => dispatch(setFilter({ ...filter, candidates: "none" }))}
+        name="group2"
+      />
     </Form>
   );
 };
