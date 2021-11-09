@@ -8,7 +8,7 @@ LexiClean requires both MongoDB and Node.js (*Express and React are bundled with
 - MongoDB (v4.4.6) (see: https://docs.mongodb.com/manual/installation/)
 - Node.js (v14.17.1) (see: https://nodejs.org/en/download/)
 
-## How to install
+## How to install (standard)
 LexiClean can be built and served locally once the dependencies are met. First, install MongoDB by following the url specified above. Once installed, in a new terminal, check that it is running as a service using:
 
     $ service mongod status
@@ -30,7 +30,9 @@ After this, install LexiCleans back-end *server* and front-end *client* dependen
 
 Once the dependencies have been succesfully installed, environmental variables for the database connection and authorisation system need to be set. In the root directory (`/`) add an `.env` file with the structure shown below. This can be done using a text editor or `vi .env` in linux.
   
-    DB_CONNECTION=mongodb://localhost:27017/lexiclean
+    DB_HOST=localhost
+    DB_PORT=27017
+    DB_NAME=lexiclean
     TOKEN_SECRET=<secret_key>
 
 The `<secret_key>` should be strong (see: https://www.allkeysgenerator.com/Random/Security-Encryption-Key-Generator.aspx).
@@ -46,18 +48,27 @@ After installation of LexiClean, launch the application from the root directory 
     $ npm run app
 
 
-
-## Attribution
-Please cite our [[conference paper]](https://arxiv.org/abs/####.#####) (to appear in xxxxx## 202#) if you find it useful in your research:
+## How to install (docker)
+LexiClean can be built using Docker. To do so, in the parent directory, execute:
 ```
-  @inproceedings{bikaun202xlexiclean,
+$ make run
+```
+
+or alternatively:
+```
+$ docker-compose -f docker-compose.yml up
+```
+
+<!-- ## Attribution
+Please cite our [[conference paper]](https://arxiv.org/abs/####.#####) (to appear in xxxxx## 2021) if you find it useful in your research:
+```
+  @inproceedings{bikaun2021lexiclean,
       title={LexiClean: An annotation tool for rapid multi-task lexical normalisation},
       author={Bikaun, Tyler, French, Tim, Hodkiewicz, Melinda, Stewart, Michael and Liu, Wei},
-      journal={xxxx, xxxxx ####.},
       pages={x--y},
-      year={202#}
+      year={2021}
 }
-```
+``` -->
 
-## Contact
-Please email any questions or queries to Tyler Bikaun (tyler.bikaun@research.uwa.edu.au)
+## Feedback
+Please email any feedback or questions to Tyler Bikaun (tyler.bikaun@research.uwa.edu.au)
