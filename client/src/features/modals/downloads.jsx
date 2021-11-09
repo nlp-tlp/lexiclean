@@ -14,7 +14,7 @@ export const Downloads = ({ projectId, projectName }) => {
   const schema = useSelector(selectProjectSchema);
   const [resultType, setResultType] = useState("seq2seq");
   const [previewContent, setPreviewContent] = useState("");
-  const [annotated, setAnnotated] = useState(false);
+  // const [annotated, setAnnotated] = useState(false);
   const [resultCount, setResultCount] = useState();
 
   const [downloadSchema, setDownloadSchema] = useState([]);
@@ -24,7 +24,7 @@ export const Downloads = ({ projectId, projectName }) => {
     const resultRes = await axios.post("/api/project/download/result", {
       project_id: projectId,
       type: resultType,
-      annotated: annotated,
+      annotated: false, //annotated,
     });
     if (resultRes.status === 200) {
       // Prepare for file download
@@ -46,7 +46,7 @@ export const Downloads = ({ projectId, projectName }) => {
       project_id: projectId,
       type: resultType,
       preview: true,
-      annotated: annotated,
+      annotated: false, //annotated,
     });
     if (response.status === 200) {
       setPreviewContent(JSON.stringify(response.data.results, null, 4));
@@ -178,11 +178,11 @@ export const Downloads = ({ projectId, projectName }) => {
             label="Annotated Only"
             className="download"
             id="checkbox"
-            checked={annotated}
-            onChange={() => {
-              setAnnotated(!annotated);
-              previewResults();
-            }}
+            // checked={annotated}
+            // onChange={() => {
+            //   setAnnotated(!annotated);
+            //   previewResults();
+            // }}
           />
         </Col>
         <Col>
@@ -324,7 +324,7 @@ export const Downloads = ({ projectId, projectName }) => {
                       </div>
                       {item === "normalisations" ? (
                         <>
-                          <p
+                          {/* <p
                             style={{
                               marginTop: "0.5em",
                               fontSize: "1em",
@@ -335,7 +335,7 @@ export const Downloads = ({ projectId, projectName }) => {
                           >
                             Download Options
                           </p>
-                          {downloadOptionsContainer}
+                          {downloadOptionsContainer} */}
                           <Button
                             variant="dark"
                             size="sm"

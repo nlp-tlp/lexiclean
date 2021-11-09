@@ -96,6 +96,8 @@ router.post("/download", async (req, res) => {
           )
       );
 
+      console.log(uniqueReplacementPairs);
+
       if (req.body.preview) {
         uniqueReplacementPairs =
           uniqueReplacementPairs.length > 10
@@ -112,14 +114,14 @@ router.post("/download", async (req, res) => {
           },
         }))
         .reduce((r, c) => Object.assign(r, c), {});
-      // console.log(replacements);
+      console.log(replacements);
 
       // Sort key alphabetically
       const replacementsSorted = Object.fromEntries(
         Object.entries(replacements).sort()
       );
 
-      // res.json(replacementsSorted);
+      res.json(replacementsSorted);
     } else {
       // Filter tokens for those annotated with map
       const tokensMapped = tokens.filter(

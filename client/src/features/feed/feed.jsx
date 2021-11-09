@@ -207,10 +207,10 @@ const ProjectList = () => {
                           id="action-icon"
                           onClick={() => modalHandler(project, "annotate")}
                         />
-                        <MdFileDownload
+                        {/* <MdFileDownload
                           id="action-icon"
                           onClick={() => modalHandler(project, "downloads")}
-                        />
+                        /> */}
                         <MdDelete
                           id="action-icon"
                           style={{ color: DELETE_COLOUR }}
