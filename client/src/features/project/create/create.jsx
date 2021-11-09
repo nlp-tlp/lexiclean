@@ -73,7 +73,7 @@ const Stepper = () => {
   const handleBadge = (stepName) => {
     //   Allows user to jump between steps on click; if saved or active.
     if (steps[stepName].saved || activeStep === stepName) {
-      console.log(stepName);
+      // console.log(stepName);
       dispatch(setActiveStep(stepName));
     }
   };
@@ -195,7 +195,7 @@ const StepperControls = () => {
       detect_digits: steps.labelling.data.detectDigits,
     };
 
-    console.log("Form payload ->", payload);
+    // console.log("Form payload ->", payload);
     if (formSubmitted === false) {
       setIsSubmitting(true);
       await axios
@@ -208,7 +208,7 @@ const StepperControls = () => {
         })
         .catch((error) => {
           if (error.response.status === 401 || 403) {
-            console.log("unauthorized");
+            // console.log("unauthorized");
             history.push("/unauthorized");
           }
         });

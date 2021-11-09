@@ -41,7 +41,7 @@ export const feedSlice = createSlice({
   initialState: initialState,
   reducers: {
     setActiveProject: (state, action) => {
-      console.log("active project payload", action.payload);
+      // console.log("active project payload", action.payload);
       state.activeProject = action.payload;
     },
     setIdle: (state, action) => {

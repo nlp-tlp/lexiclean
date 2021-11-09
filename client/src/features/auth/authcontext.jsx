@@ -12,11 +12,11 @@ export const AuthProvider = ({ children }) => {
     // rather than setting isAuthenticated into localstorage
 
     const checkToken = async () => {
-      console.log("Checking token status");
+      // console.log("Checking token status");
       await axios
         .get("/api/auth/token/validate")
         .then(function (response) {
-          console.log(`AuthContext: ${response.data.valid}`);
+          // console.log(`AuthContext: ${response.data.valid}`);
           if (response.data.valid) {
             setIsAuthenticated(true);
           } else {

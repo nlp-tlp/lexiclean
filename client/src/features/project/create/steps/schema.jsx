@@ -104,7 +104,7 @@ const TagContainer = () => {
     reader.onload = () => {
       const fileExt = meta.name.split(".").slice(-1)[0];
       if (fileExt === "txt") {
-        console.log(reader.result.split("\n").filter((line) => line !== ""));
+        // console.log(reader.result.split("\n").filter((line) => line !== ""));
 
         setTempData({
           fileName: meta.name,
@@ -168,13 +168,13 @@ const TagContainer = () => {
     if (tempMetaTag !== "") {
       if (tempData) {
         // If the tag has associated data
-        console.log("TAG WITH DATA!");
+        // console.log("TAG WITH DATA!");
         dispatch(
           setMetaTags({ [tempMetaTag]: { ...tempData, colour: tempColour } })
         );
       } else {
         // If the tag does not have associated data
-        console.log("TAG WITHOUT DATA!");
+        // console.log("TAG WITHOUT DATA!");
         dispatch(
           setMetaTags({
             [tempMetaTag]: { fileName: null, data: [], colour: tempColour },
@@ -421,9 +421,9 @@ const TagContainer = () => {
 };
 
 const GazetteerModal = ({ showModal, handleClose, tempData, setTempData }) => {
-  useEffect(() => {
-    console.log(tempData);
-  }, [tempData]);
+  // useEffect(() => {
+  //   console.log(tempData);
+  // }, [tempData]);
 
   return (
     <Modal show={showModal} onHide={handleClose}>

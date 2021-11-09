@@ -33,7 +33,7 @@ router.post("/", async (req, res) => {
 });
 
 router.post("/one/:projectId", async (req, res) => {
-  console.log(req.params, req.body);
+  // console.log(req.params, req.body);
   try {
     const response = await Map.findOne({
       project_id: req.params.projectId,
@@ -47,7 +47,7 @@ router.post("/one/:projectId", async (req, res) => {
 
 // Upload static map
 router.post("/static/", async (req, res) => {
-  console.log("Adding static map");
+  // console.log("Adding static map");
 
   const map = new Map({
     type: req.body.type,
@@ -112,20 +112,20 @@ router.post("/download", async (req, res) => {
           },
         }))
         .reduce((r, c) => Object.assign(r, c), {});
-      console.log(replacements);
+      // console.log(replacements);
 
       // Sort key alphabetically
       const replacementsSorted = Object.fromEntries(
         Object.entries(replacements).sort()
       );
 
-      res.json(replacementsSorted);
+      // res.json(replacementsSorted);
     } else {
       // Filter tokens for those annotated with map
       const tokensMapped = tokens.filter(
         (token) => token.meta_tags[req.body.mapName]
       );
-      console.log(tokensMapped);
+      // console.log(tokensMapped);
 
       // Filter for unique values only.
       let tokenValues = [

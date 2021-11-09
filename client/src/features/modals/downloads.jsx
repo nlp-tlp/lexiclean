@@ -181,7 +181,6 @@ export const Downloads = ({ projectId, projectName }) => {
             checked={annotated}
             onChange={() => {
               setAnnotated(!annotated);
-              console.log(!annotated);
               previewResults();
             }}
           />

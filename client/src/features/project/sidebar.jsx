@@ -69,7 +69,7 @@ export const Sidebar = () => {
 
   const applyFilters = () => {
     // Apply filter and take user to first page
-    console.log(filter);
+    // console.log(filter);
     dispatch(setPage(1));
     history.push(`/project/${project._id}/page/1`);
     dispatch(setIdle());

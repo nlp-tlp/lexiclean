@@ -73,7 +73,7 @@ export const Preprocessing = () => {
 
   useEffect(() => {
     if (corpus && corpus[0] === "") {
-      console.log("erased corpus paste bin");
+      // console.log("erased corpus paste bin");
       // Reset preview content
       setPreviewContent("Upload texts to preview");
     }

@@ -991,7 +991,7 @@ export const tokenSlice = createSlice({
       })
       .addCase(patchSingleTokenization.fulfilled, (state, action) => {
         // Tokenizes a set of token pieces for a single text
-        console.log("state tokenized!");
+        // console.log("state tokenized!");
         const details = action.payload.details;
 
         const oldTokenIds = action.payload.response.old_token_ids;

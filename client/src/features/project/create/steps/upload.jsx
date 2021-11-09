@@ -49,7 +49,6 @@ export const Upload = () => {
             corpusFileName: fileMeta.name,
           })
         );
-        console.log("hello");
       } else if (fileExt === "json") {
         // JSON is read as a string - converts to Object
         dispatch(
@@ -87,7 +86,7 @@ export const Upload = () => {
 
   useEffect(() => {
     if (corpus && corpus === "") {
-      console.log("erased corpus paste bin");
+      // console.log("erased corpus paste bin");
 
       // Reset corpus and remove file meta data if user erases all contents of corpus paste bin
       dispatch(

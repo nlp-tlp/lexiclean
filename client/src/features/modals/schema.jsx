@@ -64,7 +64,7 @@ export const Schema = ({ projectId }) => {
   const maps = useSelector(selectProjectSchema);
 
   const addMetaTag = () => {
-    console.log(tempMetaTag, tempColour);
+    // console.log(tempMetaTag, tempColour);
     dispatch(
       patchProjectSchema({
         projectId: projectId,

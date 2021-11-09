@@ -25,8 +25,6 @@ export const Settings = () => {
   const [tempPageLimit, setTempPageLimit] = useState(1);
   const { pageNumber } = useParams();
 
-  console.log(pageLimit, tempPageLimit);
-
   return (
     <div>
       <p style={{ fontWeight: "bold", padding: "0", margin: "0" }}>
