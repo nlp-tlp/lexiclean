@@ -173,7 +173,7 @@ export const Schema = ({ projectId }) => {
                         marginRight: "0.5rem",
                       }}
                     >
-                      <OverlayTrigger
+                      {/* <OverlayTrigger
                         trigger="click"
                         placement="left"
                         overlay={popover}
@@ -181,7 +181,7 @@ export const Schema = ({ projectId }) => {
                         <div id="edit-button">
                           <IoBrush />
                         </div>
-                      </OverlayTrigger>
+                      </OverlayTrigger> */}
                       <div
                         id="status-button"
                         active={maps.contents[key].active && "true"}

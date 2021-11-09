@@ -54,7 +54,7 @@ export const Feed = () => {
             <Button
               variant="dark"
               size="lg"
-              onClick={() => dispatch(setActiveModal("create"))}
+              href="/project/new"
             >
               Create Project
             </Button>

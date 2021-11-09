@@ -113,11 +113,11 @@ export const Sidebar = () => {
               <FilterAnnotated filter={filter} setFilter={setFilter} />
             </Col>
           </Row>
-          <Row style={{ justifyContent: "left", marginBottom: "0.5rem" }}>
+          {/* <Row style={{ justifyContent: "left", marginBottom: "0.5rem" }}>
             <Col>
               <FilterCandidates filter={filter} setFilter={setFilter} />
             </Col>
-          </Row>
+          </Row> */}
           <Row
             style={{
               textAlign: "right",

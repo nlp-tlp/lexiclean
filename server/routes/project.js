@@ -179,7 +179,7 @@ router.post("/create", utils.authenicateToken, async (req, res) => {
         ".",
         "\\",
       ];
-      const regexCharsEscaped = req.body.chars_remove
+      const regexCharsEscaped = req.body.charset_remove
         .split("")
         .map((char) => (escapedChars.includes(char) ? `\\${char}` : char));
       const regex = new RegExp("[" + regexCharsEscaped + "]", "g");

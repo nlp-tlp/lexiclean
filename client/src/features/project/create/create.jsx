@@ -190,7 +190,8 @@ const StepperControls = () => {
       maps: maps,
       lower_case: steps.preprocessing.data.lowercase,
       remove_duplicates: steps.preprocessing.data.removeDuplicates,
-      chars_remove: steps.preprocessing.data.removeCharSet,
+      chars_remove: steps.preprocessing.data.removeChars,
+      charset_remove: steps.preprocessing.data.removeCharSet,
       detect_digits: steps.labelling.data.detectDigits,
     };
 
