@@ -383,6 +383,7 @@ const TagContainer = () => {
                               trigger="click"
                               placement="left"
                               overlay={popover(key)}
+                              rootClose
                             >
                               <div id="edit-button">
                                 <IoBrush />

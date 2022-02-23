@@ -3,7 +3,8 @@ import { Card, Col, Form, Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import {
   selectCorpus,
-  selectPreprocessingActions, setStepData
+  selectPreprocessingActions,
+  setStepData
 } from "../createStepSlice";
 
 export const Preprocessing = () => {
@@ -23,9 +24,18 @@ export const Preprocessing = () => {
     // Update preview data whenever a text file is uploaded and the pre-processing
     // actions are changed
 
-    if (corpus) {
+    if (corpus && Object.keys(corpus).length === 0) {
+      // Reset preview content
+      setPreviewContent("Upload texts to preview");
+    } else {
       // Remove multiple white space and trim
-      let preCorpus = corpus.map((text) => text.replace(/\s+/g, " ").trim());
+      // setCorpus(
+      //   Object.values(corpus).map((text) => text.replace(/\s+/g, " ").trim())
+      // );
+      let preCorpus = Object.values(corpus).map((text) =>
+        text.replace(/\s+/g, " ").trim()
+      );
+      // : corpus.map((text) => text.replace(/\s+/g, " ").trim());
 
       if (actions.lowercase) {
         preCorpus = preCorpus.map((text) => text.toLowerCase());
@@ -50,7 +60,6 @@ export const Preprocessing = () => {
           ".",
           "\\",
         ];
-
         const regexCharsEscaped = actions.removeCharSet
           .split("")
           .map((char) => (escapedChars.includes(char) ? `\\${char}` : char));
@@ -70,14 +79,6 @@ export const Preprocessing = () => {
       setTokenSize(preCorpus.map((text) => text.split(" ")).flat().length);
     }
   }, [corpus, actions]);
-
-  useEffect(() => {
-    if (corpus && corpus[0] === "") {
-      // console.log("erased corpus paste bin");
-      // Reset preview content
-      setPreviewContent("Upload texts to preview");
-    }
-  }, [corpus]);
 
   return (
     <Row
@@ -127,6 +128,7 @@ export const Preprocessing = () => {
               <Card.Body>
                 <Form.Check
                   type="checkbox"
+                  id="lowerCaseCheck"
                   label="Lower case"
                   name="lowerCaseCheck"
                   title="Removes casing from characters. This can reduce annotation effort."
@@ -139,6 +141,7 @@ export const Preprocessing = () => {
 
                 <Form.Check
                   type="checkbox"
+                  id="removeCharactersCheck"
                   label="Remove characters"
                   name="removeCharactersCheck"
                   title="Removes special characters from corpus. This can reduce annotation effort."
@@ -162,6 +165,7 @@ export const Preprocessing = () => {
                 />
                 <Form.Check
                   type="checkbox"
+                  id="removeDuplicatesCheck"
                   label="Remove duplicates"
                   title="Removes duplicate documents from your corpus. This can reduce annotation effort."
                   name="removeDuplicatesCheck"

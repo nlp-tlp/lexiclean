@@ -17,6 +17,7 @@ const initialState = {
       data: {
         corpus: [],
         corpusFileName: null,
+        corpusHasIds: false,
         replacements: {},
         replacementsFileName: null,
       },

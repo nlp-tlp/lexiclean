@@ -17,7 +17,7 @@ import { Labelling } from "./steps/labelling";
 import { Preprocessing } from "./steps/preprocessing";
 import { Review } from "./steps/review";
 import { Schema } from "./steps/schema";
-import { Upload } from "./steps/upload";
+import { Upload } from "./steps/upload/upload";
 
 const REPLACE_COLOUR = "#009688";
 
