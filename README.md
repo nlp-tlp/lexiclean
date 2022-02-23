@@ -59,16 +59,17 @@ or alternatively:
 $ docker-compose -f docker-compose.yml up
 ```
 
-<!-- ## Attribution
-Please cite our [[conference paper]](https://arxiv.org/abs/####.#####) (to appear in xxxxx## 2021) if you find it useful in your research:
+## Attribution
+Please cite our [[conference paper]](https://aclanthology.org/2021.emnlp-demo.25/) if you find it useful in your research:
 ```
-  @inproceedings{bikaun2021lexiclean,
-      title={LexiClean: An annotation tool for rapid multi-task lexical normalisation},
-      author={Bikaun, Tyler, French, Tim, Hodkiewicz, Melinda, Stewart, Michael and Liu, Wei},
-      pages={x--y},
-      year={2021}
+@inproceedings{bikaun2021lexiclean,
+  title={LexiClean: An annotation tool for rapid multi-task lexical normalisation},
+  author={Bikaun, Tyler and French, Tim and Hodkiewicz, Melinda and Stewart, Michael and Liu, Wei},
+  booktitle={Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing: System Demonstrations},
+  pages={212--219},
+  year={2021}
 }
-``` -->
+```
 
 ## Feedback
 Please email any feedback or questions to Tyler Bikaun (tyler.bikaun@research.uwa.edu.au)
