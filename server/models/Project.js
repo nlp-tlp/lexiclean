@@ -40,6 +40,11 @@ const ProjectSchema = mongoose.Schema(
       starting_vocab_size: { type: Number, required: true },
       starting_oov_token_count: { type: Number, required: true },
     },
+    id2textIdMapping: {
+      type: Schema.Types.ObjectId,
+      ref: "Text",
+      required: false,
+    }, // Contains {identifier:textObjectId} mapping
     created_on: {
       type: Date,
       required: true,
@@ -51,7 +56,7 @@ const ProjectSchema = mongoose.Schema(
       default: Date.now,
     },
   },
-  { _id: true }
+  { _id: true, timestamps: true }
 );
 
 module.exports = mongoose.model("Project", ProjectSchema);

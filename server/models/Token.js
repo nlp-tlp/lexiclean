@@ -37,7 +37,7 @@ const TokenSchema = mongoose.Schema(
       default: Date.now,
     },
   },
-  { _id: true }
+  { _id: true, timestamps: true }
 );
 
 module.exports = mongoose.model("Token", TokenSchema);
