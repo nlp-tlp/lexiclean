@@ -26,6 +26,6 @@ yarn-error.log*
 
 .vscode
 .env
-logger/logs.json
+server/logger/logs.json
 
 /dev
