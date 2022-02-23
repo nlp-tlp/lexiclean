@@ -29,3 +29,4 @@ yarn-error.log*
 server/logger/logs.json
 
 /dev
+/test
