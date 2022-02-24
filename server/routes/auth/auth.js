@@ -1,22 +1,22 @@
 const express = require("express");
 const router = express.Router();
-const logger = require("../logger");
+const logger = require("../../logger");
 const dotenv = require("dotenv");
-const User = require("../models/User");
+const User = require("../../models/User");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const jwt = require("jsonwebtoken");
-
+const utils = require("./utils");
 // Get config variables
 dotenv.config();
 
-const generateJWT = (user_id) => {
-  // 24hr expiry
-  // console.log(username, process.env.TOKEN_SECRET);
-  return jwt.sign({ user_id: user_id }, process.env.TOKEN_SECRET, {
-    expiresIn: "72h",
-  });
-};
+// const generateJWT = (user_id) => {
+//   // 24hr expiry
+//   // console.log(username, process.env.TOKEN_SECRET);
+//   return jwt.sign({ user_id: user_id }, process.env.TOKEN_SECRET, {
+//     expiresIn: "72h",
+//   });
+// };
 
 // Create user
 router.post("/signup", async (req, res) => {
@@ -42,7 +42,7 @@ router.post("/signup", async (req, res) => {
       const savedUser = await newUser.save();
       res.json({
         username: req.body.username,
-        token: generateJWT(savedUser._id),
+        token: utils.generateJWT(savedUser._id),
       });
       logger.info("User created successfully", { route: "/signup" });
     }
@@ -67,7 +67,10 @@ router.post("/login", async (req, res) => {
       // Check if password is correct
       if (bcrypt.compareSync(req.body.password, user.password)) {
         // password correct
-        res.json({ username: user.username, token: generateJWT(user._id) });
+        res.json({
+          username: user.username,
+          token: utils.generateJWT(user._id),
+        });
         logger.info("Login successful", { route: "/login" });
       } else {
         res.status(409).send({ error: "Password incorrect" });

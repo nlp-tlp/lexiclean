@@ -37,23 +37,8 @@ const ProjectSchema = mongoose.Schema(
       },
     ],
     metrics: {
-      starting_vocab_size: { type: Number, required: true },
-      starting_oov_token_count: { type: Number, required: true },
-    },
-    id2textIdMapping: {
-      type: Schema.Types.ObjectId,
-      ref: "Text",
-      required: false,
-    }, // Contains {identifier:textObjectId} mapping
-    created_on: {
-      type: Date,
-      required: true,
-      default: Date.now,
-    },
-    last_modified: {
-      type: Date,
-      required: true,
-      default: Date.now,
+      starting_vocab_size: { type: Number, default: 0 },
+      starting_oov_token_count: { type: Number, default: 0 },
     },
   },
   { _id: true, timestamps: true }

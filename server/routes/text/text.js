@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const logger = require("../logger");
+const logger = require("../../logger");
 const mongoose = require("mongoose");
-const Text = require("../models/Text");
-const Token = require("../models/Token");
-const Map = require("../models/Map");
+const Text = require("../../models/Text");
+const Token = require("../../models/Token");
+const Map = require("../../models/Map");
 
 router.get("/:textId", async (req, res) => {
   try {
@@ -336,7 +336,10 @@ router.patch("/save/annotations", async (req, res) => {
       // Patch annotated field on texts
       const testUpdateRes = await Text.updateMany(
         { _id: { $in: annotatedTextIds } },
-        { annotated: true, last_modified: new Date(Date.now()) }
+        {
+          annotated: true,
+          // last_modified: new Date(Date.now())
+        }
       );
 
       res.json(testUpdateRes);
@@ -344,7 +347,10 @@ router.patch("/save/annotations", async (req, res) => {
       // Previously only marked annotated texts as those that had a change made
       const testUpdateRes = await Text.updateMany(
         { _id: { $in: req.body.textIds } },
-        { annotated: true, last_modified: new Date(Date.now()) }
+        {
+          annotated: true,
+          // last_modified: new Date(Date.now())
+        }
       );
       res.json(testUpdateRes);
     }
@@ -361,7 +367,10 @@ router.patch("/save/annotation/:textId", async (req, res) => {
   try {
     await Text.updateOne(
       { _id: req.params.textId },
-      { annotated: req.body.value, last_modified: new Date(Date.now()) }
+      {
+        annotated: req.body.value,
+        // last_modified: new Date(Date.now())
+      }
     );
 
     res.json({ message: "successfully updated annotation state" });

@@ -1,11 +1,11 @@
 const express = require("express");
 const _ = require("lodash");
 const router = express.Router();
-const logger = require("../logger");
-const Map = require("../models/Map");
-const Text = require("../models/Text");
-const Token = require("../models/Token");
-const Project = require("../models/Project");
+const logger = require("../../logger");
+const Map = require("../../models/Map");
+const Text = require("../../models/Text");
+const Token = require("../../models/Token");
+const Project = require("../../models/Project");
 
 const DEFAULT_COLOURS = { ua: "#ff7043", st: "#2196f3", en: "#eceff1" };
 

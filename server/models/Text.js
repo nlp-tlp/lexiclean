@@ -18,6 +18,7 @@ const TextSchema = mongoose.Schema(
     },
     tokens: [
       {
+        _id: 0,
         index: {
           type: Number,
           required: true,
@@ -42,11 +43,7 @@ const TextSchema = mongoose.Schema(
     rank: {
       type: Number,
     },
-    last_modified: {
-      type: Date,
-      required: true,
-      default: Date.now,
-    },
+    identifiers: [{ type: String }],
   },
   { _id: true, timestamps: true }
 );

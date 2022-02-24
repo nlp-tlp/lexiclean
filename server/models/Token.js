@@ -31,11 +31,13 @@ const TokenSchema = mongoose.Schema(
       ref: "Project",
       required: false,
     },
-    last_modified: {
-      type: Date,
-      required: true,
-      default: Date.now,
+    textId: {
+      // Used to make creating project easier. TODO: Review.
+      type: Schema.Types.ObjectId,
+      ref: "Text",
+      required: false,
     },
+    index: { type: Number, required: false }, // Used to make creating project easier. TODO: review.
   },
   { _id: true, timestamps: true }
 );

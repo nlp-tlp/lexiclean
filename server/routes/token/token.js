@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const logger = require("../logger");
-const Token = require("../models/Token");
-const Text = require("../models/Text");
+const logger = require("../../logger");
+const Token = require("../../models/Token");
+const Text = require("../../models/Text");
 
 // Add replacement on single token (sets text annotated state to true)
 router.patch("/replace/add/single/", async (req, res) => {
@@ -15,13 +15,16 @@ router.patch("/replace/add/single/", async (req, res) => {
       { _id: req.body.token_id },
       {
         replacement: req.body.replacement,
-        last_modified: new Date(Date.now()),
+        // last_modified: new Date(Date.now()),
       },
       { upsert: true }
     );
     await Text.updateOne(
       { _id: req.body.text_id },
-      { annotated: true, last_modified: new Date(Date.now()) },
+      {
+        annotated: true,
+        // last_modified: new Date(Date.now())
+      },
       { upsert: true }
     );
 
@@ -102,13 +105,16 @@ router.patch("/suggest/add/single/", async (req, res) => {
       {
         replacement: req.body.suggested_replacement,
         suggested_replacement: null,
-        last_modified: new Date(Date.now()),
+        // last_modified: new Date(Date.now()),
       },
       { upsert: true }
     );
     await Text.updateOne(
       { _id: req.body.text_id },
-      { annotated: true, last_modified: new Date(Date.now()) },
+      {
+        annotated: true,
+        // last_modified: new Date(Date.now())
+      },
       { upsert: true }
     );
     res.json(updatedReponse);
@@ -310,14 +316,17 @@ router.patch("/meta/add/single/", async (req, res) => {
       { _id: req.body.token_id },
       {
         meta_tags: updatedMetaTags,
-        last_modified: new Date(Date.now()),
+        // last_modified: new Date(Date.now()),
       },
       { upsert: true }
     ).lean();
 
     await Text.updateOne(
       { _id: req.body.text_id },
-      { annotated: true, last_modified: new Date(Date.now()) },
+      {
+        annotated: true,
+        // last_modified: new Date(Date.now())
+      },
       { upsert: true }
     );
 
@@ -377,7 +386,7 @@ router.patch("/meta/remove/one/:tokenId", async (req, res) => {
       { _id: req.params.tokenId },
       {
         meta_tags: updatedMetaTags,
-        last_modified: new Date(Date.now()),
+        // last_modified: new Date(Date.now()),
       },
       { upsert: true }
     ).lean();
