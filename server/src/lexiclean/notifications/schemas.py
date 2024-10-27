@@ -1,12 +1,14 @@
+"""Notification schemas."""
+
 from typing import Literal
 
 from bson import ObjectId
 from pydantic import BaseModel, ConfigDict, Field
+
 from lexiclean.models import AfterAnnotatedObjectId, AnnotatedObjectId, BaseDocument
 
 NOTIFICATION_TYPE = Literal["project_invite"]
 NOTIFICATION_STATUS = Literal["accepted", "rejected", "pending"]
-
 INVITE_NOTIFICATION_STATUS = Literal["accept", "reject"]
 
 
