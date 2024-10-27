@@ -1,10 +1,11 @@
+"""Server utilities."""
+
 import logging
 import re
-from typing import Any, Optional, List, Dict
+from typing import Any, Dict, List, Optional
 
 from bson import ObjectId
 from fastapi import HTTPException, status
-from lexiclean.config import get_config
 
 logger = logging.getLogger(__name__)
 
@@ -27,10 +28,8 @@ def text_token_search_pipeline(
     search_value: Optional[str] = None,
     exclude_token_ids: List[ObjectId] = [],
 ) -> List[Dict[str, Any]]:
-
-    match_stage = {"project_id": project_id}
-
-    filter_conditions = []
+    match_stage: Dict[str, Any] = {"project_id": project_id}
+    filter_conditions: List[Dict[str, Any]] = []
 
     if search_value:
         filter_conditions.append(
@@ -45,7 +44,7 @@ def text_token_search_pipeline(
     if exclude_token_ids:
         filter_conditions.append({"$not": {"$in": ["$$token._id", exclude_token_ids]}})
 
-    pipeline = [
+    pipeline: List[Dict[str, Any]] = [
         {"$match": match_stage},
         {
             "$project": {
@@ -67,44 +66,4 @@ def text_token_search_pipeline(
     ]
 
     logger.info(f"Text token search pipeline: {pipeline}")
-
     return pipeline
-
-    # return [
-    #     {
-    #         "$match": {"project_id": project_id},
-    #     },
-    #     {
-    #         "$project": {
-    #             "tokens": {
-    #                 "$filter": {
-    #                     "input": "$tokens",
-    #                     "as": "token",
-    #                     "cond": {
-    #                         "$and": [
-    #                             (
-    #                                 {
-    #                                     "$regexMatch": {
-    #                                         "input": "$$token.value",
-    #                                         "regex": re.compile(
-    #                                             r"\b" + re.escape(search_value) + r"\b"
-    #                                         ),
-    #                                     }
-    #                                 }
-    #                                 if search_value
-    #                                 else {}
-    #                             ),
-    #                             {"$not": [{"$in": ["$$token._id", exclude_token_ids]}]},
-    #                         ]
-    #                     },
-    #                 }
-    #             },
-    #             "_id": 1,
-    #         }
-    #     },
-    #     {"$unwind": "$tokens"},
-    #     {"$addFields": {"tokens.text_Id": "$_id"}},
-    #     {"$replaceRoot": {"newRoot": "$tokens"}},
-    #     {"$addFields": {"token_id": "$_id"}},
-    #     {"$project": {"_id": 0}},
-    # ]
