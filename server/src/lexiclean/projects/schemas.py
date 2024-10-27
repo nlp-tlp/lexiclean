@@ -1,16 +1,14 @@
 """Project schemas."""
 
 from datetime import datetime
-from typing import Annotated, Any, Literal, Optional, List, Dict
+from typing import Any, Dict, List, Literal, Optional
 
 from bson import ObjectId
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from pydantic.functional_validators import AfterValidator, BeforeValidator
+
+from lexiclean.models import AnnotatedObjectId
 from lexiclean.notifications.schemas import NOTIFICATION_STATUS
 from lexiclean.resources.schemas import ResourceOut
-from typing_extensions import Self
-
-from lexiclean.models import AnnotatedObjectId, AfterAnnotatedObjectId
 
 Corpus_Types = Literal["standard", "identifiers", "parallel"]
 
@@ -159,10 +157,10 @@ class ProjectOut(ProjectDocumentModel):
     id: AnnotatedObjectId = Field(alias="_id")
     created_by: AnnotatedObjectId
     # resources: List[AnnotatedObjectId] | None
-    annotators: List[AnnotatorOut]
+    annotators: List[AnnotatorOut]  # type: ignore
     tags: List[AnnotatedObjectId]
     texts: int = Field(default=0)
-    flags: List[AnnotatedObjectId]
+    flags: List[AnnotatedObjectId]  # type: ignore
     saved_texts: int = Field(default=0)
 
     model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
@@ -170,6 +168,6 @@ class ProjectOut(ProjectDocumentModel):
 
 class ProjectOutWithResources(ProjectOut):
     created_by: UserOut
-    annotators: List[UserOut]
-    tags: List[ResourceOut]
-    flags: List[ResourceOut]
+    annotators: List[UserOut]  # type: ignore
+    tags: List[ResourceOut]  # type: ignore
+    flags: List[ResourceOut]  # type: ignore
