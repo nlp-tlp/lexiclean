@@ -1,25 +1,35 @@
 from functools import lru_cache
+from typing import Optional
 
-from pydantic import SecretStr
+from pydantic import BaseModel, Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
 from lexiclean.constants import ENGLISH_LEXICON
 
 
-class MongoDBSettings(BaseSettings):
-    uri: SecretStr = (
-        "mongodb+srv://dev:LOdiK66nhq17Cvwh@lexiclean.4pchxoj.mongodb.net/lexiclean?retryWrites=true&w=majority"
+class SettingsMongoDB(BaseModel):
+    uri: Optional[SecretStr] = Field(default=None, validation_alias="MONGODB__URI")
+    db_name: Optional[str] = Field(default=None, validation_alias="MONGODB__DB_NAME")
+
+    @property
+    def mongodb_uri(self) -> Optional[str]:
+        if self.uri:
+            return self.uri.get_secret_value()
+        return None
+
+
+class SettingsAuth(BaseModel):
+    secret_key: Optional[SecretStr] = Field(
+        default=None, validation_alias="AUTH__SECRET_KEY"
     )
-    db_name: str = "dev"
+    algorithm: str = Field(default="HS256", validation_alias="AUTH__ALGORITHM")
+    access_token_expire_minutes: int = Field(
+        default=30, validation_alias="AUTH__ACCESS_TOKEN_EXPIRE_MINUTES"
+    )
 
 
-class AuthSettings(BaseSettings):
-    secret_key: SecretStr = "your-secret-key"
-    algorithm: str = "HS256"
-    access_token_expire_minutes: int = 30
-
-
-class ApiSettings(BaseSettings):
-    prefix: str = "/api"
+class SettingsAPI(BaseModel):
+    prefix: str = Field(default="/api", validation_alias="API__PREFIX")
 
 
 class Config(BaseSettings):
@@ -27,9 +37,9 @@ class Config(BaseSettings):
     def english_lexicon(self):
         return ENGLISH_LEXICON
 
-    auth: AuthSettings = AuthSettings()
-    mongodb: MongoDBSettings = MongoDBSettings()
-    api: ApiSettings = ApiSettings()
+    auth: SettingsAuth
+    mongodb: SettingsMongoDB
+    api: SettingsAPI
 
     model_config = SettingsConfigDict(
         env_file=".env", env_nested_delimiter="__", env_file_encoding="utf-8"
