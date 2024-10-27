@@ -1,10 +1,10 @@
 """Users schemas."""
 
 from datetime import datetime
-from typing import Annotated, Union, Optional
+from typing import Annotated, Optional, Union
 
 from bson import ObjectId
-from pydantic import BaseModel, ConfigDict, Field, SecretStr, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, SecretStr
 from pydantic.functional_validators import BeforeValidator
 
 AnnotatedObjectId = Annotated[Union[ObjectId, str], BeforeValidator(lambda x: str(x))]
