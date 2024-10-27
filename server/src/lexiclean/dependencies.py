@@ -1,3 +1,5 @@
+"""Server dependencies."""
+
 import logging
 from functools import lru_cache
 from typing import AsyncGenerator
@@ -6,6 +8,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from motor.motor_asyncio import AsyncIOMotorDatabase
+
 from lexiclean.config import Config
 from lexiclean.database import get_client
 from lexiclean.users.schemas import UserDocumentModel
@@ -67,7 +70,7 @@ async def get_user(
     try:
         payload = jwt.decode(
             token,
-            config.auth.secret_key.get_secret_value(),
+            config.auth.secret_key_value,
             algorithms=[config.auth.algorithm],
         )
         username: str = payload.get("sub")
