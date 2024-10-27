@@ -1,11 +1,14 @@
+"""Tokens router."""
+
 import logging
-from typing import Any
+from typing import Dict, List
 
 from bson import ObjectId
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel, Field
 from pymongo import InsertOne
+
 from lexiclean.annotations.schemas import AnnotationDocumentModel
 from lexiclean.config import config
 from lexiclean.dependencies import get_db, get_user
@@ -222,7 +225,7 @@ async def remove_token_replacement_endpoint(
         )
 
     is_suggestion = annotation["suggestion"]
-    text_token_ids = {}
+    text_token_ids: Dict[str, List[str]] = {}
 
     if apply_all:
         # Find matching tokens in the project
@@ -298,7 +301,7 @@ async def accept_token_replacement_endpoint(
     # )
 
     # print(annotation)
-    text_token_ids = {}
+    text_token_ids: Dict[str, List[str]] = {}
     if apply_all:
         # Find matching tokens in the project
         result = await db.texts.aggregate(
@@ -378,7 +381,7 @@ async def add_token_tag_endpoint(
         }
     )
 
-    text_token_ids = {}
+    text_token_ids: Dict[str, List[str]] = {}
 
     if apply_all:
         replacement = await db.annotations.find_one(
@@ -517,7 +520,7 @@ async def remove_token_tag_endpoint(
     user_id = ObjectId(user.id)
     apply_all = body.apply_all
 
-    text_token_ids = {}
+    text_token_ids: Dict[str, List[str]] = {}
 
     if apply_all:
         replacement = await db.annotations.find_one(

@@ -1,13 +1,14 @@
 """Texts router."""
 
 import logging
-from typing import List
+from typing import Any, Dict, List
 
 from bson import ObjectId
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel
 from pymongo import UpdateOne
+
 from lexiclean.annotations.schemas import AnnotationDocumentModel
 from lexiclean.config import config
 from lexiclean.dependencies import get_db, get_user
@@ -34,7 +35,6 @@ async def get_texts_endpoint(
     # candidates: bool | None = Query(default=None),
     # rank: int = Query(default=1, le=1, ge=-1),
 ):
-
     user_id = ObjectId(user.id)
 
     project = await db.projects.find_one(
@@ -54,7 +54,7 @@ async def get_texts_endpoint(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
         )
-    logger.info(f"User is on project")
+    logger.info("User is on project")
 
     match_stage = {"project_id": ObjectId(project_id)}
     # if search_term:
@@ -114,12 +114,12 @@ async def get_texts_endpoint(
     result = await db.texts.aggregate(pipeline).to_list(length=None)
     result = result[0]
     total_count = result.get("totalCount", 0)
-    texts = result.get("texts", [])
+    texts_list: List[Dict[str, Any]] = result.get("texts", [])
     # texts = [TextOut(**t) for t in result.get("texts", [])]
 
     logger.info(result)
 
-    for text in texts:
+    for text in texts_list:
         text["saved"] = False
         text["flags"] = []
         _tokens = [
@@ -148,18 +148,19 @@ async def get_texts_endpoint(
                     ),
                     None,
                 )
-                if annotation_type == "replacement":
-                    if annotation.get("suggestion", False):
-                        print("adding suggested replacement...")
-                        token["suggestion"] = annotation["value"]
+                if token is not None:
+                    if annotation_type == "replacement":
+                        if annotation.get("suggestion", False):
+                            print("adding suggested replacement...")
+                            token["suggestion"] = annotation["value"]
+                        else:
+                            print("adding replacement...")
+                            token[annotation_type] = annotation["value"]
+                        token["current_value"] = annotation["value"]
+                    elif annotation_type == "tags":
+                        token[annotation_type].append(annotation["value"])
                     else:
-                        print("adding replacement...")
-                        token[annotation_type] = annotation["value"]
-                    token["current_value"] = annotation["value"]
-                elif annotation_type == "tags":
-                    token[annotation_type].append(annotation["value"])
-                else:
-                    print(f"Unhandled annotation type: {annotation_type}")
+                        print(f"Unhandled annotation type: {annotation_type}")
             else:
                 if annotation_type == "flag":
                     text["flags"].append(annotation["value"])
@@ -172,7 +173,7 @@ async def get_texts_endpoint(
 
     return {
         "total_count": total_count,
-        "texts": [TextOut(**text) for text in texts],
+        "texts": [TextOut(**text) for text in texts_list],
     }
 
 

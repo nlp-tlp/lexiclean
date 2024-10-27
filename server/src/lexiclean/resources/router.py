@@ -1,8 +1,11 @@
+"""Resources router."""
+
 import logging
 
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
+
 from lexiclean.config import config
 from lexiclean.dependencies import get_db, get_user
 from lexiclean.resources.schemas import Resource_Types, ResourceOut
