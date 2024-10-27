@@ -27,6 +27,12 @@ class SettingsAuth(BaseModel):
         default=30, validation_alias="AUTH__ACCESS_TOKEN_EXPIRE_MINUTES"
     )
 
+    @property
+    def secret_key_value(self) -> Optional[str]:
+        if self.secret_key:
+            return self.secret_key.get_secret_value()
+        return None
+
 
 class SettingsAPI(BaseModel):
     prefix: str = Field(default="/api", validation_alias="API__PREFIX")
