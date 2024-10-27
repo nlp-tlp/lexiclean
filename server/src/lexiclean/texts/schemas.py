@@ -1,23 +1,13 @@
 """Texts schemas."""
 
-from datetime import datetime
 from typing import List, Literal, Optional
 
 from bson import ObjectId
 from pydantic import BaseModel, ConfigDict, Field
 
-from lexiclean.models import AnnotatedObjectId
+from lexiclean.models import AnnotatedObjectId, BaseDocument
 
 Resource_Types = Literal["tag", "map"]
-
-
-class BaseDocument(BaseModel):
-    id: Optional[ObjectId] = Field(default=None, alias="_id")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
-    created_by: ObjectId = Field(...)
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class Token(BaseModel):

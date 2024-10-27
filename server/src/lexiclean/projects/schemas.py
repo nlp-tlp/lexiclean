@@ -1,25 +1,15 @@
 """Project schemas."""
 
-from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional
 
 from bson import ObjectId
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from lexiclean.models import AnnotatedObjectId
+from lexiclean.models import AnnotatedObjectId, BaseDocument
 from lexiclean.notifications.schemas import NOTIFICATION_STATUS
 from lexiclean.resources.schemas import ResourceOut
 
 Corpus_Types = Literal["standard", "identifiers", "parallel"]
-
-
-class BaseDocument(BaseModel):
-    id: Optional[ObjectId] = Field(default=None, alias="_id")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
-    created_by: ObjectId = Field(...)
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class CorpusPreprocessing(BaseModel):
@@ -138,7 +128,7 @@ class ProjectUpdate(BaseModel):
     description: Optional[str] = Field(default=None, max_length=512)
 
 
-class UserOut(BaseModel):
+class ProjectUserOut(BaseModel):
     id: AnnotatedObjectId = Field(alias="_id")
     username: str
     is_admin: bool = Field(default=False)
@@ -167,7 +157,7 @@ class ProjectOut(ProjectDocumentModel):
 
 
 class ProjectOutWithResources(ProjectOut):
-    created_by: UserOut
-    annotators: List[UserOut]  # type: ignore
+    created_by: ProjectUserOut
+    annotators: List[ProjectUserOut]  # type: ignore
     tags: List[ResourceOut]  # type: ignore
     flags: List[ResourceOut]  # type: ignore

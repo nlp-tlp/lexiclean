@@ -1,20 +1,12 @@
 """Users schemas."""
 
 from datetime import datetime
-from typing import Annotated, Optional, Union
+from typing import Optional
 
 from bson import ObjectId
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, SecretStr
-from pydantic.functional_validators import BeforeValidator
 
-AnnotatedObjectId = Annotated[Union[ObjectId, str], BeforeValidator(lambda x: str(x))]
-
-
-class BaseDocument(BaseModel):
-    id: Optional[ObjectId] = Field(default=None, alias="_id")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+from lexiclean.models import AnnotatedObjectId, BaseDocument
 
 
 class UserDocumentModel(BaseDocument):
