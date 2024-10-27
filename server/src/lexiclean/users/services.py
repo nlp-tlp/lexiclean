@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 from jose import jwt
 from passlib.context import CryptContext
+
 from lexiclean.config import config
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

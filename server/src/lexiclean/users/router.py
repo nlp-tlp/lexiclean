@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from passlib.context import CryptContext
+
 from lexiclean.config import config
 from lexiclean.dependencies import get_db, get_user
 from lexiclean.users.schemas import (
