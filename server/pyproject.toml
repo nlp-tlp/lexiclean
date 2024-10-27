@@ -29,7 +29,7 @@ dev = [
 
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/maintkg"]
+packages = ["src/lexiclean"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
