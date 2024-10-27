@@ -1,9 +1,11 @@
+"""Annotation schemas."""
+
 from datetime import datetime
-from typing import Annotated, Literal, Optional, Union
+from typing import Literal, Optional, Union
 
 from bson import ObjectId
 from pydantic import BaseModel, ConfigDict, Field
-from pydantic.functional_validators import AfterValidator, BeforeValidator
+
 from lexiclean.models import AnnotatedObjectId
 
 Annotation_Types = Literal["tag", "replacement", "save", "flag"]
@@ -21,7 +23,9 @@ class BaseDocument(BaseModel):
 class AnnotationDocumentModel(BaseDocument):
     type: Annotation_Types = Field(..., description="The type of annotation")
     suggestion: bool = Field(..., description="Whether the annotation is a suggestion")
-    value: Union[bool, str, ObjectId] = Field(..., description="The value of the annotation")
+    value: Union[bool, str, ObjectId] = Field(
+        ..., description="The value of the annotation"
+    )
     text_id: ObjectId = Field(..., description="The associated text id")
     token_id: Optional[ObjectId] = Field(..., description="The associated token id")
     project_id: ObjectId = Field(..., description="The associated project id")
