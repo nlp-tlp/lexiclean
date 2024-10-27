@@ -1,10 +1,10 @@
+"""Texts schemas."""
+
 from datetime import datetime
-from typing import Annotated, Any, Literal, Optional, List, Dict
+from typing import List, Literal, Optional
 
 from bson import ObjectId
-from pydantic import BaseModel, ConfigDict, Field, model_validator
-from pydantic.functional_validators import AfterValidator, BeforeValidator
-from lexiclean.annotations.schemas import TagOut
+from pydantic import BaseModel, ConfigDict, Field
 
 from lexiclean.models import AnnotatedObjectId
 
