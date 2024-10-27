@@ -1,11 +1,12 @@
+"""Resources schemas."""
+
 import logging
 from datetime import datetime
-from typing import Annotated, Literal, Optional, List, Dict, Union
+from typing import Dict, List, Literal, Optional, Union
 
 from bson import ObjectId
-from pydantic import BaseModel, ConfigDict, Field, model_validator
-from pydantic.functional_validators import AfterValidator, BeforeValidator
-from typing_extensions import Self
+from pydantic import BaseModel, ConfigDict, Field
+
 from lexiclean.models import AnnotatedObjectId
 
 logger = logging.getLogger(__name__)
@@ -46,7 +47,7 @@ class ResourceDocumentModel(BaseDocument):
 class ResourceCreate(BaseModel):
     type: Resource_Types = Field(..., description="Type of resource")
 
-    values: Union[List[str],Dict[str, str]] = Field(
+    values: Union[List[str], Dict[str, str]] = Field(
         ...,
         description="Value of the resource",
         examples=[["hello", "world"], {"h3llo": "hello"}],
