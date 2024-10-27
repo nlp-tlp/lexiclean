@@ -1,17 +1,17 @@
 """Users schemas."""
 
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Union, Optional
 
 from bson import ObjectId
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, EmailStr
 from pydantic.functional_validators import BeforeValidator
 
-AnnotatedObjectId = Annotated[ObjectId | str, BeforeValidator(lambda x: str(x))]
+AnnotatedObjectId = Annotated[Union[ObjectId, str], BeforeValidator(lambda x: str(x))]
 
 
 class BaseDocument(BaseModel):
-    id: ObjectId | None = Field(default=None, alias="_id")
+    id: Optional[ObjectId] = Field(default=None, alias="_id")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -20,8 +20,8 @@ class BaseDocument(BaseModel):
 class UserDocumentModel(BaseDocument):
     username: str = Field(...)
     hashed_password: str = Field(...)
-    email: EmailStr | None = Field(default=None)
-    name: str | None = Field(deafult=None)
+    email: Optional[EmailStr] = Field(default=None)
+    name: Optional[str] = Field(deafult=None)
     openai_api_key: str = Field(default="")
     api_key: ObjectId
     security_question: str = Field(...)
@@ -31,27 +31,27 @@ class UserDocumentModel(BaseDocument):
 class UserCreate(BaseModel):
     username: str
     password: str
-    email: EmailStr | None = Field(default=None)
-    name: str | None = Field(default=None)
+    email: Optional[EmailStr] = Field(default=None)
+    name: Optional[str] = Field(default=None)
     security_question: str
     security_answer: str
 
 
 class UserUpdate(BaseModel):
-    openai_api_key: str | None = Field(default=None, min_length=0)
-    name: str | None = Field(default=None, min_length=1)
-    security_question: str | None = Field(default=None, min_length=10)
-    security_answer: str | None = Field(default=None, min_length=1)
-    email: EmailStr | None = Field(default=None)
+    openai_api_key: Optional[str] = Field(default=None, min_length=0)
+    name: Optional[str] = Field(default=None, min_length=1)
+    security_question: Optional[str] = Field(default=None, min_length=10)
+    security_answer: Optional[str] = Field(default=None, min_length=1)
+    email: Optional[EmailStr] = Field(default=None)
 
 
 class UserOut(BaseModel):
     id: AnnotatedObjectId = Field(alias="_id")
     username: str
-    email: EmailStr | None
-    name: str | None
+    email: Optional[EmailStr]
+    name: Optional[str]
     openai_api_key: SecretStr
-    api_key: AnnotatedObjectId | None  # TODO: Make SecretStr
+    api_key: Optional[AnnotatedObjectId]  # TODO: Make SecretStr
     created_at: datetime
     updated_at: datetime
     security_question: str

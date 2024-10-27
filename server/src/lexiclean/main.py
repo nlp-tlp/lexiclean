@@ -4,16 +4,17 @@ from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from src.config import config, get_config
-from src.database import close_mongo_connection, connect_to_mongo
-from src.dependencies import get_db, get_user
-from src.notifications.router import router as notifications_router
-from src.projects.router import router as projects_router
-from src.resources.router import router as resurces_router
-from src.texts.router import router as texts_router
-from src.tokens.router import router as tokens_router
-from src.users.router import router as users_router
-from src.users.schemas import UserDocumentModel, UserOut
+
+from lexiclean.config import config, get_config
+from lexiclean.database import close_mongo_connection, connect_to_mongo
+from lexiclean.dependencies import get_db, get_user
+from lexiclean.notifications.router import router as notifications_router
+from lexiclean.projects.router import router as projects_router
+from lexiclean.resources.router import router as resurces_router
+from lexiclean.texts.router import router as texts_router
+from lexiclean.tokens.router import router as tokens_router
+from lexiclean.users.router import router as users_router
+from lexiclean.users.schemas import UserDocumentModel, UserOut
 
 logging.basicConfig(
     level=logging.INFO,

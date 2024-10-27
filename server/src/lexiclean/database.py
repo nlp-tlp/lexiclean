@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -6,11 +7,11 @@ from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorClientSession
 
 logger = logging.getLogger(__name__)
 
-client: AsyncIOMotorClient | None = None
-session: AsyncIOMotorClientSession | None = None
+client: Optional[AsyncIOMotorClient] = None
+session: Optional[AsyncIOMotorClientSession] = None
 
 
-def get_client() -> AsyncIOMotorClient | None:
+def get_client() -> Optional[AsyncIOMotorClient]:
     return client
 
 

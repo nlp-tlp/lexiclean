@@ -1,18 +1,18 @@
 from datetime import datetime
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, Optional, List, Dict
 
 from bson import ObjectId
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pydantic.functional_validators import AfterValidator, BeforeValidator
-from src.annotations.schemas import TagOut
+from lexiclean.annotations.schemas import TagOut
 
-AnnotatedObjectId = Annotated[ObjectId | str, BeforeValidator(lambda x: str(x))]
+from lexiclean.models import AnnotatedObjectId
 
 Resource_Types = Literal["tag", "map"]
 
 
 class BaseDocument(BaseModel):
-    id: ObjectId | None = Field(default=None, alias="_id")
+    id: Optional[ObjectId] = Field(default=None, alias="_id")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     created_by: ObjectId = Field(...)
@@ -47,13 +47,13 @@ class TextDocumentModel(BaseDocument):
     rank: int = Field(
         default=0, description="The rank of the text", examples=[0, 1, 2], ge=0
     )
-    identifiers: list[str] = Field(
+    identifiers: List[str] = Field(
         default=[],
         description="The list of identifiers",
         examples=[["id1", "id2", "id3"]],
     )
     project_id: ObjectId = Field(..., description="The associated projects id")
-    tokens: list[Token] = Field(
+    tokens: List[Token] = Field(
         ...,
         description="The list of tokens",
         min_items=1,
@@ -68,10 +68,10 @@ class TokenOut(BaseModel):
     value: str
     current_value: str
     in_vocab: bool
-    suggestion: str | None = Field(default=None)
-    replacement: str | None = Field(default=None)
-    # tags: list[TagOut] = Field(default=[])
-    tags: list[AnnotatedObjectId] = Field(default=[])
+    suggestion: Optional[str] = Field(default=None)
+    replacement: Optional[str] = Field(default=None)
+    # tags: List[TagOut] = Field(default=[])
+    tags: List[AnnotatedObjectId] = Field(default=[])
 
     model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
 
@@ -81,10 +81,10 @@ class TextOut(BaseModel):
     original: str
     weight: float
     rank: int
-    identifiers: list[str]
+    identifiers: List[str]
     project_id: AnnotatedObjectId
-    tokens: list[TokenOut]
-    flags: list[AnnotatedObjectId] = Field(default=[])
+    tokens: List[TokenOut]
+    flags: List[AnnotatedObjectId] = Field(default=[])
     saved: bool
 
     model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)

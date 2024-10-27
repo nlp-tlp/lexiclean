@@ -1,25 +1,22 @@
 """Project schemas."""
 
 from datetime import datetime
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, Optional, List, Dict
 
 from bson import ObjectId
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pydantic.functional_validators import AfterValidator, BeforeValidator
-from src.notifications.schemas import NOTIFICATION_STATUS
-from src.resources.schemas import ResourceOut
+from lexiclean.notifications.schemas import NOTIFICATION_STATUS
+from lexiclean.resources.schemas import ResourceOut
 from typing_extensions import Self
 
-AnnotatedObjectId = Annotated[ObjectId | str, BeforeValidator(lambda x: str(x))]
-AfterAnnotatedObjectId = Annotated[
-    ObjectId | str, AfterValidator(lambda x: ObjectId(x))
-]
+from lexiclean.models import AnnotatedObjectId, AfterAnnotatedObjectId
 
 Corpus_Types = Literal["standard", "identifiers", "parallel"]
 
 
 class BaseDocument(BaseModel):
-    id: ObjectId | None = Field(default=None, alias="_id")
+    id: Optional[ObjectId] = Field(default=None, alias="_id")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     created_by: ObjectId = Field(...)
@@ -31,7 +28,7 @@ class CorpusPreprocessing(BaseModel):
     lowercase: bool = Field(default=False)
     remove_punctuation: bool = Field(default=False)
     remove_duplicates: bool = Field(default=False)
-    remove_content: list[str] = Field(
+    remove_content: List[str] = Field(
         default=[],
         examples=[["l/h", "bkt", "als"]],
         description="Word or phrases to remove from corpus",
@@ -40,14 +37,14 @@ class CorpusPreprocessing(BaseModel):
 
 class CorpusDetails(BaseModel):
     type: Corpus_Types = Field(default="standard", description="Type of corpus")
-    filename: str | None = Field(default=None, description="Filename of the corpus")
+    filename: Optional[str] = Field(default=None, description="Filename of the corpus")
 
 
 class ReplacementDetails(BaseModel):
-    values: dict[str, str] = Field(
+    values: Dict[str, str] = Field(
         default={}, description="Dictionary of token replacements"
     )
-    filename: str | None = Field(
+    filename: Optional[str] = Field(
         default=None, description="Filename of the replacement file"
     )
 
@@ -59,7 +56,7 @@ class PreannotationSettings(BaseModel):
 
 
 class Settings(BaseModel):
-    special_tokens: list[str] = Field(
+    special_tokens: List[str] = Field(
         default=[], examples=[["[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]"]]
     )
     digits_in_vocab: bool = Field(default=False)
@@ -84,8 +81,8 @@ class Tag(BaseModel):
         description="Hex color code",
         examples=["#4DB6AC"],
     )
-    description: str | None = Field(default=None, max_length=512)
-    values: list[str] = Field(default=[])
+    description: Optional[str] = Field(default=None, max_length=512)
+    values: List[str] = Field(default=[])
 
 
 class Metrics(BaseModel):
@@ -107,10 +104,10 @@ class ProjectDocumentModel(BaseDocument):
     corpus: CorpusDetails = Field(default=CorpusDetails())
     replacements: ReplacementDetails = Field(default=ReplacementDetails())
     settings: Settings = Field(default=Settings())
-    # resources: list[ObjectId] = Field(default=[])
-    annotators: list[Annotator] = Field(default=[])
-    flags: list[Flag] = Field(default=[])
-    tags: list[ObjectId] = Field(default=[])
+    # resources: List[ObjectId] = Field(default=[])
+    annotators: List[Annotator] = Field(default=[])
+    flags: List[Flag] = Field(default=[])
+    tags: List[ObjectId] = Field(default=[])
     metrics: Metrics = Field(default=Metrics())
 
     model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
@@ -122,11 +119,11 @@ class ProjectCreate(BaseModel):
     corpus: CorpusDetails
     replacements: ReplacementDetails = Field(default=ReplacementDetails())
     settings: Settings = Field(default=Settings())
-    flags: list[Flag] = Field(default=[])
-    tags: list[Tag] = Field(default=[])
-    # resources: list[AfterAnnotatedObjectId] = Field(default=[])
-    annotators: list[str] = Field(default=[])
-    texts: dict[str, str] = Field(default={})
+    flags: List[Flag] = Field(default=[])
+    tags: List[Tag] = Field(default=[])
+    # resources: List[AfterAnnotatedObjectId] = Field(default=[])
+    annotators: List[str] = Field(default=[])
+    texts: Dict[str, str] = Field(default={})
 
     @model_validator(mode="before")
     @classmethod
@@ -139,8 +136,8 @@ class ProjectCreate(BaseModel):
 
 
 class ProjectUpdate(BaseModel):
-    name: str | None = Field(default=None, min_length=3, max_length=32)
-    description: str | None = Field(default=None, max_length=512)
+    name: Optional[str] = Field(default=None, min_length=3, max_length=32)
+    description: Optional[str] = Field(default=None, max_length=512)
 
 
 class UserOut(BaseModel):
@@ -161,11 +158,11 @@ class AnnotatorOut(BaseModel):
 class ProjectOut(ProjectDocumentModel):
     id: AnnotatedObjectId = Field(alias="_id")
     created_by: AnnotatedObjectId
-    # resources: list[AnnotatedObjectId] | None
-    annotators: list[AnnotatorOut]
-    tags: list[AnnotatedObjectId]
+    # resources: List[AnnotatedObjectId] | None
+    annotators: List[AnnotatorOut]
+    tags: List[AnnotatedObjectId]
     texts: int = Field(default=0)
-    flags: list[AnnotatedObjectId]
+    flags: List[AnnotatedObjectId]
     saved_texts: int = Field(default=0)
 
     model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
@@ -173,6 +170,6 @@ class ProjectOut(ProjectDocumentModel):
 
 class ProjectOutWithResources(ProjectOut):
     created_by: UserOut
-    annotators: list[UserOut]
-    tags: list[ResourceOut]
-    flags: list[ResourceOut]
+    annotators: List[UserOut]
+    tags: List[ResourceOut]
+    flags: List[ResourceOut]

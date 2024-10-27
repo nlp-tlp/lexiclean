@@ -6,9 +6,9 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from src.config import Config
-from src.database import get_client
-from src.users.schemas import UserDocumentModel
+from lexiclean.config import Config
+from lexiclean.database import get_client
+from lexiclean.users.schemas import UserDocumentModel
 
 logger = logging.getLogger(__name__)
 

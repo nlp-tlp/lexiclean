@@ -1,13 +1,13 @@
 import logging
 import math
 from collections import defaultdict
-from typing import Any
+from typing import Any, List, Dict, Optional
 
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import UpdateOne
-from src.projects.schemas import ProjectOutWithResources
-from src.resources.schemas import ResourceOut
+from lexiclean.projects.schemas import ProjectOutWithResources
+from lexiclean.resources.schemas import ResourceOut
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ def calculate_tfidf(texts):
 
 
 async def rank_texts(
-    db: AsyncIOMotorDatabase, texts: list[str], candidate_tokens: list[dict[str, Any]]
+    db: AsyncIOMotorDatabase, texts: List[str], candidate_tokens: List[Dict[str, Any]]
 ):
     """
     Calculate mean, masked, TF-IDF for each text
@@ -105,8 +105,8 @@ async def rank_texts(
 
 async def get_project(
     db: AsyncIOMotorDatabase, project_id: ObjectId, user_id: ObjectId
-) -> ProjectOutWithResources | None:
-    pipeline: dict[str, Any] = [
+) -> Optional[ProjectOutWithResources]:
+    pipeline: Dict[str, Any] = [
         {
             "$match": {
                 "_id": project_id,

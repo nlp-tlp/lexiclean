@@ -1,21 +1,22 @@
 """Notifications router."""
 
 import logging
+from typing import List
 
 from bson import ObjectId
 from bson.errors import InvalidId
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from src.config import config
-from src.dependencies import get_db, get_user
-from src.notifications.schemas import (
+from lexiclean.config import config
+from lexiclean.dependencies import get_db, get_user
+from lexiclean.notifications.schemas import (
     INVITE_NOTIFICATION_STATUS,
     NotificationDocumentModel,
     NotificationOut,
     ProjectOut,
     SenderOut,
 )
-from src.users.schemas import UserDocumentModel
+from lexiclean.users.schemas import UserDocumentModel
 
 logger = logging.getLogger(__name__)
 
@@ -182,7 +183,7 @@ async def update_invite_notification_endpoint(
 
 @router.patch("/uninvite")
 async def delete_project_invite_notification_endpoint(
-    usernames: list[str] = Body(..., min_items=1),
+    usernames: List[str] = Body(..., min_items=1),
     project_id: str = Query(...),
     db: AsyncIOMotorDatabase = Depends(get_db),
     user: UserDocumentModel = Depends(get_user),
@@ -243,7 +244,7 @@ async def delete_project_invite_notification_endpoint(
 
 @router.post("/invite")
 async def create_project_invite_notification_endpoint(
-    usernames: list[str] = Body(..., min_items=1),
+    usernames: List[str] = Body(..., min_items=1),
     project_id: str = Query(...),
     db: AsyncIOMotorDatabase = Depends(get_db),
     user: UserDocumentModel = Depends(get_user),

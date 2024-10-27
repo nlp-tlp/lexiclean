@@ -1,10 +1,10 @@
 import logging
 import re
-from typing import Any
+from typing import Any, Optional, List, Dict
 
 from bson import ObjectId
 from fastapi import HTTPException, status
-from src.config import get_config
+from lexiclean.config import get_config
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +24,9 @@ class UnauthenticatedException(HTTPException):
 
 def text_token_search_pipeline(
     project_id: ObjectId,
-    search_value: str | None = None,
-    exclude_token_ids: list[ObjectId] = [],
-) -> list[dict[str, Any]]:
+    search_value: Optional[str] = None,
+    exclude_token_ids: List[ObjectId] = [],
+) -> List[Dict[str, Any]]:
 
     match_stage = {"project_id": project_id}
 

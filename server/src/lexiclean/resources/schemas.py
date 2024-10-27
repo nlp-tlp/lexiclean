@@ -1,21 +1,20 @@
 import logging
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Optional, List, Dict, Union
 
 from bson import ObjectId
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pydantic.functional_validators import AfterValidator, BeforeValidator
 from typing_extensions import Self
+from lexiclean.models import AnnotatedObjectId
 
 logger = logging.getLogger(__name__)
-
-AnnotatedObjectId = Annotated[ObjectId | str, BeforeValidator(lambda x: str(x))]
 
 Resource_Types = Literal["tag", "map", "flag"]
 
 
 class BaseDocument(BaseModel):
-    id: ObjectId | None = Field(default=None, alias="_id")
+    id: Optional[ObjectId] = Field(default=None, alias="_id")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     created_by: ObjectId = Field(...)
@@ -27,12 +26,12 @@ class ResourceDocumentModel(BaseDocument):
     name: str = Field(..., description="Name of the resource")
     description: str = Field(default="", description="Description of the resource")
     type: Resource_Types = Field(..., description="Type of resource")
-    values: list[str] | dict[str, str] = Field(
+    values: Union[List[str], Dict[str, str]] = Field(
         ...,
         description="Value of the resource",
         examples=[["hello", "world"], {"h3llo": "hello"}],
     )
-    color: str | None = Field(
+    color: Optional[str] = Field(
         default="#ff0000",
         min_length=3,
         max_length=7,
@@ -47,7 +46,7 @@ class ResourceDocumentModel(BaseDocument):
 class ResourceCreate(BaseModel):
     type: Resource_Types = Field(..., description="Type of resource")
 
-    values: list[str] | dict[str, str] = Field(
+    values: Union[List[str],Dict[str, str]] = Field(
         ...,
         description="Value of the resource",
         examples=[["hello", "world"], {"h3llo": "hello"}],
@@ -59,8 +58,8 @@ class ResourceOut(BaseModel):
     name: str
     description: str = Field(default="")
     type: Resource_Types
-    values: list[str] | dict[str, str]
-    color: str | None
+    values: Union[List[str], Dict[str, str]]
+    color: Optional[str]
     active: bool
     project_id: AnnotatedObjectId = Field(alias="project_id")
 

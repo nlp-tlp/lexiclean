@@ -6,11 +6,11 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel, Field
 from pymongo import InsertOne
-from src.annotations.schemas import AnnotationDocumentModel
-from src.config import config
-from src.dependencies import get_db, get_user
-from src.users.schemas import UserDocumentModel
-from src.utils import text_token_search_pipeline
+from lexiclean.annotations.schemas import AnnotationDocumentModel
+from lexiclean.config import config
+from lexiclean.dependencies import get_db, get_user
+from lexiclean.users.schemas import UserDocumentModel
+from lexiclean.utils import text_token_search_pipeline
 
 logger = logging.getLogger(__name__)
 

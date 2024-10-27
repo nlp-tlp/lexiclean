@@ -21,7 +21,7 @@ src/routers/projects.py
 src/routers/users.py
 src/services/__init__.py
 src/services/users.py
-src/src.egg-info/PKG-INFO
+src/lexiclean.egg-info/PKG-INFO
 src/src.egg-info/SOURCES.txt
 src/src.egg-info/dependency_links.txt
 src/src.egg-info/top_level.txt

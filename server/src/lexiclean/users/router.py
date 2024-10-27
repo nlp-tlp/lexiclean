@@ -2,23 +2,23 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Dict
+from typing import Dict, List
 
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from passlib.context import CryptContext
-from src.config import config
-from src.dependencies import get_db, get_user
-from src.users.schemas import (
+from lexiclean.config import config
+from lexiclean.dependencies import get_db, get_user
+from lexiclean.users.schemas import (
     SecurityQuestionReset,
     UserCreate,
     UserDocumentModel,
     UserOut,
     UserUpdate,
 )
-from src.users.services import (
+from lexiclean.users.services import (
     authenticate_user,
     create_access_token,
     get_password_hash,
@@ -86,7 +86,7 @@ async def login(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.get("", response_model=list[UserOut])
+@router.get("", response_model=List[UserOut])
 async def read_users_endpoint(db: AsyncIOMotorDatabase = Depends(get_db)):
     users = await db.users.find().to_list(length=None)
     return [UserOut(**user) for user in users]

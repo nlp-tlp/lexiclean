@@ -9,17 +9,17 @@ import string
 from collections import defaultdict
 from difflib import SequenceMatcher
 from itertools import combinations
-from typing import Any, Literal, Tuple
+from typing import Any, Literal, Tuple, List, Dict, Optional
 
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel, Field
 from pymongo import InsertOne
-from src.annotations.schemas import AnnotationDocumentModel
-from src.config import config
-from src.dependencies import get_db, get_user
-from src.projects.schemas import (
+from lexiclean.annotations.schemas import AnnotationDocumentModel
+from lexiclean.config import config
+from lexiclean.dependencies import get_db, get_user
+from lexiclean.projects.schemas import (
     Annotator,
     CorpusPreprocessing,
     Flag,
@@ -31,11 +31,11 @@ from src.projects.schemas import (
     ProjectUpdate,
     Tag,
 )
-from src.projects.services import get_project, rank_texts
-from src.resources.schemas import ResourceDocumentModel, ResourceOut
-from src.texts.schemas import TextDocumentModel, Token
-from src.users.schemas import UserDocumentModel, UserOut
-from src.utils import text_token_search_pipeline
+from lexiclean.projects.services import get_project, rank_texts
+from lexiclean.resources.schemas import ResourceDocumentModel, ResourceOut
+from lexiclean.texts.schemas import TextDocumentModel, Token
+from lexiclean.users.schemas import UserDocumentModel, UserOut
+from lexiclean.utils import text_token_search_pipeline
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ async def create_project_endpoint(
     body.tags = []
     body.flags = []
 
-    body.annotators: list[Annotator] = [
+    body.annotators: List[Annotator] = [
         {"_id": ObjectId(user.id), "status": "accepted"}
     ]  # + [ObjectId(a) for a in body.annotators]
 
@@ -76,7 +76,7 @@ async def create_project_endpoint(
     english_lexicon = config.english_lexicon
     logger.info(f"English lexicon size: {len(english_lexicon)}")
 
-    resource_dictionaries: dict[str, list[str]] = {"en": english_lexicon}
+    resource_dictionaries: Dict[str, List[str]] = {"en": english_lexicon}
 
     # Create replacements resource
     # await db.resources.insert_one()
@@ -961,10 +961,10 @@ async def add_project_tags_endpoint(
 async def get_texts_with_user_annotations(
     db: AsyncIOMotorDatabase,
     project_id: ObjectId,
-    annotators: list[UserOut],
-    tag_id_to_name: dict[str, str],
-    flag_id_to_name: dict[str, str],
-    skip: int | None = None,
+    annotators: List[UserOut],
+    tag_id_to_name: Dict[str, str],
+    flag_id_to_name: Dict[str, str],
+    skip: Optional[int] = None,
     limit: int = 1,
 ):
     """
@@ -1627,7 +1627,7 @@ async def download_project(
 
 async def download_replacements(
     db: AsyncIOMotorDatabase, project_id: ObjectId, user_id: ObjectId
-) -> dict[str, list[dict[str, Any]]]:
+) -> Dict[str, List[Dict[str, Any]]]:
     """Download replacements for a project"""
     annotations = await db.annotations.find(
         {

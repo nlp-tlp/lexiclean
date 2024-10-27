@@ -3,10 +3,10 @@ import logging
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from src.config import config
-from src.dependencies import get_db, get_user
-from src.resources.schemas import Resource_Types, ResourceOut
-from src.users.schemas import UserDocumentModel
+from lexiclean.config import config
+from lexiclean.dependencies import get_db, get_user
+from lexiclean.resources.schemas import Resource_Types, ResourceOut
+from lexiclean.users.schemas import UserDocumentModel
 
 logger = logging.getLogger(__name__)
 

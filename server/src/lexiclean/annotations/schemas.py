@@ -1,17 +1,16 @@
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Optional, Union
 
 from bson import ObjectId
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.functional_validators import AfterValidator, BeforeValidator
-
-AnnotatedObjectId = Annotated[ObjectId | str, BeforeValidator(lambda x: str(x))]
+from lexiclean.models import AnnotatedObjectId
 
 Annotation_Types = Literal["tag", "replacement", "save", "flag"]
 
 
 class BaseDocument(BaseModel):
-    id: ObjectId | None = Field(default=None, alias="_id")
+    id: Optional[ObjectId] = Field(default=None, alias="_id")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     created_by: ObjectId = Field(...)
@@ -22,9 +21,9 @@ class BaseDocument(BaseModel):
 class AnnotationDocumentModel(BaseDocument):
     type: Annotation_Types = Field(..., description="The type of annotation")
     suggestion: bool = Field(..., description="Whether the annotation is a suggestion")
-    value: bool | str | ObjectId = Field(..., description="The value of the annotation")
+    value: Union[bool, str, ObjectId] = Field(..., description="The value of the annotation")
     text_id: ObjectId = Field(..., description="The associated text id")
-    token_id: ObjectId | None = Field(..., description="The associated token id")
+    token_id: Optional[ObjectId] = Field(..., description="The associated token id")
     project_id: ObjectId = Field(..., description="The associated project id")
 
 

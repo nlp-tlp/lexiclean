@@ -1,18 +1,19 @@
 """Texts router."""
 
 import logging
+from typing import List
 
 from bson import ObjectId
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel
 from pymongo import UpdateOne
-from src.annotations.schemas import AnnotationDocumentModel
-from src.config import config
-from src.dependencies import get_db, get_user
-from src.texts.schemas import TextOut
-from src.texts.utils import OpenAIAPIException, get_gpt_correction
-from src.users.schemas import UserDocumentModel
+from lexiclean.annotations.schemas import AnnotationDocumentModel
+from lexiclean.config import config
+from lexiclean.dependencies import get_db, get_user
+from lexiclean.texts.schemas import TextOut
+from lexiclean.texts.utils import OpenAIAPIException, get_gpt_correction
+from lexiclean.users.schemas import UserDocumentModel
 
 logger = logging.getLogger(__name__)
 
@@ -176,7 +177,7 @@ async def get_texts_endpoint(
 
 
 class SaveTextsBody(BaseModel):
-    ids: list[str] = Body(min_length=1)
+    ids: List[str] = Body(min_length=1)
     save: bool
     project_id: str
 
