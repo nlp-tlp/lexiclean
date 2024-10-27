@@ -7,6 +7,7 @@ from bson import ObjectId
 from bson.errors import InvalidId
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
+
 from lexiclean.config import config
 from lexiclean.dependencies import get_db, get_user
 from lexiclean.notifications.schemas import (
@@ -79,8 +80,8 @@ async def get_notifications_endpoint(
         output.append(
             NotificationOut(
                 **notification,
-                sender=SenderOut(id=sender["_id"], username=sender["username"]),
-                project=ProjectOut(id=project["_id"], name=project["name"]),
+                sender=SenderOut(username=sender["username"]),  # _id=sender["_id"]
+                project=ProjectOut(_id=project["_id"], name=project["name"]),
             )
         )
 
