@@ -1,7 +1,7 @@
+"""Server database utilities."""
+
 import logging
 from typing import Optional
-from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorClientSession
 
