@@ -1,0 +1,1 @@
+export const SECONDARY_SIDEBAR_MENU_ITEMS = [];

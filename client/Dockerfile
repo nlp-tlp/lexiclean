@@ -1,17 +1,28 @@
-FROM node:14.17.0-alpine
+# Build stage
+FROM node:14 as build-stage
 
-# Set working directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Install dependencies
-COPY ./package*.json ./
-RUN npm install --silent
+COPY package*.json ./
 
-# Copy source code
+RUN npm install
+
+# If you need to add environment variables, you can add them here
+# ENV REACT_APP_API_URL=http://backend:3001
+
 COPY . .
 
-# Run client
 EXPOSE 3000
 
-# Start up client
 CMD ["npm", "start"]
+
+# RUN npm run build
+
+# # Production stage
+# FROM nginx:stable-alpine as production-stage
+
+# COPY --from=build-stage /app/build /usr/share/nginx/html
+
+# EXPOSE 3000
+
+# CMD ["nginx", "-g", "daemon off;"]
