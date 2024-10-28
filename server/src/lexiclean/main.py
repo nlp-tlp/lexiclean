@@ -39,7 +39,6 @@ mongodb_client = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # type: ignore
-
     config = get_config()
 
     connect_to_mongo(uri=config.mongodb.uri.get_secret_value())
@@ -77,11 +76,6 @@ app.include_router(resurces_router)
 app.include_router(tokens_router)
 app.include_router(notifications_router)
 # app.include_router(maps.router)
-
-
-@app.get(f"{config.api.prefix}/")
-def read_root():
-    return {"Hello": "World"}
 
 
 @app.get(f"{config.api.prefix}/settings")
