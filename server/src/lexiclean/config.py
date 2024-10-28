@@ -8,34 +8,26 @@ from lexiclean.constants import ENGLISH_LEXICON
 
 
 class SettingsMongoDB(BaseModel):
-    uri: Optional[SecretStr] = Field(default=None, validation_alias="MONGODB__URI")
-    db_name: Optional[str] = Field(default=None, validation_alias="MONGODB__DB_NAME")
+    uri: SecretStr = Field(...)
+    db_name: str = Field(...)
 
     @property
-    def mongodb_uri(self) -> Optional[str]:
-        if self.uri:
-            return self.uri.get_secret_value()
-        return None
+    def mongodb_uri(self) -> str:
+        return self.uri.get_secret_value()
 
 
 class SettingsAuth(BaseModel):
-    secret_key: Optional[SecretStr] = Field(
-        default=None, validation_alias="AUTH__SECRET_KEY"
-    )
-    algorithm: str = Field(default="HS256", validation_alias="AUTH__ALGORITHM")
-    access_token_expire_minutes: int = Field(
-        default=30, validation_alias="AUTH__ACCESS_TOKEN_EXPIRE_MINUTES"
-    )
+    secret_key: SecretStr = Field(...)
+    algorithm: str = Field(default="HS256")
+    access_token_expire_minutes: int = Field(default=360)
 
     @property
-    def secret_key_value(self) -> Optional[str]:
-        if self.secret_key:
-            return self.secret_key.get_secret_value()
-        return None
+    def secret_key_value(self) -> str:
+        return self.secret_key.get_secret_value()
 
 
 class SettingsAPI(BaseModel):
-    prefix: str = Field(default="/api", validation_alias="API__PREFIX")
+    prefix: str = Field(default="/api")
 
 
 class Config(BaseSettings):

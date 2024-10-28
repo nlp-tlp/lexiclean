@@ -6,7 +6,15 @@ from typing import Optional
 from bson import ObjectId
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, SecretStr
 
-from lexiclean.models import AnnotatedObjectId, BaseDocument
+from lexiclean.models import AnnotatedObjectId
+
+
+class BaseDocument(BaseModel):
+    id: Optional[ObjectId] = Field(default=None, alias="_id")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class UserDocumentModel(BaseDocument):
