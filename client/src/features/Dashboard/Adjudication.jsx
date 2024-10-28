@@ -80,7 +80,7 @@ const Adjudication = () => {
   return (
     <StyledCard title="Adjudication" id="dashboard-adjudication">
       <Box p={"0rem 0.5rem 1rem 0.5rem"}>
-        {process.env.REACT_APP_DISABLE_COLLABORATION === "true" ? (
+        {import.meta.env.VITE_DISABLE_COLLABORATION === "true" ? (
           <FeatureNotAvailableAlert />
         ) : (
           <Alert severity="info">
@@ -117,8 +117,8 @@ const Adjudication = () => {
           </Alert>
         )}
       </Box>
-      {process.env.REACT_APP_DISABLE_COLLABORATION ===
-      "true" ? null : loading || !data ? (
+      {import.meta.env.VITE_DISABLE_COLLABORATION === "true" ? null : loading ||
+        !data ? (
         <Skeleton height={240} />
       ) : (
         <>

@@ -117,8 +117,8 @@ const PrimarySidebar = ({ drawerOpen, handleDrawerToggle }) => {
             </ListItem>
             <ListItemButton
               component={Link}
-              disabled={!process.env.REACT_APP_DOCS_URL}
-              to={process.env.REACT_APP_DOCS_URL}
+              disabled={!import.meta.env.VITE_DOCS_URL}
+              to={import.meta.env.VITE_DOCS_URL}
               target="_blank"
               rel="noopener noreferrer"
               sx={{

@@ -32,13 +32,13 @@ const Annotators = ({ projectId, loading, data, handleUpdate, disabled }) => {
   return (
     <StyledCard title="Annotators" id="dashboard-annotators">
       <Box p="0rem 1rem">
-        {process.env.REACT_APP_DISABLE_COLLABORATION === "true" ? (
+        {import.meta.env.VITE_DISABLE_COLLABORATION === "true" ? (
           <FeatureNotAvailableAlert />
         ) : (
           <EnabledAlert />
         )}
       </Box>
-      {process.env.REACT_APP_DISABLE_COLLABORATION === "false" && (
+      {import.meta.env.VITE_DISABLE_COLLABORATION === "false" && (
         <>
           <InviteForm
             data={data}

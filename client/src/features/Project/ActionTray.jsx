@@ -21,7 +21,7 @@ import {
   AutoAwesome as AutoAwesomeIcon,
 } from "@mui/icons-material";
 import { useContext, useState } from "react";
-import { ProjectContext } from "../..//shared/context/ProjectContext";
+import { ProjectContext } from "../../shared/context/ProjectContext";
 import JoinFullIcon from "@mui/icons-material/JoinFull";
 import { useModal } from "../../shared/context/ModalContext";
 import { teal } from "@mui/material/colors";

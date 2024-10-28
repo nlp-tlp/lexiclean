@@ -152,6 +152,9 @@ export const MainContent = () => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const matches = useMediaQuery((theme) => theme.breakpoints.down("md"));
 
+  const imagePath = import.meta.env.VITE_PUBLIC_URL || "/public";
+  const imageUrl = `${imagePath}/static/annotation_interface_${mode}.png`;
+
   return (
     <Box
       data-testid="main-content"
@@ -242,7 +245,7 @@ export const MainContent = () => {
                       maxHeight: "100%",
                       objectFit: "contain",
                     }}
-                    src={`${process.env.PUBLIC_URL}/static/annotation_interface_${mode}.png`}
+                    src={imageUrl}
                     alt="Annotation Interface"
                     onLoad={() => setImageLoaded(true)}
                     id="main-image"
@@ -330,7 +333,7 @@ export const Footer = () => {
         <Typography variant="body1">
           <MuiLink
             data-testid="footer-privacy-policy"
-            href={`${process.env.REACT_APP_DOCS_URL}/privacy-policy`}
+            href={`${docsUrl}/privacy-policy`}
             color="primary"
             underline="hover"
             target="_blank"
@@ -341,7 +344,7 @@ export const Footer = () => {
           {" | "}
           <MuiLink
             data-testid="footer-terms-and-conditions"
-            href={`${process.env.REACT_APP_DOCS_URL}/terms-and-conditions`}
+            href={`${docsUrl}/terms-and-conditions`}
             color="primary"
             underline="hover"
             target="_blank"
