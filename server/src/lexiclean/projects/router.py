@@ -1,21 +1,22 @@
 """Project router."""
 
-import math
 import itertools
 import json
 import logging
+import math
 import re
 import string
 from collections import defaultdict
 from difflib import SequenceMatcher
 from itertools import combinations
-from typing import Any, Literal, Tuple, List, Dict, Optional
+from typing import Any, DefaultDict, Dict, List, Literal, Optional, Tuple, Union
 
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel, Field
 from pymongo import InsertOne
+
 from lexiclean.annotations.schemas import AnnotationDocumentModel
 from lexiclean.config import config
 from lexiclean.dependencies import get_db, get_user
@@ -29,6 +30,7 @@ from lexiclean.projects.schemas import (
     ProjectOut,
     ProjectOutWithResources,
     ProjectUpdate,
+    ProjectUserOut,
     Tag,
 )
 from lexiclean.projects.services import get_project, rank_texts
@@ -961,7 +963,7 @@ async def add_project_tags_endpoint(
 async def get_texts_with_user_annotations(
     db: AsyncIOMotorDatabase,
     project_id: ObjectId,
-    annotators: List[UserOut],
+    annotators: Union[List[UserOut], List[ProjectUserOut]],
     tag_id_to_name: Dict[str, str],
     flag_id_to_name: Dict[str, str],
     skip: Optional[int] = None,
@@ -1066,10 +1068,10 @@ async def get_texts_with_user_annotations(
     output_annotations = []
     for text in texts:
         text_id = str(text["_id"])
-        tags = {}
-        replacements = {}
-        flags = {}
-        saves = {}
+        tags: Dict[str, List[str]] = {}
+        replacements: Dict[str, List[str]] = {}
+        flags: Dict[str, str] = {}
+        saves: Dict[str, bool] = {}
 
         for annotator in annotators:
             annotator_id = str(annotator.id)
@@ -1162,7 +1164,7 @@ def compute_pairwise_similarity(annotations) -> Tuple[list, list, list]:
 
     annotator_ids = list(annotations.keys())
     pairwise_scores = []
-    token_level_scores = [
+    token_level_scores: List[List[float]] = [
         [] for _ in range(len(annotations[annotator_ids[0]]["tokens"]))
     ]
 
@@ -1564,6 +1566,11 @@ async def download_project(
     """Download a project"""
     project = await get_project(db, project_id, ObjectId(user_id))
 
+    if project is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
+        )
+
     texts = await db.texts.find({"project_id": project_id}).to_list(length=None)
     logger.info(f"Found: {len(texts)} texts")
 
@@ -1639,7 +1646,7 @@ async def download_replacements(
 
     logger.info(f"Found: {len(annotations)} replacements")
 
-    token_replacement_counts = defaultdict(dict)
+    token_replacement_counts: DefaultDict = defaultdict(dict)
     for a in annotations:
         token_id = str(a["token_id"])
 
