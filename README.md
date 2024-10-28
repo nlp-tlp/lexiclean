@@ -2,7 +2,7 @@
 
 > [!IMPORTANT]  
 > LexiClean v2 is currently being released publicly 🚧
-> We're actively migrating to version 2. The core features and workflow demonstrated in `v1` remain relevant as they form the foundation of `v2`. Please check back for updates.
+> We're actively migrating to version 2, with completion expected by November 11th, 2024. The core features and workflow demonstrated in v1 remain relevant as they form the foundation of v2. This update is mainly architecture and user interface updates only. Please check back for updates.
 
 LexiClean is a rapid annotation tool for acquiring parallel corpora for lexical normalisation built with the full-stack web-based framework MERN (MongoDB-Express-React-Node). A live demonstration of the tool can be found at https://lexiclean.nlp-tlp.org and a systems demonstration video at https://youtu.be/P7_ooKrQPDU.
 
