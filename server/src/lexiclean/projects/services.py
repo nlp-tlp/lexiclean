@@ -1,13 +1,14 @@
+"""Project router services."""
+
 import logging
 import math
-from collections import defaultdict
-from typing import Any, List, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import UpdateOne
+
 from lexiclean.projects.schemas import ProjectOutWithResources
-from lexiclean.resources.schemas import ResourceOut
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,9 @@ def calculate_tfidf(texts):
 
 
 async def rank_texts(
-    db: AsyncIOMotorDatabase, texts: List[str], candidate_tokens: List[Dict[str, Any]]
+    db: AsyncIOMotorDatabase,
+    texts: List[Dict[str, Any]],
+    candidate_tokens: List[Dict[str, Any]],
 ):
     """
     Calculate mean, masked, TF-IDF for each text
@@ -66,11 +69,11 @@ async def rank_texts(
     # - 3. compute filtered text average tf-idf score/weight
     tfidfs = calculate_tfidf(texts)  # Token tf-idfs
 
-    print("calculated inverse TF-IDF scores")
-    print("tfidfs: ", tfidfs)
+    logger.info("calculated inverse TF-IDF scores")
+    logger.info(f"tfidfs: {tfidfs}")
 
     candidate_tokens_unique = set(candidate_tokens)
-    print("candidate_tokens_unique: ", candidate_tokens_unique)
+    logger.info(f"candidate_tokens_unique: {candidate_tokens_unique}")
 
     # Calculate mean, weighted, tf-idfs scores
     for text in texts:
@@ -106,7 +109,7 @@ async def rank_texts(
 async def get_project(
     db: AsyncIOMotorDatabase, project_id: ObjectId, user_id: ObjectId
 ) -> Optional[ProjectOutWithResources]:
-    pipeline: Dict[str, Any] = [
+    pipeline: List[Dict[str, Any]] = [
         {
             "$match": {
                 "_id": project_id,
