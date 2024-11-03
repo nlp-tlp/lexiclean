@@ -16,7 +16,6 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { styled } from "@mui/material/styles";
 import { truncateText } from "../../utils/general";
 import { useAuthRedirect } from "../../hooks/useAuthRedirect";
-
 import { PRIMARY_SIDEBAR_WIDTH } from "../../constants/layout";
 import ThemeToggleButton from "./ThemeToggleButton";
 import { useAppContext } from "../../context/AppContext";
@@ -27,6 +26,8 @@ import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
 import { useNavigate } from "react-router-dom";
 import NotificationButton from "./NotificationButton";
+import ArticleIcon from "@mui/icons-material/Article";
+import GitHubIcon from "@mui/icons-material/GitHub";
 
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
@@ -121,6 +122,8 @@ const CustomAppBar = ({ drawerOpen, handleDrawerToggle }) => {
           <Typography fontSize={10}>{breadcrumbs}</Typography>
         </Stack>
         <Stack direction="row" spacing={2} alignItems="center">
+          <GitHubItemButton />
+          <DocumentationItemButton />
           <NotificationButton />
           <ThemeToggleButton />
           <UserMenuButtonIcon />
@@ -244,5 +247,49 @@ const UserMenu = ({ anchorEl, open, handleClose }) => {
     </Menu>
   );
 };
+
+const DocumentationItemButton = () => (
+  <Tooltip
+    title={
+      import.meta.env.VITE_DOCS_URL
+        ? "Documentation"
+        : "Documentation URL not configured"
+    }
+  >
+    <span>
+      <IconButton
+        component="a"
+        href={import.meta.env.VITE_DOCS_URL || "#"}
+        target="_blank"
+        rel="noopener noreferrer"
+        disabled={!import.meta.env.VITE_DOCS_URL}
+        sx={{ opacity: import.meta.env.VITE_DOCS_URL ? 1 : 0.5 }}
+      >
+        <ArticleIcon />
+      </IconButton>
+    </span>
+  </Tooltip>
+);
+
+const GitHubItemButton = () => (
+  <Tooltip
+    title={
+      import.meta.env.VITE_GITHUB_URL ? "GitHub" : "GitHub URL not configured"
+    }
+  >
+    <span>
+      <IconButton
+        component="a"
+        href={import.meta.env.VITE_GITHUB_URL || "#"}
+        target="_blank"
+        rel="noopener noreferrer"
+        disabled={!import.meta.env.VITE_GITHUB_URL}
+        sx={{ opacity: import.meta.env.VITE_GITHUB_URL ? 1 : 0.5 }}
+      >
+        <GitHubIcon />
+      </IconButton>
+    </span>
+  </Tooltip>
+);
 
 export default CustomAppBar;
