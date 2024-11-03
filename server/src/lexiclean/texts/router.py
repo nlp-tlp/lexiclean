@@ -151,16 +151,14 @@ async def get_texts_endpoint(
                 if token is not None:
                     if annotation_type == "replacement":
                         if annotation.get("suggestion", False):
-                            print("adding suggested replacement...")
                             token["suggestion"] = annotation["value"]
                         else:
-                            print("adding replacement...")
                             token[annotation_type] = annotation["value"]
                         token["current_value"] = annotation["value"]
                     elif annotation_type == "tags":
                         token[annotation_type].append(annotation["value"])
                     else:
-                        print(f"Unhandled annotation type: {annotation_type}")
+                        logger.info(f"Unhandled annotation type: {annotation_type}")
             else:
                 if annotation_type == "flag":
                     text["flags"].append(annotation["value"])

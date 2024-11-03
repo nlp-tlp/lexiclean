@@ -165,7 +165,6 @@ async def add_token_replacement_endpoint(
             token_id = token["token_id"]
             logger.info(f"Token: {token}")
             if str(token_id) in update_token_ids:
-                print("adding annotation")
                 text_id = token["text_id"]
                 token_id = token["token_id"]
                 annotation = AnnotationDocumentModel(
@@ -300,7 +299,6 @@ async def accept_token_replacement_endpoint(
     #     {"token_id": token_id, "created_by": user_id, "type": "replacement"}
     # )
 
-    # print(annotation)
     text_token_ids: Dict[str, List[str]] = {}
     if apply_all:
         # Find matching tokens in the project
