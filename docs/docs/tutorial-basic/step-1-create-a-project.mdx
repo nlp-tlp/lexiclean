@@ -1,0 +1,60 @@
+---
+sidebar_position: 1
+---
+import ThemeToggleImage from "@site/src/components/ThemeToggleImage";
+
+# Creating Your First Project
+
+Welcome to the **Basic Tutorial** for LexiClean, where you'll learn the foundational concepts needed to get started. First off, make sure you're logged into the LexiClean application. Once logged in, you can navigate to the **Project Creation** page by typing `/create` in your address bar, clicking the `New Project` button on the sidebar, or selecting the `Create New Project` card. This tutorial will guide you through the essentials to set up your project swiftly.
+
+## Naming Your Project
+
+Begin by naming your project. Type your desired project name into the text field. For this tutorial, let's name our project `Dirty Work Order Texts`, which reflects our example using short texts from maintenance work orders. It's that simple! Next, we'll upload our text dataset.
+
+<ThemeToggleImage
+  darkImg="/img/tutorials/basic/step_1_project_name_dark.png"
+  lightImg="/img/tutorials/basic/step_1_project_name_light.png"
+  alt="Basic Tutorial - Project Naming"
+  centerInDiv
+  caption="Project Details UI Component"
+/>
+
+## Uploading a Text Dataset
+
+LexiClean supports multiple dataset formats, but for now, we'll focus on uploading a simple CSV file. This file will contain noisy, user-generated texts from maintenance records. Below is an example dataset. Copy it into a CSV file, ensuring you use the header `text` and enclose your texts in quotes. For more information on LexiClean datasets, refer to [Concepts: Datasets](../concepts/datasets).
+
+```csv
+text
+"rpl engine oil"
+"c/o eng coolant"
+"c/o old oil"
+"blown pp gskt - c/o"
+"pp leakin wtr"
+"water in oil - insp engine"
+```
+
+After uploading your dataset, you'll see green input valid indicators next to each component, signaling that you've provided all necessary information correctly. These indicators are there to help you identify any potential errors.
+
+<ThemeToggleImage
+  darkImg="/img/tutorials/basic/step_1_data_dark.png"
+  lightImg="/img/tutorials/basic/step_1_data_light.png"
+  alt="Basic Tutorial - Data Upload"
+  centerInDiv
+  caption="Project Data Upload UI Component with Tutorial Data"
+/>
+
+## Finalising Your Project
+
+If all information has been correctly input and uploaded, the `Create Project` button at the bottom of the page will be active. Should it be disabled, look for any orange `input invalid` indicators for guidance on what needs correction. Alternatively, you can use the `Start Over` button to reset the page and begin afresh.
+
+<ThemeToggleImage
+  darkImg="/img/tutorials/basic/step_1_create_btn_dark.png"
+  lightImg="/img/tutorials/basic/step_1_create_btn_light.png"
+  alt="Basic Tutorial - Project Naming"
+  centerInDiv
+  caption="Create Project Sticky Footer Demonstrating Create Project Button"
+/>
+
+🚀 You've now completed the first step in creating a project with LexiClean! Dive into the features available during the creation process [here](../interface/create). Check out the [Advanced Tutorials](/category/tutorials---advanced) to further enhance your expertise and skills.
+
+Next, we'll explore how to annotate our new project.

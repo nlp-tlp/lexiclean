@@ -1,0 +1,118 @@
+---
+sidebar_position: 2
+---
+
+import { blue } from "@mui/material/colors";
+import { Box, Grid, Typography } from "@mui/material";
+import { Token } from "@site/src/components/Token";
+import ThemeToggleImage from "@site/src/components/ThemeToggleImage";
+
+
+# Annotating Your Project
+
+To begin annotating your project, navigate to the [Annotation View](/category/annotation-view) by clicking on the `Annotate` button located on your project's card within the [Project Feed](../interface/projects). 
+
+<ThemeToggleImage
+      darkImg="/img/tutorials/basic/step_2_project_feed_dark.png"
+      lightImg="/img/tutorials/basic/step_2_project_feed_light.png"
+      alt="Basic Tutorial - Project Feed Interface"
+      centerInDiv
+      my={4}
+      border
+      caption="Project Feed UI Component Demonstrating Tutorial Project after Creation"
+    />
+
+This section of the basic tutorial will guide you through enhancing your dataset's quality by identifying and correcting low-quality text segments, such as out-of-vocabulary (OOV) words. LexiClean simplifies this task by automatically highlighting OOV words in orange, while in-vocabulary (IV) words are displayed in a standard color. You can edit and interact with tokens by right-clicking on them.
+
+<Box display='flex' alignItems='center' justifyContent='space-evenly' sx={{ textAlign: 'center' }}>
+  <Box display='flex' alignItems='center' flexDirection='column'>
+    <Token
+          token={{
+            value: "engine",
+            currentValue: "engine",
+            replacement: null,
+            suggestion: null,
+            en: true,
+          }}
+          isSelected={true}
+        />
+    <span>In-vocabulary (IV) token</span>
+  </Box>
+  <Box display='flex' alignItems='center' flexDirection='column'>
+    <Token
+          token={{
+            value: "c/o",
+            currentValue: "c/o",
+            replacement: null,
+            suggestion: null,
+            en: false,
+          }}
+          isSelected={true}
+        />
+    <span>Out-of-vocabulary (OOV) token</span>
+  </Box>
+</Box>
+
+
+## Annotation View
+
+
+<ThemeToggleImage
+      darkImg="/img/tutorials/basic/step_2_annotation_view_dark.png"
+      lightImg="/img/tutorials/basic/step_2_annotation_view_light.png"
+      alt="Basic Tutorial - Annotation View"
+      centerInDiv
+      border
+      caption="Annotation View Demonstrating the First Four Tutorial Texts"
+    />
+
+## Editing Your First Token
+
+When you encounter an orange token, such as `c/o`, it indicates an out-of-vocabulary word, signifying non-standard or noisy text. To edit this token, left-click on it and change its content to `change out`. Upon editing, a popover will appear, showing the transformation you're about to make. After making your edit, left-click the `Apply` button to save the change. This process is known as a **Replacement**, a type of **Token Transformation** in LexiClean. Following the replacement, the token will turn green, indicating the successful update. Additionally, a bar will appear beneath the token; clicking this bar reveals token-level operations available for further actions, though we'll explore these in more detail later (for the eager, find out more [here](../interface/annotation/tokens)).
+
+<Box display='flex' alignItems='center' justifyContent='space-evenly' sx={{ textAlign: 'center' }}>
+  <Box display='flex' alignItems='center' flexDirection='column'>
+    <Token
+          token={{
+            value: "c/o",
+            currentValue: "change out",
+            replacement: "change out",
+            suggestion: null,
+            en: true,
+          }}
+          isSelected={true}
+        />
+    <span>Token with replacement</span>
+  </Box>
+</Box>
+
+<ThemeToggleImage
+      darkImg="/img/tutorials/basic/step_2_token_editing_dark.png"
+      lightImg="/img/tutorials/basic/step_2_token_editing_light.png"
+      alt="Basic Tutorial - Token Editing Popover"
+      centerInDiv
+      border
+      caption="Annotation View Demonstrating the Editing Popover for the 'Change Out' Token"
+    />
+
+<ThemeToggleImage
+      darkImg="/img/tutorials/basic/step_2_edited_token_dark.png"
+      lightImg="/img/tutorials/basic/step_2_edited_token_light.png"
+      alt="Basic Tutorial - Edited Token"
+      centerInDiv
+      width="50%"
+      caption="Annotation View Demonstrating the Editing Popover for the 'Change Out' Token"
+    />
+
+
+
+{ /* <!-- ## Adding Flags to Documents -->
+
+<!-- ## Seeing Historical Actions via the Contextualiser -->
+
+
+## Saving Your First Document */}
+
+{ /* ... */}
+
+
