@@ -241,11 +241,9 @@ const TrayFlagChip = ({ text }) => {
 
     if (text.flags.includes(flagId)) {
       // if flag exists, delete
-      // console.log("flag exists");
       await deleteFlag({ textId: text._id, flagId });
     } else {
       // if flag doesn't exist, add
-      // console.log("flag not exist");
       await addFlag({ textId: text._id, flagId });
     }
   };

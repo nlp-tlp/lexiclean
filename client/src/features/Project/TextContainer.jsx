@@ -93,8 +93,6 @@ const TokenizedText = ({ textId, tokens }) => {
       return a - b;
     });
 
-    // console.log("indexes", indexes);
-
     const groups = indexes.reduce((r, n) => {
       // https://stackoverflow.com/questions/47906850/javascript-group-the-numbers-from-an-array-with-series-of-consecutive-numbers
       const lastSubArray = r[r.length - 1];
@@ -105,10 +103,8 @@ const TokenizedText = ({ textId, tokens }) => {
       return r;
     }, []);
     setTokenIndexGroups(groups);
-    // console.log("groups", groups);
     // Check all sub arrays are greater than 1 in length
     const validSelection = groups.filter((l) => l.length === 1).length === 0;
-    // console.log("validSelection", validSelection);
     setValid(validSelection);
   }, [tokenIndexes]);
 

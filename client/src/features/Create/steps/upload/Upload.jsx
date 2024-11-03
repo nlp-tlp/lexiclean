@@ -148,8 +148,6 @@ const Upload = (props) => {
               };
             });
 
-          console.log(rowsObject);
-
           updateValue("corpus", rowsObject);
           updateValue("corpusFileName", fileName);
           updateValue("corpusType", corpusType);

@@ -70,7 +70,6 @@ const Project = () => {
     if (!page) {
       page = 1; // Default to page 1 if 'page' is not present
     }
-    console.log(`Query parameter 'page' changed to: ${page}`);
     // Add your logic here to handle the change in query params
     // const fetchTexts = async () => {
     //   await getTexts({

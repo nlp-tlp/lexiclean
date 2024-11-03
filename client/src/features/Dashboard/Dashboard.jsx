@@ -78,9 +78,7 @@ const Dashboard = () => {
   };
 
   const createProjectTagFunction = async (key, newValue) => {
-    console.log("createProjectTag", key, newValue);
     const data = await addProjectTag({ projectId, tag: newValue });
-
     if (data) {
       setData((prevState) => {
         const updatedData = { ...prevState };
@@ -96,7 +94,6 @@ const Dashboard = () => {
   };
 
   const updateProjectTagFunction = async (key, value) => {
-    console.log("updateProjectTag", key, value);
     const data = await updateProjectTag({
       projectId,
       tagId: value._id,
@@ -125,7 +122,6 @@ const Dashboard = () => {
   };
 
   const deleteProjectTagFunction = async (tagId) => {
-    console.log("deleteProjectTagFunction", tagId);
     const data = await deleteProjectTag({ projectId, tagId });
     if (data) {
       setData((prevState) => {
@@ -144,12 +140,10 @@ const Dashboard = () => {
   };
 
   const addProjectFlagFunction = async (flagName) => {
-    console.log("addProjectFlagFunction", flagName);
     const newFlag = await addProjectFlag({
       projectId,
       flag: { name: flagName },
     });
-    console.log("newFlag", newFlag);
     if (newFlag) {
       setData((prevState) => {
         const updatedData = { ...prevState };
@@ -165,13 +159,10 @@ const Dashboard = () => {
   };
 
   const deleteProjectFlagFunction = async (flagName) => {
-    console.log("deleteProjectFlagFunction", flagName);
     const flagId = data.details.flags.find(
       (flag) => flag.name === flagName
     )._id;
-    console.log("flagId", flagId);
     const flagToRemove = await deleteProjectFlag({ projectId, flagId });
-    console.log("flagToRemove", flagToRemove);
 
     if (flagToRemove) {
       setData((prevState) => {
@@ -189,11 +180,9 @@ const Dashboard = () => {
     }
   };
   const updateProjectFlagFunction = async (currentFlagName, newFlagName) => {
-    console.log("updateProjectFlagFunction", currentFlagName, newFlagName);
     const flagId = data.details.flags.find(
       (flag) => flag.name === currentFlagName
     )._id;
-    console.log("flagId", flagId);
 
     const updatedFlag = await updateProjectFlag({
       projectId,

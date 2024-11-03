@@ -75,10 +75,7 @@ const InviteForm = ({ data, disabled, handleUpdate }) => {
     setIsLoading(true);
 
     try {
-      console.log("Calling inviteNotification with:", { usernames });
       const result = await inviteNotification(usernames);
-      console.log("Result from inviteNotification:", result);
-
       if (result.success) {
         setSuccessMessage("Invitation(s) sent successfully.");
         setUsernames([]);
@@ -86,7 +83,6 @@ const InviteForm = ({ data, disabled, handleUpdate }) => {
         //   await handleUpdate({ newAnnotators: result.data.invited });
         // }
       } else {
-        console.log("Error in handleInvite:", result.error);
         setErrorMessage(result.error);
       }
     } catch (error) {

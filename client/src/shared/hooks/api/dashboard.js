@@ -63,8 +63,6 @@ const useDashboardActions = () => {
   };
 
   const addProjectTag = async ({ projectId, tag }) => {
-    console.log("addProjectTag");
-
     try {
       const data = await callApi(`/projects/${projectId}/tags`, {
         method: "POST",
@@ -81,8 +79,6 @@ const useDashboardActions = () => {
   };
 
   const updateProjectTag = async ({ projectId, tagId, tag }) => {
-    console.log("updateProjectTag", tag);
-
     try {
       const data = await callApi(`/projects/${projectId}/tags/${tagId}`, {
         method: "PATCH",
@@ -99,8 +95,6 @@ const useDashboardActions = () => {
   };
 
   const deleteProjectTag = async ({ projectId, tagId }) => {
-    console.log("deleteProjectTag");
-
     try {
       const data = await callApi(`/projects/${projectId}/tags/${tagId}`, {
         method: "DELETE",
@@ -119,8 +113,6 @@ const useDashboardActions = () => {
     /**
      * Add new flag to project
      */
-    console.log("addProjectFlag");
-
     try {
       const data = await callApi(`/projects/${projectId}/flags`, {
         method: "POST",
@@ -140,9 +132,6 @@ const useDashboardActions = () => {
     /**
      * Update existing flag on project
      */
-    console.log("updateProjectFlag");
-    console.log("flag: ", flag);
-
     try {
       const data = await callApi(`/projects/${projectId}/flags/${flagId}`, {
         method: "PATCH",
@@ -162,8 +151,6 @@ const useDashboardActions = () => {
     /**
      * Delete an existing flag on project
      */
-    console.log("deleteProjectFlag");
-
     try {
       const data = await callApi(`/projects/${projectId}/flags/${flagId}`, {
         method: "DELETE",

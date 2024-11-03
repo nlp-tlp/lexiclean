@@ -8,7 +8,6 @@ import {
 } from "@mui/material";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { ProjectContext } from "../../shared/context/ProjectContext";
-// import useProjectActions from "../../shared/hooks/api/project";
 
 const Paginator = () => {
   const navigate = useNavigate();
@@ -17,10 +16,7 @@ const Paginator = () => {
   const query = new URLSearchParams(location.search);
   const page = parseInt(query.get("page") || "1", 10);
 
-  console.log("page", page);
-
   const handleChangePage = (event, newPage) => {
-    console.log(newPage);
     dispatch({ type: "SET_PAGE", payload: newPage });
     navigate(`/project/${state.projectId}?page=${newPage}`, {
       replace: true,

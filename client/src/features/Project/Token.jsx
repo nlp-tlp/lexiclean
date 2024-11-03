@@ -66,13 +66,11 @@ const Token = ({ textId, token, tokenIndex }) => {
   };
 
   const handleTokenEdit = (e, newToken) => {
-    console.log("handleTokenEdit");
     dispatch({
       type: "UPDATE_TOKEN_VALUE",
       payload: { textId, tokenIndex, newValue: newToken },
     });
     if (token.current_value !== newToken) {
-      console.log("handlePrimaryPopoverOpen");
       handlePrimaryPopoverOpen(e);
     }
   };
@@ -84,8 +82,6 @@ const Token = ({ textId, token, tokenIndex }) => {
       token.current_value !== token.suggestion &&
       token.current_value !== token.replacement
     ) {
-      console.log("editing");
-      console.log("token", token);
       setEditing(true);
     } else {
       setEditing(false);

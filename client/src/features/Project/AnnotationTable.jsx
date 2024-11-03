@@ -6,7 +6,6 @@ import { ProjectContext } from "../../shared/context/ProjectContext";
 
 const AnnotationTable = () => {
   const [state, dispatch] = useContext(ProjectContext);
-  // console.log("AnnotationTable state: ", state);
 
   //   const pageBeforeViewChange = useSelector(selectPageBeforeViewChange);
 

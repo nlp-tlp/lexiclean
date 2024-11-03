@@ -42,9 +42,6 @@ const AnnotationToast = () => {
     let title;
     let content;
     let icon;
-
-    console.log("info", info);
-
     switch (info.action) {
       case "accept":
         title = "Accepted";

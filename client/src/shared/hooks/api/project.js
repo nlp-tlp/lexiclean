@@ -37,7 +37,7 @@ const useProjectActions = () => {
       const data = await callApi("/projects");
       return data;
     } catch (error) {
-      console.log(`error fetching projects: ${error}`);
+      console.error(`error fetching projects: ${error}`);
       throw error;
     }
   };
@@ -52,7 +52,7 @@ const useProjectActions = () => {
         dispatch({ type: "SET_VALUE", payload: { progress: data } });
       }
     } catch (error) {
-      console.log(`error fetching project progress: ${error}`);
+      console.error(`error fetching project progress: ${error}`);
       snackbarDispatch({
         type: "SHOW",
         message: `Unable to fetch project progress`,
@@ -72,7 +72,7 @@ const useProjectActions = () => {
         dispatch({ type: "SET_PROJECT", payload: data });
       }
     } catch (error) {
-      console.log(`error fetching project: ${error}`);
+      console.error(`error fetching project: ${error}`);
       throw error; // Rethrow to handle it in the calling function
     }
   };
@@ -86,7 +86,7 @@ const useProjectActions = () => {
         return data.name;
       }
     } catch (error) {
-      console.log(`error fetching project: ${error}`);
+      console.error(`error fetching project: ${error}`);
       throw error; // Rethrow to handle it in the calling function
     }
   };
@@ -98,9 +98,6 @@ const useProjectActions = () => {
      * page : page number
      * limit : page limit
      */
-
-    console.log("page", page, "limit", limit);
-
     try {
       const data = await callApi(`/texts/${projectId}`, {
         method: "GET",
@@ -112,7 +109,7 @@ const useProjectActions = () => {
         dispatch({ type: "SET_TEXTS", payload: data });
       }
     } catch (error) {
-      console.log(`error fetching texts: ${error}`);
+      console.error(`error fetching texts: ${error}`);
     }
   };
 

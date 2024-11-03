@@ -17,8 +17,6 @@ import ArticleIcon from "@mui/icons-material/Article";
 import SettingsIcon from "@mui/icons-material/Settings";
 
 const ProjectCard = ({ index, project }) => {
-  console.log(project);
-
   const projectProperties = [
     {
       value: project.texts,

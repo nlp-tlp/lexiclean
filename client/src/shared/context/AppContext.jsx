@@ -42,7 +42,6 @@ export function AppProvider({ children }) {
 
   useEffect(() => {
     if (notificationsQuery.data) {
-      console.log("Setting notifications:", notificationsQuery.data);
       dispatch({ type: "SET_NOTIFICATIONS", payload: notificationsQuery.data });
     }
   }, [notificationsQuery.data]);

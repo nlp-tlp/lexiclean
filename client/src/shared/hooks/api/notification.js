@@ -22,20 +22,16 @@ const useNotificationActions = () => {
   };
 
   const inviteNotification = async (usernames) => {
-    console.log("inviteNotification called with:", { usernames });
     try {
-      console.log("Calling API...");
       const response = await callApi("/notifications/invite", {
         method: "POST",
         data: usernames,
         params: { project_id: projectId },
       });
-      console.log("API response:", response);
       return { success: true, data: response };
     } catch (error) {
       console.error("Error in inviteNotification:", error);
       if (error.response) {
-        console.log("Error response:", error.response);
         return {
           success: false,
           error:
@@ -43,13 +39,11 @@ const useNotificationActions = () => {
             "An error occurred while inviting users.",
         };
       } else if (error.request) {
-        console.log("Error request:", error.request);
         return {
           success: false,
           error: "No response received from the server.",
         };
       } else {
-        console.log("Error message:", error.message);
         return {
           success: false,
           error: "An error occurred while sending the invitation.",
@@ -94,14 +88,11 @@ const useNotificationActions = () => {
         method: "PATCH",
         data: { status: "reject" },
       });
-
       if (data) {
-        //
-        console.log(data);
         return data;
       }
     } catch (error) {
-      //
+      console.error("Error in declineNotification:", error);
     }
   };
 

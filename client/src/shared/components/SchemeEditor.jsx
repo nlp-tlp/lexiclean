@@ -56,7 +56,6 @@ const SchemaEditor = ({
   };
 
   const createNewTag = () => {
-    // console.log("createNewTag", currentTag);
     createTag(currentTag);
     setCurrentTag(tagTemplate);
     setSelectedTagIndex(null);
@@ -70,7 +69,6 @@ const SchemaEditor = ({
   };
 
   const deleteTag = (index) => {
-    // console.log("Deleting Tag");
     const newTags = values.tags.filter((_, idx) => idx !== index);
     deleteFunction
       ? deleteFunction(values.tags.find((_, idx) => idx === index)._id)
@@ -84,14 +82,12 @@ const SchemaEditor = ({
       setCurrentTag(tagTemplate);
       setSelectedTagIndex(null);
     } else {
-      // console.log("Selected Tag");
       setSelectedTagIndex(index);
       setCurrentTag(values.tags[index]);
     }
   };
 
   const updateExistingTag = (index) => {
-    // console.log("Updating Existing Tag");
     // Clone the current tags array
     const updatedTags = [...values.tags];
 
