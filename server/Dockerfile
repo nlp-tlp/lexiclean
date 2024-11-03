@@ -1,17 +1,24 @@
-FROM node:14.17.0-alpine
+FROM python:3.9-slim
 
-# Set working directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Install dependencies
-COPY ./package*.json ./
-RUN npm install --silent
+# Copy requirements first
+COPY requirements.txt .
+# Remove any -e entries from requirements before installing
+RUN grep -v '^-e' requirements.txt > requirements.cleaned.txt
+RUN pip install --no-cache-dir -r requirements.cleaned.txt
 
-# Copy server source code
+# Copy env files
+COPY .env.docker .env.docker
+
+# Copy the rest of the code
 COPY . .
 
-# Run server
-EXPOSE 3001
+RUN pip install -e .
 
-# Start up server
-CMD ["npm", "run", "server"]
+# Explicitly set environment variables from .env.docker
+ENV $(cat .env.docker | xargs)
+
+EXPOSE 8000
+
+CMD ["uvicorn", "src.lexiclean.main:app", "--host", "0.0.0.0", "--port", "8000"]

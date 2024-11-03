@@ -1,0 +1,173 @@
+---
+sidebar_label: Annotations
+sidebar_position: 3
+---
+
+import { blue } from "@mui/material/colors";
+import { Box, Grid, Typography } from "@mui/material";
+import { Token } from "@site/src/components/Token";
+
+# Annotation and Transformation Types and Operations
+
+In LexiClean, every interaction with texts and tokens is categorised under the broad umbrella of **annotations**. This section is designed to clarify the range of annotation types LexiClean offers and to explain how these annotations are translated into concrete operations, facilitating the comprehensive annotation and transformation of texts.
+
+:::warning
+LexiClean does not support altering sequence lengths through actions such as token splitting. This limitation ensures the integrity and practicality of token-level adjudication. For more information, please see our [Limitations](../limitations) page.
+:::
+
+## Overview
+
+Annotations in LexiClean encompass any operation that alters text content or assigns labels to text or its constituent tokens. These operations are broadly divided into **Transformations** and **Tagging**:
+
+- **Transformations**: These are token-level modifications that alter text content, including adding, replacing, rearranging, or removing characters. Transformations aim to standardise or correct textual content, enhancing data quality for NLP tasks.
+
+- **Tagging**: Tagging involves applying labels to texts or tokens to denote semantic information or categorisation. It's divided into:
+  - **Text-level Tagging**: Operations such as saving and flagging texts fall under this category. While saving is technically not an annotation, it is considered as part of the annotation process in LexiClean for its role in data management.
+  - **Token-level Tagging**: This involves assigning semantic labels to individual tokens, enriching the dataset with detailed, actionable insights.
+
+:::success Get Ready for Rapid Annotation!
+LexiClean distinguishes itself from other annotation tools with its unique capability to propagate token-level annotations across multiple instances. This standout feature facilitates quick and efficient annotation processes, enabling actions like `Apply Many`, `Accept Many`, `Delete Many`, `Remove Many`, and `Revert Many`. It significantly streamlines your annotation workflow, making rapid annotation not just possible, but effortless.
+:::
+
+## Suggested and Accepted Annotations
+
+LexiClean distinguishes between two types of annotations related to token-level transformations and tags: **suggested** and **accepted**.
+
+- **Accepted Annotations**: These are annotations that users have directly applied via the annotation view or those included by the system during project creation. They represent definitive modifications or labels that have been confirmed by users.
+
+- **Suggested Annotations**: These annotations are generated when a user employs the `Apply Many` action, proposing changes across matched tokens as "suggestions." These suggestions require user confirmation, either individually (`Accept`) or through the `Accept Many` action, to become accepted annotations. This distinction ensures users are conscious of the changes they're implementing, facilitating verification to maintain the highest data quality.
+
+<Grid container={2} spaing={2}>
+  <Grid item xs={12} md={6} lg={3} justifyContent='center'>
+  <Box display='flex' alignItems='center' flexDirection='column' sx={{textAlign:'center'}}>
+  <Token
+    token={{
+      value: "engine",
+      currentValue: "engine",
+      replacement: null,
+      suggestion: null,
+      en: true,
+    }}
+    isSelected={true}
+  />
+  <span>In vocabulary token</span>
+  </Box>
+  </Grid>
+
+  <Grid item xs={12} md={6} lg={3}>
+  <Box display='flex' alignItems='center' flexDirection='column' sx={{textAlign:'center'}}>
+  <Token
+    token={{
+      value: "rpl",
+      currentValue: "rpl",
+      replacement: null,
+      suggestion: null,
+      en: false,
+    }}
+    isSelected={true}
+  />
+  <span>Out of vocabulary token</span>
+
+  </Box>
+  </Grid>
+  <Grid item xs={12} md={6} lg={3}>
+<Box display='flex' alignItems='center' flexDirection='column' sx={{textAlign:'center'}}>
+  <Token
+    token={{
+      value: "rpl",
+      currentValue: "replace",
+      replacement: "replace",
+      suggestion: null,
+      en: true,
+    }}
+    isSelected={true}
+  />
+  <span>Token with accepted replacement</span>
+  </Box>
+  </Grid>
+  
+  <Grid item xs={12} md={6} lg={3} direction='column' justifyContent='center' alignItems='center'>
+  <Box display='flex' alignItems='center' flexDirection='column' sx={{textAlign:'center'}}>
+  <Token
+    token={{
+      value: "rpl",
+      currentValue: "rpl",
+      replacement: null,
+      suggestion: "replace",
+      en: true,
+    }}
+    isSelected={true}
+  />
+  <span>Token with replacement suggestion</span>
+  </Box>
+  </Grid>
+
+</Grid>
+
+The separation into suggested and accepted annotations underlines LexiClean's commitment to empowering users with control over their annotation processes while ensuring data accuracy and reliability.
+
+## Token Transformations
+
+Token transformations involve modifying the content of your project's texts at the token (word) level. In LexiClean, these modifications are typically referred to as `replacements`. Replacements can be initiated by the system (`suggested`) or by the user (`accepted`).
+
+### Apply One
+
+#### Description
+
+Provide a detailed explanation of the "Apply One" operation, including what it does and when to use it. Describe the process of applying a single transformation to a token and the potential impact on text quality or semantic accuracy.
+
+#### Visual Guide
+
+<!-- Insert a GIF or series of images here to visually demonstrate the "Apply One" operation in action. This visual guide should complement the written description, offering users a clear example of how to perform the operation. -->
+
+<!--  -->
+
+## Token-based Annotations
+
+## Token Transformations
+
+Token (word) transformations are operations that transform the content of your project's texts. In LexiClean, modifications to tokens are referred to as `replacements`. Replacements can be either `suggested` or `accepted`.
+
+### Apply One
+
+- Description:
+
+<!-- GIF of operation -->
+
+### Apply Many
+
+- Description:
+
+<!-- GIF of operation -->
+
+### Accept One
+
+### Accept Many
+
+### Delete One
+
+### Delete Many
+
+### Remove One
+
+### Remove Many
+
+### Revert One
+
+### Revert Many
+
+## Text-based Annotations
+
+Text-based annotations occur at the text-level. Here, annotations consist of the types: `flag` and `save`.
+
+### Flags
+
+- Description: Flags are text-level labels. Multiple flags can exist simultaneously.
+- Benefit:
+- Operations: This annotation type can be added or removed from a text item, but not applied across the entire corpus like tokens.
+
+### Saves
+
+## Best Practices and Tips
+
+Conclude with a section on best practices and tips for using annotations and token transformations effectively in LexiClean. Offer advice on how to maximize the benefits of these features, including workflow suggestions and strategies for ensuring high-quality annotations.

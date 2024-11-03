@@ -1,73 +1,126 @@
 # LexiClean: An annotation tool for rapid multi-task lexical normalisation
 
-> [!IMPORTANT]  
-> LexiClean v2 is currently being released publicly 🚧
-> We're actively migrating to version 2, with completion expected by November 11th, 2024. The core features and workflow demonstrated in v1 remain relevant as they form the foundation of v2. This update is mainly architecture and user interface updates only. Please check back for updates.
-> To try out the v2 version:
-> `git checkout v2  # Switch to v2 branch`
-> or visit the v2 branch directly.
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Docker](https://img.shields.io/badge/docker-supported-brightgreen.svg)](https://www.docker.com/)
 
+> [!IMPORTANT]
+> LexiClean v2 is currently being released. While it is currently testable, an updated video walk through is still pending and will be re-released by the 11th of November. In the meantime, please consult the original systems demonstration or documentation for more information.
 
-LexiClean is a rapid annotation tool for acquiring parallel corpora for lexical normalisation built with the full-stack web-based framework MERN (MongoDB-Express-React-Node). A live demonstration of the tool can be found at https://lexiclean.nlp-tlp.org and a systems demonstration video at https://youtu.be/P7_ooKrQPDU.
+LexiClean is a rapid annotation tool for acquiring parallel corpora for lexical normalisation built with MongoDB, React and FastAPI. A live demonstration of the tool can be found at https://lexiclean.nlp-tlp.org and a systems demonstration video at https://youtu.be/P7_ooKrQPDU.
 
-### Dependencies
-LexiClean requires both MongoDB and Node.js (*Express and React are bundled with Node.js*)
+📌 **Quick Links:**
+- [Live Demo](https://lexiclean.nlp-tlp.org)
+- [Demo Video](https://youtu.be/P7_ooKrQPDU)
 
-- MongoDB (v4.4.6) (see: https://docs.mongodb.com/manual/installation/)
-- Node.js (v14.17.1) (see: https://nodejs.org/en/download/)
+![Annotation Interface](./client/public/static/annotation_interface_light.png)
 
-## How to install (standard)
-LexiClean can be built and served locally once the dependencies are met. First, install MongoDB by following the url specified above. Once installed, in a new terminal, check that it is running as a service using:
+## 📦 Dependencies
+To run LexiClean using Docker, you'll need:
 
-    $ service mongod status
-  
-If should have an *active* status.
+- Docker Engine (see: https://docs.docker.com/engine/install/)
+- Docker Compose (see: https://docs.docker.com/compose/install/)
 
-<!-- ```$ brew services list```  for macOS-->
+## 🚀 Quick Start with Docker Compose
 
+1. Clone the repository:
 
-Next, clone this repository into a folder and navigate to the root of the directory:
-
-    $ git clone https://github.com/nlp-tlp/lexiclean.git
-    $ cd lexiclean
-
-After this, install LexiCleans back-end *server* and front-end *client* dependencies using `npm`. For the client, navigate to `./client` using `$ cd ./client` in your terminal. Server dependencies will be installed at the root (`/`) level.
-
-    $ npm install
-
-
-Once the dependencies have been succesfully installed, environmental variables for the database connection and authorisation system need to be set. In the root directory (`/`) add an `.env` file with the structure shown below. This can be done using a text editor or `vi .env` in linux.
-  
-    DB_HOST=localhost
-    DB_PORT=27017
-    DB_NAME=lexiclean
-    TOKEN_SECRET=<secret_key>
-
-The `<secret_key>` should be strong (see: https://www.allkeysgenerator.com/Random/Security-Encryption-Key-Generator.aspx).
-
-Now you're ready to populate the database with an English lexicon and start annotating! To populate the database with the English lexicon (`en_lexicon.json`), navigate to the root directory (`/`) in LexiClean. Ensure that your `.env` is set-up correctly before commencing this step. When ready, run the following command in your terminal:
-
-    $ node en_lexicon_insert.js
-
-
-###
-After installation of LexiClean, launch the application from the root directory (`/`) by running:
-
-    $ npm run app
-
-
-## How to install (docker)
-LexiClean can be built using Docker. To do so, in the parent directory, execute:
-```
-$ make run
+```bash
+git clone https://github.com/nlp-tlp/lexiclean.git
+cd lexiclean
 ```
 
-or alternatively:
-```
-$ docker-compose -f docker-compose.yml up
+2. Start the application:
+```bash
+docker compose up --build
 ```
 
-## Attribution
+### Available Services
+| Service       | URL                   | Description        |
+| ------------- | --------------------- | ------------------ |
+| Frontend      | http://localhost:3000 | User interface     |
+| Backend API   | http://localhost:8000 | API server         |
+| Documentation | http://localhost:4000 | User documentation |
+| MongoDB       | localhost:27018       | Database           |
+
+## 🏗️ Architecture
+The application consists of four main services:
+
+- Frontend (React): User interface running on port 3000
+- Backend (FastAPI): API server running on port 8000
+- MongoDB: Database running on port 27018
+- Documentation (React, Docasaurus): Service running on port 4000
+
+## ⚙️ Environment Variables
+
+### Backend (FastAPI)
+```env
+MONGODB__URI=mongodb://root:example@mongodb:27017/lexiclean?authSource=admin
+MONGODB__DB_NAME=lexiclean
+AUTH__SECRET_KEY=secret
+AUTH__ALGORITHM=HS256
+AUTH__ACCESS_TOKEN_EXPIRE_MINUTES=360
+API__PREFIX=/api
+```
+
+### Frontend
+```env
+VITE_API_URL=http://localhost:8000/api
+VITE_DOCS_URL=http://localhost:4000
+VITE_GITHUB_URL=https://github.com/nlp-tlp/lexiclean
+NODE_ENV=development
+```
+
+### MongoDB
+
+```env
+MONGO_INITDB_ROOT_USERNAME=root
+MONGO_INITDB_ROOT_PASSWORD=example
+```
+
+## 🛠️ Manual Installation
+
+If you prefer to run the application without Docker, follow these steps:
+
+1. Install MongoDB (v4.4.6 or later):
+  - Follow the [official MongoDB installation guide](https://docs.mongodb.com/manual/installation/)
+2. Verify MongoDB is running:
+```bash
+service mongod status
+```
+
+3. Install dependencies:
+```bash
+# Install backend dependencies
+cd server
+pip install -r requirements.txt
+
+# Install frontend dependencies
+cd ../client
+npm install
+
+# Optional: Install documentation dependencies
+cd ../docs
+npm install
+```
+
+4. Set up environment variables using the `.env.example` files as examples
+
+5. Start the services manually:
+```bash
+# Start backend
+cd server
+uvicorn main:app --reload
+
+# Start frontend (in a new terminal)
+cd client
+npm run dev
+
+# Optiona: Start the documentation server (in a new terminal)
+cd docs
+npm run start
+```
+
+## 📝 Attribution
 Please cite our [[conference paper]](https://aclanthology.org/2021.emnlp-demo.25/) if you find it useful in your research:
 ```
 @inproceedings{bikaun2021lexiclean,
@@ -79,5 +132,9 @@ Please cite our [[conference paper]](https://aclanthology.org/2021.emnlp-demo.25
 }
 ```
 
-## Feedback
+## 📫 Feedback
 Please email any feedback or questions to Tyler Bikaun (tyler.bikaun@research.uwa.edu.au)
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

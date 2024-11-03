@@ -1,0 +1,36 @@
+---
+sidebar_position: 3
+sidebar_label: Token Contextualizer
+---
+
+import ThemeToggleImage from "@site/src/components/ThemeToggleImage";
+
+# Token Contextualizer
+
+## Overview
+
+The **Token Contextualizer** is a crucial component designed to enhance data annotation accuracy by providing detailed insights into the modification history of a token within your project.
+
+
+## How to Use
+
+To use the Token Contextualizer, begin by selecting any token within your project. Upon selection, the component reveals:
+- The **current value** of the token,
+- Its **original value** (highlighted if it has been modified),
+- A **summary of modifications** that have occurred in the past, showcasing similar changes, including the types of transformations and their frequencies.
+
+## User Interface
+
+## Contextualizer UI
+
+Below is an example of the Contextualizer's user-interface for the selected token "change out" which has been replaced from its original value of "c/o". Here, you can see that the "c/o" has been replaced to "change out" and "change/out" for the given project -- making the erroneous "change/out" evident and the correct correction "change out" apparent.
+
+<ThemeToggleImage
+  darkImg="/img/interface/annotation_view/contextualizer/ui_dark.png"
+  lightImg="/img/interface/annotation_view/contextualizer/ui_light.png"
+  alt="Contextualizer Interface"
+  centerInDiv
+  width="50%"
+  border
+  caption='Example of Contextualizer component for the selected token "change out"'
+/>

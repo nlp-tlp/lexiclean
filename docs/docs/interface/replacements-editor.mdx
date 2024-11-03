@@ -1,0 +1,42 @@
+---
+label: Replacements Editor
+sidebar_position: 4
+---
+
+import ThemeToggleImage from "@site/src/components/ThemeToggleImage";
+
+# Replacements Editor
+
+## Overview
+
+The **Replacements Editor** is a tool designed to support the use of existing resources such as replacement dictionaries in the process of applying predefined text replacements within your projects. Upon [project creation](create), this editor allows you to define a dictionary of words or phrases to be automatically substituted throughout your corpus right from the start.
+
+When you specify replacements during project creation, LexiClean scans your corpus and applies these changes automatically. It's important to note that the current version of the editor supports single words as inputs and both words and phrases as outputs, as demonstrated below. To input your replacement rules directly into the editor, format them as valid [JSON](https://www.json.org/json-en.html) or upload a JSON file following the format illustrated here. The editor also includes validation feedback to help ensure your data is correctly formatted.
+
+```json
+{
+  "rpl": "replace",
+  "c/o": "change out"
+  // Format: "input": "output"
+}
+```
+
+To enhance your experience with the **Replacements Editor**, two helpful buttons are available:
+
+- **Prettify**: Clicking this button reformats your JSON data, making it easier to read and review.
+- **Reset**: This button clears the editor, allowing you to start fresh.
+
+## How to Use
+
+:::warning
+Coming soon!
+:::
+
+## User Interface
+
+<ThemeToggleImage
+  darkImg="/img/interface/replacements_editor/ui_dark.png"
+  lightImg="/img/interface/replacements_editor/ui_light.png"
+  alt="Replacements Editor Interface"
+  centerInDiv
+/>

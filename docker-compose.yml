@@ -1,44 +1,60 @@
-version: "3.8"
 services:
-  client:
-    image: lexiclean-client
-    build: ./client/
-    stdin_open: true
+  fastapi:
+    build: 
+       context: ./server
+       dockerfile: Dockerfile
+    depends_on:
+      - mongodb
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB__URI=mongodb://root:example@mongodb:27017/lexiclean?authSource=admin
+      - MONGODB__DB_NAME=lexiclean
+      - AUTH__SECRET_KEY=secret
+      - AUTH__ALGORITHM=HS256
+      - AUTH__ACCESS_TOKEN_EXPIRE_MINUTES=360
+      - API__PREFIX=/api
+    networks:
+      - app-network
+
+  frontend:
+    build: 
+      context: ./client
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    networks:
-      - lexiclean-app
-    volumes:
-      - ./client/:/usr/src/app
-      - /usr/src/app/node_modules
     depends_on:
-      - server
-  server:
-    image: lexiclean-server
-    build: ./server/
-    stdin_open: true
-    ports:
-      - "3001:3001"
+      - fastapi
+      - docs
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
+      - VITE_DOCS_URL=http://localhost:4000
+      - VITE_GITHUB_URL=https://github.com/nlp-tlp/lexiclean
+      - NODE_ENV=development
     networks:
-      - lexiclean-app
-    volumes:
-      - ./server/:/usr/src/app
-      - /usr/src/app/node_modules
-    depends_on:
-      - mongo
-  mongo:
-    image: mongo:4.4.8
+      - app-network
+
+  mongodb:
+    image: mongo:latest
     ports:
       - "27018:27017"
-    networks:
-      - lexiclean-app
     volumes:
-      - mongo-data:/data/db
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    networks:
+      - app-network
 
-networks:
-  lexiclean-app:
-    driver: bridge
+  docs:
+    build:
+      context: ./docs
+    ports:
+      - "4000:4000"
 
 volumes:
-  mongo-data:
-    driver: local
+  mongodb_data:
+
+networks:
+  app-network:
+    driver: bridge

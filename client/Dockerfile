@@ -1,17 +1,14 @@
-FROM node:14.17.0-alpine
+FROM node:20-alpine
 
-# Set working directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Install dependencies
-COPY ./package*.json ./
-RUN npm install --silent
+COPY package*.json ./
+RUN npm install
 
-# Copy source code
 COPY . .
 
-# Run client
+# For development server
+ENV HOST=0.0.0.0
 EXPOSE 3000
 
-# Start up client
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev", "--", "--host", "--port", "3000"]

@@ -89,6 +89,7 @@ body {
   cursor: pointer;
   color: #263238;
   transition: all 0.5s ease-in-out;
+  border-radius: 25%;
 }
 
 #icon:hover {
