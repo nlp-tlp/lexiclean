@@ -142,6 +142,19 @@ async def update_user_endpoint(
     logger.info(f"Updating user with id: {user.id}: {body}")
     update_data: Dict = body.model_dump(exclude_none=True, by_alias=True)
 
+    # Special handling for OpenAI API key - allow it to be cleared
+    if "openai_api_key" in update_data and update_data["openai_api_key"] == "":
+        update_data["openai_api_key"] = None
+
+    # Remove any empty strings from the update data
+    update_data = {k: v for k, v in update_data.items() if v is not None and v != ""}
+
+    if not update_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No valid fields to update",
+        )
+
     # Check if email is being updated
     if "email" in update_data and update_data["email"] != user.email:
         # Check if the new email is already in use

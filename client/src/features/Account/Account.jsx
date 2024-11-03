@@ -47,10 +47,11 @@ const Account = () => {
 
   useEffect(() => {
     const hasChanged =
-      name !== (state.user?.name || "") ||
-      email !== (state.user?.email || "") ||
-      openAIKey !== (state.user?.openai_api_key || "") ||
-      securityQuestion !== (state.user?.security_question || "") ||
+      (name !== state.user?.name && name !== "") ||
+      (email !== state.user?.email && email !== "") ||
+      (openAIKey !== state.user?.openai_api_key && openAIKey !== "") ||
+      (securityQuestion !== state.user?.security_question &&
+        securityQuestion !== "") ||
       securityAnswer !== "";
     setIsChanged(hasChanged);
   }, [name, email, openAIKey, securityQuestion, securityAnswer, state.user]);
@@ -58,13 +59,33 @@ const Account = () => {
   const handleUpdate = async () => {
     try {
       setIsSubmitting(true);
-      await updateUserDetails({
-        name,
-        email,
-        openAIKey,
-        securityQuestion,
-        securityAnswer,
-      });
+
+      // Create an object with only the changed fields
+      const updates = {};
+
+      if (name !== state.user?.name) {
+        updates.name = name;
+      }
+      if (email !== state.user?.email) {
+        updates.email = email;
+      }
+      if (openAIKey !== state.user?.openai_api_key) {
+        updates.openai_api_key = openAIKey;
+      }
+      if (securityQuestion !== state.user?.security_question) {
+        updates.security_question = securityQuestion;
+      }
+      if (securityAnswer) {
+        // Only send if there's a new security answer
+        updates.security_answer = securityAnswer;
+      }
+
+      // Only make the API call if there are actually changes
+      if (Object.keys(updates).length > 0) {
+        await updateUserDetails(updates);
+        // Clear security answer after successful update
+        setSecurityAnswer("");
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -115,7 +136,7 @@ const Account = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="false"
-              helperText="Your email address; changes are currently disabled."
+              helperText="Your email address."
             />
             <TextField
               label="OpenAI API Key"
