@@ -24,6 +24,8 @@ import { docsUrl } from "../../shared/constants/misc";
 import { useAuth } from "../../shared/context/AuthContext";
 import { useAuthRedirect } from "../../shared/hooks/useAuthRedirect";
 import { useNavigate } from "react-router-dom";
+import DocumentationItemButton from "../../shared/components/Layout/DocumentationItemButton";
+import GithubItemButton from "../../shared/components/Layout/GithubItemButton";
 
 export const featureContent = [
   {
@@ -125,10 +127,8 @@ export const Header = () => {
         alignItems="center"
         id="header-actions"
       >
-        {/* <Button size="small">Documentation</Button> */}
-        <IconButton color="inherit" disabled>
-          <GitHubIcon />
-        </IconButton>
+        <DocumentationItemButton />
+        <GithubItemButton />
         <ThemeToggleButton />
         <Button
           id={`header-${isAuthenticated ? "logout" : "login"}-button`}
