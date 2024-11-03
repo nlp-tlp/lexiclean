@@ -3,8 +3,10 @@ FROM python:3.9-slim
 WORKDIR /app
 
 # Copy requirements first
-COPY requirements.docker.txt .
-RUN pip install --no-cache-dir -r requirements.docker.txt
+COPY requirements.txt .
+# Remove any -e entries from requirements before installing
+RUN grep -v '^-e' requirements.txt > requirements.cleaned.txt
+RUN pip install --no-cache-dir -r requirements.cleaned.txt
 
 # Copy env files
 COPY .env.docker .env.docker
