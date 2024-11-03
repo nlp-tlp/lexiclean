@@ -411,43 +411,32 @@ async def get_projects_endpoint(
         {
             "$group": {
                 "_id": {"text_id": "$text_id", "project_id": "$project_id"},
-                "count": {"$sum": 1},
+                "saves": {"$sum": 1},
             }
         },
+        {"$group": {"_id": "$_id.project_id", "saved_texts": {"$sum": 1}}},
         {
             "$project": {
                 "_id": 0,
-                "text_id": {"$toString": "$_id.text_id"},
-                "project_id": {"$toString": "$_id.project_id"},
-                "count": 1,
+                "project_id": {"$toString": "$_id"},
+                "saved_texts": 1,
             }
         },
     ]
 
     save_counts = await db.annotations.aggregate(save_pipeline).to_list(length=None)
-    print(f"save_counts: {save_counts}")
-    save_dict = {
-        tuple([item["project_id"], item["text_id"]]): item["count"]
-        for item in save_counts
-    }
-    print(f"save_dict: {save_dict}")
+    logger.info(f"save_counts: {save_counts}")
+    save_dict = {item["project_id"]: item["saved_texts"] for item in save_counts}
+    logger.info(f"save_dict: {save_dict}")
 
     projects_out = []
     for project in result.get("projects", []):
         project_id = str(project["_id"])
-        accepted_annotators = len(
-            [a for a in project.get("annotators", []) if a["status"] == "accepted"]
-        )
-
-        majority_saved_texts = math.floor(
-            (save_dict.get(project_id, 0) / accepted_annotators)
-        )
-
         projects_out.append(
             ProjectOut(
                 **project,
                 texts=text_counts.get(project_id, 0),
-                saved_texts=majority_saved_texts,
+                saved_texts=save_dict.get(project_id, 0),
             )
         )
 

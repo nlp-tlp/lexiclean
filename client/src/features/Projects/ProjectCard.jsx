@@ -17,6 +17,8 @@ import ArticleIcon from "@mui/icons-material/Article";
 import SettingsIcon from "@mui/icons-material/Settings";
 
 const ProjectCard = ({ index, project }) => {
+  console.log(project);
+
   const projectProperties = [
     {
       value: project.texts,
@@ -24,7 +26,9 @@ const ProjectCard = ({ index, project }) => {
       icon: <ArticleIcon fontSize="inherit" color="inherit" />,
     },
     {
-      value: `${project.savedCount} / ${project.textCount}`,
+      value: `${project.saved_texts} / ${project.texts} (${(
+        (project.saved_texts / project.texts) * 100 || 0
+      ).toFixed(0)}%)`,
       title: "Texts Annotated",
       icon: <ArticleIcon fontSize="inherit" color="inherit" />,
     },
