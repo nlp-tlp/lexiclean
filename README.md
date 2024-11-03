@@ -138,3 +138,16 @@ Please email any feedback or questions to Tyler Bikaun (tyler.bikaun@research.uw
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+### Bug Reports & Feature Requests
+- Open an issue using the appropriate template
+- Provide clear description and steps to reproduce (for bugs)
+- Include relevant environment details or examples
+
+### Pull Requests
+1. Fork and create a branch
+2. Make changes following our code style
+3. Test your changes
+4. Submit a PR with a clear description
