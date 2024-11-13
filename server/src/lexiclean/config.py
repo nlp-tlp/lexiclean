@@ -1,15 +1,15 @@
-from functools import lru_cache
-from typing import Optional
+"""Configuration settings."""
 
-from pydantic import BaseModel, Field, SecretStr
+from functools import lru_cache
+
+from pydantic import BaseModel, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from lexiclean.constants import ENGLISH_LEXICON
 
-
 class SettingsMongoDB(BaseModel):
-    uri: SecretStr = Field(...)
-    db_name: str = Field(...)
+    uri: SecretStr
+    db_name: str
 
     @property
     def mongodb_uri(self) -> str:
@@ -17,9 +17,9 @@ class SettingsMongoDB(BaseModel):
 
 
 class SettingsAuth(BaseModel):
-    secret_key: SecretStr = Field(...)
-    algorithm: str = Field(default="HS256")
-    access_token_expire_minutes: int = Field(default=360)
+    secret_key: SecretStr
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 360
 
     @property
     def secret_key_value(self) -> str:
@@ -27,26 +27,28 @@ class SettingsAuth(BaseModel):
 
 
 class SettingsAPI(BaseModel):
-    prefix: str = Field(default="/api")
+    prefix: str = "/api"
 
 
 class Config(BaseSettings):
+    api: SettingsAPI = SettingsAPI()
+    auth: SettingsAuth
+    mongodb: SettingsMongoDB
+
     @property
     def english_lexicon(self):
         return ENGLISH_LEXICON
-
-    auth: SettingsAuth
-    mongodb: SettingsMongoDB
-    api: SettingsAPI
-
+    
     model_config = SettingsConfigDict(
-        env_file=".env", env_nested_delimiter="__", env_file_encoding="utf-8"
+        env_file=".env", 
+        env_nested_delimiter="__",
+        env_file_encoding="utf-8",
+        extra="ignore"
     )
 
-
 @lru_cache()
-def get_config():
+def get_config() -> Config:
+    """Get configuration."""
     return Config()
-
 
 config = get_config()

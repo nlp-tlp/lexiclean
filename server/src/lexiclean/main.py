@@ -36,12 +36,12 @@ tags_metadata = [
 
 mongodb_client = None
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # type: ignore
     config = get_config()
 
-    connect_to_mongo(uri=config.mongodb.uri.get_secret_value())
+    logger.info(f"Connecting to database with URI: {config.mongodb.mongodb_uri}")
+    connect_to_mongo(uri=config.mongodb.mongodb_uri)
     try:
         yield
     finally:
