@@ -48,8 +48,8 @@ export const Token = ({
 }) => {
   const { colorMode } = useColorMode();
 
-  console.log(token);
-  console.log(token.currentValue);
+  // console.log(token);
+  // console.log(token.currentValue);
 
   if (!token) {
     return;
