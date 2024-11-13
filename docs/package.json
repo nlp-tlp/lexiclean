@@ -2,6 +2,9 @@
   "name": "docs",
   "version": "0.0.0",
   "private": true,
+  "engines": {
+    "node": ">=18.0"
+  },
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start --port 4000",
@@ -21,6 +24,7 @@
     "@mdx-js/react": "^3.0.0",
     "@mui/material": "^5.15.14",
     "clsx": "^2.0.0",
+    "dotenv": "^16.4.5",
     "prism-react-renderer": "^2.3.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
@@ -40,8 +44,5 @@
       "last 3 firefox version",
       "last 5 safari version"
     ]
-  },
-  "engines": {
-    "node": ">=18.0"
   }
 }

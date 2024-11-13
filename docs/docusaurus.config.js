@@ -5,12 +5,18 @@
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
 import { themes as prismThemes } from "prism-react-renderer";
+import Dotenv from "dotenv";
+Dotenv.config({ path: ".env" });
+
+const GITHUB_URL =
+  process.env.GITHUB_URL || "https://github.com/nlp-tlp/lexiclean";
+const WEBSITE_URL = process.env.WEBSITE_URL || "https://lexiclean.nlp-tlp.org";
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: "LexiClean - Documentation",
   tagline: "Multi-task Lexical Normalisation",
-  url: "https://lexiclean.nlp-tlp.org",
+  url: WEBSITE_URL,
   baseUrl: "/",
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
@@ -51,12 +57,12 @@ const config = {
         },
         items: [
           {
-            href: "https://github.com/nlp-tlp/lexiclean",
+            href: GITHUB_URL,
             label: "GitHub",
             position: "right",
           },
           {
-            href: "https://lexiclean.nlp-tlp.org",
+            href: WEBSITE_URL,
             label: "LexiClean",
             position: "right",
           },
@@ -64,7 +70,6 @@ const config = {
       },
       footer: {
         style: "dark",
-        // Copyright © ${new Date().getFullYear()} LexiClean -
         copyright: `Launched into the digital cosmos by 🚀 Tyler Bikaun (4theKnowledge)`,
       },
       prism: {
