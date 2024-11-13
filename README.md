@@ -1,7 +1,7 @@
 # LexiClean: An annotation tool for rapid multi-task lexical normalisation
 
-[![Live Demo](https://img.shields.io/badge/-Live%20Demo-brightgreen?style=flat&logo=firefoxbrowser&logoColor=white)](https://lexiclean-nlp-tlp.onrender.com)
-[![Documentation](https://img.shields.io/badge/-Documentation-blue?style=flat&logo=github&logoColor=white)](https://lexiclean-docs.onrender.com)
+[![Live Demo](https://img.shields.io/badge/-Live%20Demo-brightgreen?style=flat&logo=firefoxbrowser&logoColor=white)](https://lexiclean.tech)
+[![Documentation](https://img.shields.io/badge/-Documentation-blue?style=flat&logo=github&logoColor=white)](https://docs.lexiclean.tech)
 [![Video Demo](https://img.shields.io/badge/-Video%20Demo-red?style=flat&logo=youtube&logoColor=white)](https://youtu.be/P7_ooKrQPDU)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Docker](https://img.shields.io/badge/docker-supported-brightgreen.svg)](https://www.docker.com/)
