@@ -1,6 +1,7 @@
 """Configuration settings."""
 
 from functools import lru_cache
+from typing import List
 
 from pydantic import BaseModel, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -28,13 +29,31 @@ class SettingsAuth(BaseModel):
 
 class SettingsAPI(BaseModel):
     prefix: str = "/api"
-
+    docs_url: str | None = "/docs"
+    redoc_url: str | None = "/redoc"
+    openapi_url: str | None = "/openapi.json"
+    debug_endpoints: bool = True
+    
+    allowed_origins: List[str] = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://frontend:3000",
+        "http://localhost:8000",
+        "http://fastapi:8000",
+        "http://0.0.0.0:3000",
+        "http://0.0.0.0:8000",
+    ]
 
 class Config(BaseSettings):
     api: SettingsAPI = SettingsAPI()
     auth: SettingsAuth
     mongodb: SettingsMongoDB
+    environment: str = "development"
 
+    @property
+    def is_production(self) -> bool:
+        return self.environment.lower() == "production"
+    
     @property
     def english_lexicon(self):
         return ENGLISH_LEXICON

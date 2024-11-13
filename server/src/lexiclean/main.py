@@ -50,76 +50,79 @@ async def lifespan(app: FastAPI):  # type: ignore
         logger.info("Database connection closed")
 
 
-origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://frontend:3000",
-    "http://localhost:8000",
-    "http://fastapi:8000",
-    "http://0.0.0.0:3000",
-    "http://0.0.0.0:8000",
-]
+def create_app() -> FastAPI:
+    config = get_config()
 
-app = FastAPI(
-    title="LexiClean",
-    description=description,
-    version="0.0.1",
-    contact={"name": "Tyler Bikaun", "email": "tylerbikaun@gmail.com"},
-    lifespan=lifespan,
-)
+    logger.info(f'Creating app in environment: {config.environment}')
+    
+    # Configure docs URLs based on environment
+    docs_url = None if config.is_production else config.api.docs_url
+    redoc_url = None if config.is_production else config.api.redoc_url
+    openapi_url = None if config.is_production else config.api.openapi_url
+    
+    app = FastAPI(
+        title="LexiClean",
+        description=description,
+        version="0.0.1",
+        contact={"name": "Tyler Bikaun", "email": "tylerbikaun@gmail.com"},
+        lifespan=lifespan,
+        docs_url=docs_url,
+        redoc_url=redoc_url,
+        openapi_url=openapi_url,
+    )
+    
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=config.api.allowed_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    
+    # Include routers
+    app.include_router(users_router)
+    app.include_router(projects_router)
+    app.include_router(texts_router)
+    app.include_router(resurces_router)
+    app.include_router(tokens_router)
+    app.include_router(notifications_router)
+    
+    # Debug endpoints - only available in non-production
+    if not config.is_production and config.api.debug_endpoints:
+        @app.get(f"{config.api.prefix}/settings")
+        def read_settings():
+            return config
 
+        @app.get(f"{config.api.prefix}/db")
+        async def read_db(db: AsyncIOMotorDatabase = Depends(get_db)):
+            if db.client:
+                collection_names = await db.list_collection_names()
+                return {"message": "Database connected", "collection_names": collection_names}
+            return {"message": "Database not connected"}
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-app.include_router(users_router)
-app.include_router(projects_router)
-app.include_router(texts_router)
-app.include_router(resurces_router)
-app.include_router(tokens_router)
-app.include_router(notifications_router)
-# app.include_router(maps.router)
-
-
-@app.get(f"{config.api.prefix}/settings")
-def read_settings():
-    return config
-
-
-@app.get(f"{config.api.prefix}/db")
-async def read_db(db: AsyncIOMotorDatabase = Depends(get_db)):
-    if db.client:
-        collection_names = await db.list_collection_names()
-        return {"message": "Database connected", "collection_names": collection_names}
-    else:
-        return {"message": "Database not connected"}
-
-
-@app.get(f"{config.api.prefix}/protected")
-async def protected_route(user: UserDocumentModel = Depends(get_user)):
-    return {
-        "message": "You are authenticated",
-        "user": UserOut(**user.model_dump()),
-    }
-
-
-@app.get(f"{config.api.prefix}/health")
-async def health_check(db: AsyncIOMotorDatabase = Depends(get_db)):
-    try:
-        # Check database connection
-        await db.command("ping")
+    # Protected and health check endpoints - always available
+    @app.get(f"{config.api.prefix}/protected")
+    async def protected_route(user: UserDocumentModel = Depends(get_user)):
         return {
-            "status": "healthy",
-            "database": "connected",
+            "message": "You are authenticated",
+            "user": UserOut(**user.model_dump()),
         }
-    except Exception as e:
-        logger.error(f"Health check failed: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Service unhealthy",
-        )
+
+    @app.get(f"{config.api.prefix}/health")
+    async def health_check(db: AsyncIOMotorDatabase = Depends(get_db)):
+        try:
+            await db.command("ping")
+            return {
+                "status": "healthy",
+                "database": "connected",
+            }
+        except Exception as e:
+            logger.error(f"Health check failed: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Service unhealthy",
+            )
+    
+    return app
+
+app = create_app()
