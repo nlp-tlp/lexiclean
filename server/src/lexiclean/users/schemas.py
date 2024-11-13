@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional, Union
 
 from bson import ObjectId
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, SecretStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, SecretStr, field_validator
 
 from lexiclean.models import AnnotatedObjectId
 
@@ -50,7 +50,7 @@ class UserUpdate(BaseModel):
         if v is not None and v != "":
             # If it's not None or empty string, it must be a valid email
             try:
-                EmailStr.validate(v)
+                EmailStr.validate(v)  # type: ignore
             except ValueError:
                 raise ValueError("Invalid email address")
         return v if v else None  # Convert empty string to None

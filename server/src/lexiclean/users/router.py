@@ -10,8 +10,8 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from passlib.context import CryptContext
 
-from lexiclean.config import config
-from lexiclean.dependencies import get_db, get_user
+from lexiclean.config import Config, config
+from lexiclean.dependencies import get_config, get_db, get_user
 from lexiclean.users.schemas import (
     SecurityQuestionReset,
     UserCreate,
@@ -105,7 +105,16 @@ async def get_user_profile_endpoint(
 
 
 @router.get("/{user_id}", response_model=UserOut)
-async def get_user_endpoint(user_id: str, db: AsyncIOMotorDatabase = Depends(get_db)):
+async def get_user_endpoint(
+    user_id: str,
+    db: AsyncIOMotorDatabase = Depends(get_db),
+    config: Config = Depends(get_config),
+):
+    if config.is_production:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Getting users by id is disabled in production",
+        )
     logger.info(f"Getting user with id: {user_id}")
 
     user = await db.users.find_one({"_id": ObjectId(user_id)})
@@ -119,8 +128,15 @@ async def get_user_endpoint(user_id: str, db: AsyncIOMotorDatabase = Depends(get
 
 @router.delete("/{user_id}")
 async def delete_user_endpoint(
-    user_id: str, db: AsyncIOMotorDatabase = Depends(get_db)
+    user_id: str,
+    db: AsyncIOMotorDatabase = Depends(get_db),
+    config: Config = Depends(get_config),
 ):
+    if config.is_production:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Deleting users is disabled in production",
+        )
     user = await db.users.find_one({"_id": ObjectId(user_id)})
     if user is None:
         raise HTTPException(
