@@ -1,16 +1,17 @@
 # LexiClean: An annotation tool for rapid multi-task lexical normalisation
 
+[![Live Demo](https://img.shields.io/badge/-Live%20Demo-brightgreen?style=flat&logo=firefoxbrowser&logoColor=white)](https://lexiclean-nlp-tlp.onrender.com)
+[![Documentation](https://img.shields.io/badge/-Documentation-blue?style=flat&logo=github&logoColor=white)](https://lexiclean-docs.onrender.com)
+[![Video Demo](https://img.shields.io/badge/-Video%20Demo-red?style=flat&logo=youtube&logoColor=white)](https://youtu.be/P7_ooKrQPDU)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Docker](https://img.shields.io/badge/docker-supported-brightgreen.svg)](https://www.docker.com/)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
+
 
 > [!IMPORTANT]
 > LexiClean v2 is currently being released. While it is currently testable, an updated video walk through is still pending and will be re-released by the 11th of November. In the meantime, please consult the original systems demonstration or documentation for more information.
 
-LexiClean is a rapid annotation tool for acquiring parallel corpora for lexical normalisation built with MongoDB, React and FastAPI. 
-
-📌 **Quick Links:**
-- [Live Demo](https://lexiclean.nlp-tlp.org)
-- [Demo Video](https://youtu.be/P7_ooKrQPDU)
+LexiClean is a rapid annotation tool for acquiring parallel corpora for lexical normalisation built with MongoDB, React and FastAPI.
 
 ![Annotation Interface](./client/public/static/annotation_interface_light.png)
 
