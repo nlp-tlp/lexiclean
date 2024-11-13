@@ -8,6 +8,16 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from lexiclean.constants import ENGLISH_LEXICON
 
+BASE_ALLOWED_ORIGINS = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://frontend:3000",
+        "http://localhost:8000",
+        "http://fastapi:8000",
+        "http://0.0.0.0:3000",
+        "http://0.0.0.0:8000",
+    ]
+
 class SettingsMongoDB(BaseModel):
     uri: SecretStr
     db_name: str
@@ -33,16 +43,11 @@ class SettingsAPI(BaseModel):
     redoc_url: str | None = "/redoc"
     openapi_url: str | None = "/openapi.json"
     debug_endpoints: bool = True
+    extra_origins: List[str] = []
     
-    allowed_origins: List[str] = [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://frontend:3000",
-        "http://localhost:8000",
-        "http://fastapi:8000",
-        "http://0.0.0.0:3000",
-        "http://0.0.0.0:8000",
-    ]
+    @property
+    def allowed_origins(self) -> List[str]:
+        return BASE_ALLOWED_ORIGINS + self.extra_origins
 
 class Config(BaseSettings):
     api: SettingsAPI = SettingsAPI()

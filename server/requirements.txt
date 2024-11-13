@@ -27,7 +27,7 @@ isort==5.13.2
 itsdangerous==2.2.0
 Jinja2==3.1.4
 jiter==0.6.1
--e git+https://github.com/nlp-tlp/lexiclean@65bcf536df5c4aceed344a0cc729565678819744#egg=lexiclean&subdirectory=server
+-e git+https://github.com/nlp-tlp/lexiclean@a26f245caaac460a4e61eb1db20dc5891ad8fbca#egg=lexiclean&subdirectory=server
 loguru==0.7.2
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
