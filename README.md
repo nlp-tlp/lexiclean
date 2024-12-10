@@ -9,13 +9,22 @@
 
 
 > [!IMPORTANT]
-> LexiClean v2 is currently being released. While it is currently testable, an updated video walk through is still pending and will be re-released by the 11th of November. In the meantime, please consult the original systems demonstration or documentation for more information.
+> LexiClean v2 is currently being released. While it is currently testable, an updated video walk through is still pending and will be re-released ASAP. In the meantime, please consult the original systems demonstration or documentation for more information.
 
 LexiClean is a rapid annotation tool for acquiring parallel corpora for lexical normalisation built with MongoDB, React and FastAPI.
+<<<<<<< HEAD
+=======
+
+📌 **Quick Links:**
+
+- [Live Demo](https://lexiclean.nlp-tlp.org)
+- [Demo Video](https://youtu.be/P7_ooKrQPDU)
+>>>>>>> 39dc557 (chore: update README for clarity and formatting improvements)
 
 ![Annotation Interface](./client/public/static/annotation_interface_light.png)
 
 ## 📦 Dependencies
+
 To run LexiClean using Docker, you'll need:
 
 - Docker Engine (see: https://docs.docker.com/engine/install/)
@@ -31,11 +40,13 @@ cd lexiclean
 ```
 
 2. Start the application:
+
 ```bash
 docker compose up --build
 ```
 
 ### Available Services
+
 | Service       | URL                   | Description        |
 | ------------- | --------------------- | ------------------ |
 | Frontend      | http://localhost:3000 | User interface     |
@@ -44,6 +55,7 @@ docker compose up --build
 | MongoDB       | localhost:27018       | Database           |
 
 ## 🏗️ Architecture
+
 The application consists of four main services:
 
 - Frontend (React): User interface running on port 3000
@@ -54,6 +66,7 @@ The application consists of four main services:
 ## ⚙️ Environment Variables
 
 ### Backend (FastAPI)
+
 ```env
 MONGODB__URI=mongodb://root:example@mongodb:27017/lexiclean?authSource=admin
 MONGODB__DB_NAME=lexiclean
@@ -64,6 +77,7 @@ API__PREFIX=/api
 ```
 
 ### Frontend
+
 ```env
 VITE_API_URL=http://localhost:8000/api
 VITE_DOCS_URL=http://localhost:4000
@@ -83,13 +97,17 @@ MONGO_INITDB_ROOT_PASSWORD=example
 If you prefer to run the application without Docker, follow these steps:
 
 1. Install MongoDB (v4.4.6 or later):
-  - Follow the [official MongoDB installation guide](https://docs.mongodb.com/manual/installation/)
+
+- Follow the [official MongoDB installation guide](https://docs.mongodb.com/manual/installation/)
+
 2. Verify MongoDB is running:
+
 ```bash
 service mongod status
 ```
 
 3. Install dependencies:
+
 ```bash
 # Install backend dependencies
 cd server
@@ -107,6 +125,7 @@ npm install
 4. Set up environment variables using the `.env.example` files as examples
 
 5. Start the services manually:
+
 ```bash
 # Start backend
 cd server
@@ -122,7 +141,9 @@ npm run start
 ```
 
 ## 📝 Attribution
+
 Please cite our [[conference paper]](https://aclanthology.org/2021.emnlp-demo.25/) if you find it useful in your research:
+
 ```
 @inproceedings{bikaun2021lexiclean,
   title={LexiClean: An annotation tool for rapid multi-task lexical normalisation},
@@ -134,6 +155,7 @@ Please cite our [[conference paper]](https://aclanthology.org/2021.emnlp-demo.25
 ```
 
 ## 📫 Feedback
+
 Please email any feedback or questions to Tyler Bikaun (tyler.bikaun@research.uwa.edu.au)
 
 ## 📄 License
@@ -143,11 +165,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🤝 Contributing
 
 ### Bug Reports & Feature Requests
+
 - Open an issue using the appropriate template
 - Provide clear description and steps to reproduce (for bugs)
 - Include relevant environment details or examples
 
 ### Pull Requests
+
 1. Fork and create a branch
 2. Make changes following our code style
 3. Test your changes
