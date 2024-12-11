@@ -61,12 +61,12 @@ const EntitySelector = () => {
             <List>
               {state.project.tags.map((t) => (
                 <Tooltip
+                  key={`tag-tooltip-${t._id}`}
                   title={`Descripton: ${t.description}`}
                   placement="left"
                   arrow
                 >
                   <ListItemButton
-                    key={`tag-${t._id}`}
                     sx={{
                       "&:hover": {
                         backgroundColor: alpha(t.color, 0.25),

@@ -274,6 +274,7 @@ const TrayFlagChip = ({ text }) => {
           {state.project.flags.length > 0 ? (
             state.project.flags.map((option, index) => (
               <FlagMenuItem
+                key={`flag-menu-item-${index}`}
                 state={state}
                 text={text}
                 option={option._id}
