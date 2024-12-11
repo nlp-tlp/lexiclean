@@ -7,7 +7,6 @@
 [![Docker](https://img.shields.io/badge/docker-supported-brightgreen.svg)](https://www.docker.com/)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 
-
 > [!IMPORTANT]
 > LexiClean v2 is currently being released. While it is currently testable, an updated video walk through is still pending and will be re-released ASAP. In the meantime, please consult the original systems demonstration or documentation for more information.
 
@@ -19,7 +18,7 @@ LexiClean is a rapid annotation tool for acquiring parallel corpora for lexical 
 
 - [Live Demo](https://lexiclean.nlp-tlp.org)
 - [Demo Video](https://youtu.be/P7_ooKrQPDU)
->>>>>>> 39dc557 (chore: update README for clarity and formatting improvements)
+  > > > > > > > 39dc557 (chore: update README for clarity and formatting improvements)
 
 ![Annotation Interface](./client/public/static/annotation_interface_light.png)
 
@@ -106,7 +105,21 @@ If you prefer to run the application without Docker, follow these steps:
 service mongod status
 ```
 
-3. Install dependencies:
+3. Create and activate a Python virtual environment:
+
+```bash
+# Create a virtual environment in the server directory
+cd server
+python -m venv venv
+
+# Activate the virtual environment
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+```
+
+4. Install dependencies:
 
 ```bash
 # Install backend dependencies
@@ -122,9 +135,9 @@ cd ../docs
 npm install
 ```
 
-4. Set up environment variables using the `.env.example` files as examples
+5. Set up environment variables using the `.env.example` files as examples
 
-5. Start the services manually:
+6. Start the services manually:
 
 ```bash
 # Start backend
