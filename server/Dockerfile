@@ -21,4 +21,4 @@ ENV $(cat .env.docker | xargs)
 
 EXPOSE 8000
 
-CMD ["uvicorn", "src.lexiclean.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["uvicorn", "src.lexiclean.main:app", "--host", "0.0.0.0", "--port", "8000"]
