@@ -1,0 +1,72 @@
+services:
+  fastapi:
+    build: 
+       context: ./server
+       dockerfile: Dockerfile
+    depends_on:
+      - mongodb
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./server:/app
+    command: uvicorn src.lexiclean.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      - MONGODB__URI=mongodb://root:example@mongodb:27017/lexiclean?authSource=admin
+      - MONGODB__DB_NAME=lexiclean
+      - AUTH__SECRET_KEY=secret
+      - AUTH__ALGORITHM=HS256
+      - AUTH__ACCESS_TOKEN_EXPIRE_MINUTES=360
+      - API__PREFIX=/api
+    networks:
+      - app-network
+
+  frontend:
+    build: 
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: npm run dev -- --host
+    depends_on:
+      - fastapi
+      - docs
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
+      - VITE_DOCS_URL=http://localhost:4000
+      - VITE_GITHUB_URL=https://github.com/nlp-tlp/lexiclean
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - app-network
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    networks:
+      - app-network
+
+  docs:
+    build:
+      context: ./docs
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./docs:/app
+      - /app/node_modules
+    command: npm run start
+
+volumes:
+  mongodb_data:
+
+networks:
+  app-network:
+    driver: bridge
