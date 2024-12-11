@@ -7,6 +7,7 @@ services:
       - mongodb
     ports:
       - "8000:8000"
+    command: uvicorn src.lexiclean.main:app --host 0.0.0.0 --port 8000
     environment:
       - MONGODB__URI=mongodb://root:example@mongodb:27017/lexiclean?authSource=admin
       - MONGODB__DB_NAME=lexiclean
@@ -26,6 +27,7 @@ services:
     depends_on:
       - fastapi
       - docs
+    command: npm run dev
     environment:
       - VITE_API_URL=http://localhost:8000/api
       - VITE_DOCS_URL=http://localhost:4000
