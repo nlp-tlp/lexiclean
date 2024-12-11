@@ -153,6 +153,42 @@ cd docs
 npm run start
 ```
 
+## Development
+
+To run the application in development mode with hot-reloading enabled:
+
+```bash
+# Start all services in development mode
+docker compose -f docker-compose.dev.yml up
+
+# To run in detached mode (background)
+docker compose -f docker-compose.dev.yml up -d
+
+# To rebuild containers after dependency changes
+docker compose -f docker-compose.dev.yml up --build
+```
+
+The development configuration (`docker-compose.dev.yml`) enables:
+
+- Hot-reloading for both frontend and backend changes
+- Volume mounting of local files into containers
+- Development server configurations
+- Exposed ports for debugging
+
+Your changes to the following directories will automatically reflect in the running containers:
+
+- `./client` - Frontend React application
+- `./server` - Backend FastAPI application
+- `./docs` - Documentation site
+
+To stop the development servers:
+
+```bash
+# If running in foreground, use Ctrl+C
+# If running in detached mode:
+docker compose -f docker-compose.dev.yml down
+```
+
 ## 📝 Attribution
 
 Please cite our [[conference paper]](https://aclanthology.org/2021.emnlp-demo.25/) if you find it useful in your research:
